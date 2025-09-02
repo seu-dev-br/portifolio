@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "portifolio",
   "routes": [
     {
       "handle": "filesystem"
@@ -11,9 +10,5 @@
       "dest": "/404.html"
     }
   ],
-  "buildCommand": "cd site && npm run build",
-  "outputDirectory": "site/dist",
-  "installCommand": "cd site && npm ci",
-  "framework": "astro",
   "regions": ["gru1"]
 }
