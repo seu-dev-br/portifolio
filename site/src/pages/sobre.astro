@@ -1,0 +1,375 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Sobre - Ítalo Antonio" description="Conheça mais sobre Ítalo Antonio, desenvolvedor Full Stack">
+	<div class="container">
+		<section class="about-hero">
+			<div class="about-content">
+				<div class="about-text">
+					<h1>Sobre Mim</h1>
+					<h2>Ítalo Antonio - Desenvolvedor Full Stack</h2>
+					<p>
+						Olá! Sou o Ítalo Antonio, um desenvolvedor full stack apaixonado por criar 
+						soluções digitais inovadoras e eficientes. Com experiência em diversas 
+						tecnologias modernas, estou sempre em busca de novos desafios e 
+						oportunidades para crescer profissionalmente.
+					</p>
+					<p>
+						Minha jornada na programação começou com curiosidade e se tornou uma 
+						verdadeira paixão. Adoro trabalhar tanto no frontend quanto no backend, 
+						criando experiências completas e funcionais para os usuários.
+					</p>
+					<p>
+						Trabalho com JavaScript, TypeScript, React, Node.js, Python e muitas 
+						outras tecnologias. Adoro resolver problemas complexos e transformar 
+						ideias em realidade através do código.
+					</p>
+				</div>
+				<div class="about-image">
+					<!-- Substitua pela sua foto -->
+					<div class="placeholder-image">
+						<span>Sua Foto Aqui</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="skills-detailed">
+			<h2>Minhas Habilidades</h2>
+			<div class="skills-categories">
+				<div class="skill-category">
+					<h3>Frontend</h3>
+					<div class="skills-list">
+						<span class="skill-tag">HTML5</span>
+						<span class="skill-tag">CSS3</span>
+						<span class="skill-tag">JavaScript</span>
+						<span class="skill-tag">TypeScript</span>
+						<span class="skill-tag">React</span>
+						<span class="skill-tag">Vue.js</span>
+						<span class="skill-tag">Astro</span>
+						<span class="skill-tag">Tailwind CSS</span>
+					</div>
+				</div>
+				
+				<div class="skill-category">
+					<h3>Backend</h3>
+					<div class="skills-list">
+						<span class="skill-tag">Node.js</span>
+						<span class="skill-tag">Python</span>
+						<span class="skill-tag">Express.js</span>
+						<span class="skill-tag">Firebase</span>
+						<span class="skill-tag">PostgreSQL</span>
+						<span class="skill-tag">MongoDB</span>
+						<span class="skill-tag">REST APIs</span>
+						<span class="skill-tag">GraphQL</span>
+					</div>
+				</div>
+				
+				<div class="skill-category">
+					<h3>DevOps & Tools</h3>
+					<div class="skills-list">
+						<span class="skill-tag">Git</span>
+						<span class="skill-tag">GitHub Actions</span>
+						<span class="skill-tag">Docker</span>
+						<span class="skill-tag">Vercel</span>
+						<span class="skill-tag">AWS</span>
+						<span class="skill-tag">Linux</span>
+						<span class="skill-tag">VS Code</span>
+						<span class="skill-tag">Figma</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="experience">
+			<h2>Experiência</h2>
+			<div class="timeline">
+				<div class="timeline-item">
+					<div class="timeline-date">2023 - Presente</div>
+					<div class="timeline-content">
+						<h3>Desenvolvedor Full Stack</h3>
+						<h4>Empresa Atual</h4>
+						<p>
+							Desenvolvimento de aplicações web completas utilizando React, Node.js 
+							e bancos de dados relacionais. Responsável por arquitetura, 
+							desenvolvimento e deploy de sistemas.
+						</p>
+					</div>
+				</div>
+				
+				<div class="timeline-item">
+					<div class="timeline-date">2022 - 2023</div>
+					<div class="timeline-content">
+						<h3>Desenvolvedor Frontend</h3>
+						<h4>Empresa Anterior</h4>
+						<p>
+							Criação de interfaces modernas e responsivas, integração com APIs 
+							REST, otimização de performance e experiência do usuário.
+						</p>
+					</div>
+				</div>
+				
+				<div class="timeline-item">
+					<div class="timeline-date">2021 - 2022</div>
+					<div class="timeline-content">
+						<h3>Desenvolvedor Junior</h3>
+						<h4>Primeira Empresa</h4>
+						<p>
+							Início da carreira profissional, focado em desenvolvimento web 
+							com JavaScript, HTML, CSS e primeiros contatos com frameworks modernos.
+						</p>
+					</div>
+				</div>
+			</div>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.about-hero {
+		padding: 3rem 0 5rem;
+	}
+
+	.about-content {
+		display: grid;
+		grid-template-columns: 2fr 1fr;
+		gap: 4rem;
+		align-items: center;
+	}
+
+	.about-text h1 {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+		background: linear-gradient(45deg, #af40ff, #5b42f3, #00ddeb);
+		background-size: 400% 400%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient 3s ease infinite;
+	}
+
+	@keyframes gradient {
+		0% { background-position: 0% 50%; }
+		50% { background-position: 100% 50%; }
+		100% { background-position: 0% 50%; }
+	}
+
+	.about-text h2 {
+		font-size: 1.5rem;
+		margin-bottom: 2rem;
+		color: rgba(255, 255, 255, 0.8);
+		font-weight: 400;
+	}
+
+	.about-text p {
+		font-size: 1.1rem;
+		line-height: 1.7;
+		margin-bottom: 1.5rem;
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	.about-image {
+		display: flex;
+		justify-content: center;
+	}
+
+	.placeholder-image {
+		width: 280px;
+		height: 280px;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgba(255, 255, 255, 0.5);
+		font-size: 1.1rem;
+		border: 3px solid rgba(175, 64, 255, 0.3);
+	}
+
+	.skills-detailed {
+		padding: 4rem 0;
+	}
+
+	.skills-detailed h2 {
+		text-align: center;
+		font-size: 2.5rem;
+		margin-bottom: 3rem;
+		color: white;
+	}
+
+	.skills-categories {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 2rem;
+	}
+
+	.skill-category {
+		background: rgba(255, 255, 255, 0.05);
+		padding: 2rem;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.skill-category h3 {
+		font-size: 1.4rem;
+		margin-bottom: 1.5rem;
+		color: #af40ff;
+		text-align: center;
+	}
+
+	.skills-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.7rem;
+		justify-content: center;
+	}
+
+	.skill-tag {
+		background: rgba(175, 64, 255, 0.2);
+		color: #af40ff;
+		padding: 0.5rem 1rem;
+		border-radius: 25px;
+		font-size: 0.9rem;
+		font-weight: 500;
+		border: 1px solid rgba(175, 64, 255, 0.3);
+		transition: all 0.3s ease;
+	}
+
+	.skill-tag:hover {
+		background: rgba(175, 64, 255, 0.3);
+		transform: translateY(-2px);
+	}
+
+	.experience {
+		padding: 4rem 0;
+	}
+
+	.experience h2 {
+		text-align: center;
+		font-size: 2.5rem;
+		margin-bottom: 3rem;
+		color: white;
+	}
+
+	.timeline {
+		max-width: 800px;
+		margin: 0 auto;
+		position: relative;
+	}
+
+	.timeline::before {
+		content: '';
+		position: absolute;
+		left: 50%;
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		background: rgba(175, 64, 255, 0.3);
+		transform: translateX(-50%);
+	}
+
+	.timeline-item {
+		display: flex;
+		margin-bottom: 3rem;
+		position: relative;
+	}
+
+	.timeline-item:nth-child(odd) {
+		flex-direction: row;
+	}
+
+	.timeline-item:nth-child(even) {
+		flex-direction: row-reverse;
+	}
+
+	.timeline-date {
+		flex: 0 0 150px;
+		text-align: center;
+		padding: 1rem;
+		background: rgba(175, 64, 255, 0.2);
+		border-radius: 25px;
+		color: #af40ff;
+		font-weight: 600;
+		font-size: 0.9rem;
+		height: fit-content;
+		border: 1px solid rgba(175, 64, 255, 0.3);
+	}
+
+	.timeline-content {
+		flex: 1;
+		padding: 2rem;
+		margin: 0 2rem;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 12px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		position: relative;
+	}
+
+	.timeline-content h3 {
+		font-size: 1.3rem;
+		margin-bottom: 0.5rem;
+		color: white;
+	}
+
+	.timeline-content h4 {
+		font-size: 1rem;
+		margin-bottom: 1rem;
+		color: #af40ff;
+		font-weight: 500;
+	}
+
+	.timeline-content p {
+		color: rgba(255, 255, 255, 0.7);
+		line-height: 1.6;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.about-content {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+			text-align: center;
+		}
+
+		.about-text h1 {
+			font-size: 2.5rem;
+		}
+
+		.placeholder-image {
+			width: 200px;
+			height: 200px;
+		}
+
+		.timeline::before {
+			left: 20px;
+		}
+
+		.timeline-item {
+			flex-direction: column !important;
+			padding-left: 50px;
+		}
+
+		.timeline-date {
+			position: absolute;
+			left: -40px;
+			top: 0;
+			flex: none;
+			width: 80px;
+			height: 80px;
+			border-radius: 50%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 0.8rem;
+		}
+
+		.timeline-content {
+			margin: 0;
+		}
+
+		.skills-categories {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

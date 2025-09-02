@@ -1,0 +1,386 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Contato - Ítalo Antonio" description="Entre em contato com Ítalo Antonio para projetos e oportunidades">
+	<div class="container">
+		<section class="contact-hero">
+			<h1>Entre em Contato</h1>
+			<p>Vamos conversar sobre projetos, oportunidades ou apenas trocar ideias sobre tecnologia!</p>
+		</section>
+
+		<section class="contact-content">
+			<div class="contact-info">
+				<h2>Informações de Contato</h2>
+				
+				<div class="contact-methods">
+					<div class="contact-method">
+						<div class="contact-icon">📧</div>
+						<div class="contact-details">
+							<h3>Email</h3>
+							<a href="mailto:italo.antonio@exemplo.com">italo.antonio@exemplo.com</a>
+						</div>
+					</div>
+					
+					<div class="contact-method">
+						<div class="contact-icon">💼</div>
+						<div class="contact-details">
+							<h3>LinkedIn</h3>
+							<a href="https://linkedin.com/in/italo-antonio" target="_blank" rel="noopener">linkedin.com/in/italo-antonio</a>
+						</div>
+					</div>
+					
+					<div class="contact-method">
+						<div class="contact-icon">💻</div>
+						<div class="contact-details">
+							<h3>GitHub</h3>
+							<a href="https://github.com/Ganjamanbr" target="_blank" rel="noopener">github.com/Ganjamanbr</a>
+						</div>
+					</div>
+					
+					<div class="contact-method">
+						<div class="contact-icon">🐦</div>
+						<div class="contact-details">
+							<h3>Twitter</h3>
+							<a href="https://twitter.com/italo_antonio" target="_blank" rel="noopener">@italo_antonio</a>
+						</div>
+					</div>
+				</div>
+
+				<div class="availability">
+					<h3>Disponibilidade</h3>
+					<p>
+						Estou sempre aberto a discussões sobre novos projetos, 
+						oportunidades de trabalho ou colaborações interessantes. 
+						Respondo a emails normalmente em até 24 horas.
+					</p>
+				</div>
+			</div>
+
+			<div class="contact-form-section">
+				<h2>Envie uma Mensagem</h2>
+				<form class="contact-form" action="https://formspree.io/f/SEU_FORM_ID" method="POST">
+					<div class="form-group">
+						<label for="name">Nome</label>
+						<input type="text" id="name" name="name" required>
+					</div>
+					
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" id="email" name="email" required>
+					</div>
+					
+					<div class="form-group">
+						<label for="subject">Assunto</label>
+						<select id="subject" name="subject" required>
+							<option value="">Selecione um assunto</option>
+							<option value="projeto">Proposta de Projeto</option>
+							<option value="trabalho">Oportunidade de Trabalho</option>
+							<option value="colaboracao">Colaboração</option>
+							<option value="feedback">Feedback sobre o Site/Blog</option>
+							<option value="outro">Outro</option>
+						</select>
+					</div>
+					
+					<div class="form-group">
+						<label for="message">Mensagem</label>
+						<textarea id="message" name="message" rows="6" required placeholder="Conte-me mais sobre o que você tem em mente..."></textarea>
+					</div>
+					
+					<button type="submit" class="btn btn-primary">Enviar Mensagem</button>
+				</form>
+			</div>
+		</section>
+
+		<section class="cta-section">
+			<h2>Vamos Trabalhar Juntos?</h2>
+			<p>
+				Se você tem um projeto interessante ou está procurando um desenvolvedor 
+				dedicado para sua equipe, adoraria ouvir sobre suas ideias!
+			</p>
+			<div class="cta-buttons">
+				<a href="/blog" class="btn btn-outline">Ver Meus Posts</a>
+				<a href="/sobre" class="btn btn-secondary">Sobre Mim</a>
+			</div>
+		</section>
+	</div>
+</Layout>
+
+<style>
+	.contact-hero {
+		text-align: center;
+		padding: 3rem 0 4rem;
+	}
+
+	.contact-hero h1 {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+		background: linear-gradient(45deg, #af40ff, #5b42f3, #00ddeb);
+		background-size: 400% 400%;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: gradient 3s ease infinite;
+	}
+
+	@keyframes gradient {
+		0% { background-position: 0% 50%; }
+		50% { background-position: 100% 50%; }
+		100% { background-position: 0% 50%; }
+	}
+
+	.contact-hero p {
+		font-size: 1.2rem;
+		color: rgba(255, 255, 255, 0.7);
+		max-width: 600px;
+		margin: 0 auto;
+	}
+
+	.contact-content {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 4rem;
+		margin: 3rem 0 5rem;
+	}
+
+	.contact-info h2,
+	.contact-form-section h2 {
+		font-size: 1.8rem;
+		margin-bottom: 2rem;
+		color: white;
+	}
+
+	.contact-methods {
+		margin-bottom: 3rem;
+	}
+
+	.contact-method {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 1.5rem;
+		margin-bottom: 1rem;
+		background: rgba(255, 255, 255, 0.05);
+		border-radius: 12px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.contact-method:hover {
+		background: rgba(255, 255, 255, 0.08);
+		transform: translateY(-2px);
+	}
+
+	.contact-icon {
+		font-size: 2rem;
+		width: 50px;
+		height: 50px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(175, 64, 255, 0.2);
+		border-radius: 12px;
+		flex-shrink: 0;
+	}
+
+	.contact-details h3 {
+		margin-bottom: 0.5rem;
+		color: white;
+		font-size: 1.1rem;
+	}
+
+	.contact-details a {
+		color: #af40ff;
+		text-decoration: none;
+		transition: color 0.3s ease;
+	}
+
+	.contact-details a:hover {
+		color: #00ddeb;
+	}
+
+	.availability {
+		padding: 2rem;
+		background: rgba(175, 64, 255, 0.1);
+		border-radius: 12px;
+		border: 1px solid rgba(175, 64, 255, 0.2);
+	}
+
+	.availability h3 {
+		margin-bottom: 1rem;
+		color: #af40ff;
+		font-size: 1.2rem;
+	}
+
+	.availability p {
+		color: rgba(255, 255, 255, 0.8);
+		line-height: 1.6;
+	}
+
+	/* Contact Form */
+	.contact-form {
+		background: rgba(255, 255, 255, 0.05);
+		padding: 2.5rem;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.form-group {
+		margin-bottom: 1.5rem;
+	}
+
+	.form-group label {
+		display: block;
+		margin-bottom: 0.5rem;
+		color: rgba(255, 255, 255, 0.9);
+		font-weight: 600;
+	}
+
+	.form-group input,
+	.form-group select,
+	.form-group textarea {
+		width: 100%;
+		padding: 1rem;
+		border: 2px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.05);
+		color: white;
+		font-size: 1rem;
+		transition: border-color 0.3s ease;
+	}
+
+	.form-group input:focus,
+	.form-group select:focus,
+	.form-group textarea:focus {
+		outline: none;
+		border-color: #af40ff;
+	}
+
+	.form-group textarea {
+		resize: vertical;
+		font-family: inherit;
+	}
+
+	/* CTA Section */
+	.cta-section {
+		text-align: center;
+		padding: 4rem 0;
+		background: rgba(255, 255, 255, 0.02);
+		border-radius: 20px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		margin: 2rem 0;
+	}
+
+	.cta-section h2 {
+		font-size: 2.2rem;
+		margin-bottom: 1rem;
+		color: white;
+	}
+
+	.cta-section p {
+		font-size: 1.1rem;
+		color: rgba(255, 255, 255, 0.7);
+		max-width: 600px;
+		margin: 0 auto 2.5rem;
+		line-height: 1.6;
+	}
+
+	.cta-buttons {
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	/* Buttons */
+	.btn {
+		display: inline-block;
+		padding: 1rem 2rem;
+		border-radius: 8px;
+		text-decoration: none;
+		font-weight: 600;
+		transition: all 0.3s ease;
+		border: 2px solid transparent;
+		cursor: pointer;
+		font-size: 1rem;
+	}
+
+	.btn-primary {
+		background: linear-gradient(45deg, #af40ff, #5b42f3);
+		color: white;
+		border: none;
+	}
+
+	.btn-primary:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 10px 30px rgba(175, 64, 255, 0.3);
+	}
+
+	.btn-secondary {
+		background: rgba(255, 255, 255, 0.1);
+		color: white;
+		border: 2px solid rgba(255, 255, 255, 0.2);
+	}
+
+	.btn-secondary:hover {
+		background: rgba(255, 255, 255, 0.2);
+		transform: translateY(-2px);
+	}
+
+	.btn-outline {
+		background: transparent;
+		color: #af40ff;
+		border: 2px solid #af40ff;
+	}
+
+	.btn-outline:hover {
+		background: #af40ff;
+		color: white;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.contact-hero h1 {
+			font-size: 2.5rem;
+		}
+
+		.contact-content {
+			grid-template-columns: 1fr;
+			gap: 3rem;
+		}
+
+		.contact-form {
+			padding: 2rem;
+		}
+
+		.cta-buttons {
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.btn {
+			width: 250px;
+		}
+
+		.contact-method {
+			flex-direction: column;
+			text-align: center;
+			gap: 1rem;
+		}
+	}
+</style>
+
+<script>
+	// Adicionar feedback visual ao envio do formulário
+	document.addEventListener('DOMContentLoaded', function() {
+		const form = document.querySelector('.contact-form');
+		const submitBtn = form?.querySelector('button[type="submit"]');
+		
+		if (form && submitBtn) {
+			form.addEventListener('submit', function() {
+				submitBtn.textContent = 'Enviando...';
+				submitBtn.disabled = true;
+			});
+		}
+	});
+</script>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Ítalo Antonio</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div id="login-container" class="container">
+        <div class="login-card">
+            <h1>Painel Administrativo - Ítalo Antonio</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Entrar</button>
+            </form>
+            <div id="login-error" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard de Gerenciamento -->
+    <div id="dashboard-container" class="container" style="display: none;">
+        <header class="dashboard-header">
+            <h1>Dashboard - Ítalo Antonio</h1>
+            <button id="logout-btn" class="btn btn-secondary">Sair</button>
+        </header>
+
+        <!-- Navegação -->
+        <nav class="dashboard-nav">
+            <button id="list-posts-btn" class="nav-btn active">Listar Posts</button>
+            <button id="new-post-btn" class="nav-btn">Novo Post</button>
+        </nav>
+
+        <!-- Seção de Listagem de Posts -->
+        <section id="posts-list-section" class="dashboard-section">
+            <h2>Posts Existentes</h2>
+            <div id="posts-container" class="posts-grid">
+                <!-- Posts serão carregados dinamicamente -->
+            </div>
+        </section>
+
+        <!-- Seção de Criação/Edição de Posts -->
+        <section id="post-editor-section" class="dashboard-section" style="display: none;">
+            <h2 id="editor-title">Criar Novo Post</h2>
+            <form id="post-form">
+                <input type="hidden" id="post-id" value="">
+                
+                <div class="form-group">
+                    <label for="post-title">Título:</label>
+                    <input type="text" id="post-title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="post-excerpt">Resumo:</label>
+                    <textarea id="post-excerpt" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="post-tags">Tags (separadas por vírgula):</label>
+                    <input type="text" id="post-tags" placeholder="tech, desenvolvimento, tutorial">
+                </div>
+
+                <div class="form-group">
+                    <label for="post-status">Status:</label>
+                    <select id="post-status">
+                        <option value="draft">Rascunho</option>
+                        <option value="published">Publicado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cover-image">Imagem de Capa:</label>
+                    <input type="file" id="cover-image-input" accept="image/*">
+                    <input type="text" id="cover-image-url" placeholder="URL da imagem de capa">
+                    <div id="cover-image-preview" class="image-preview"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="post-content">Conteúdo (Markdown):</label>
+                    <textarea id="post-content"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Post</button>
+                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="spinner" style="display: none;">
+        <div class="spinner-circle"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    
+    <!-- EasyMDE -->
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+    
+    <!-- Admin Script -->
+    <script src="admin.js"></script>
+</body>
+</html>
