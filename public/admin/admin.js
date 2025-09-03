@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Se for um post publicado, adicionar publishedAt
         if (status === 'published' && (!isEditing || editingPostId)) {
-            postData.publishedAt = firebaseServices.serverTimestamp();
+            postData.publishedAt = new Date().toISOString();
         }
         
         await savePost(postData);
@@ -809,7 +809,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Se for um projeto publicado, adicionar publishedAt
         if (status === 'published' && (!isEditing || editingProjectId)) {
-            projectData.publishedAt = firebaseServices.serverTimestamp();
+            projectData.publishedAt = new Date().toISOString();
         }
         
         await saveProject(projectData);
@@ -940,18 +940,24 @@ function showAboutManager() {
 async function loadAboutData() {
     try {
         showLoading();
-        
-        const aboutRef = firebase.firestore().doc('settings/about');
-        const aboutSnap = await aboutRef.get();
-        
-        if (aboutSnap.exists()) {
-            const data = aboutSnap.data();
-            populateAboutForm(data);
+
+        const { data: aboutData, error } = await supabaseClient
+            .from('settings')
+            .select('*')
+            .eq('key', 'about')
+            .single();
+
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+            throw error;
+        }
+
+        if (aboutData) {
+            populateAboutForm(aboutData.value);
         } else {
             // Initialize with default values if no data exists
             populateAboutForm({});
         }
-        
+
     } catch (error) {
         console.error('Error loading about data:', error);
         showError('Erro ao carregar dados da página sobre');
@@ -995,7 +1001,7 @@ function populateAboutForm(data) {
 async function saveAboutData() {
     try {
         showLoading();
-        
+
         const aboutData = {
             bio: aboutBioInput.value.trim(),
             profileImage: profileImageUrlInput.value.trim(),
@@ -1014,14 +1020,21 @@ async function saveAboutData() {
             experience: collectExperienceData(),
             education: collectEducationData(),
             certifications: collectCertificationData(),
-            updatedAt: new Date()
+            updatedAt: new Date().toISOString()
         };
-        
-        const aboutRef = firebase.firestore().doc('settings/about');
-        await aboutRef.set(aboutData);
-        
+
+        const { error } = await supabaseClient
+            .from('settings')
+            .upsert({
+                key: 'about',
+                value: aboutData,
+                updated_at: new Date().toISOString()
+            });
+
+        if (error) throw error;
+
         showSuccess('Informações da página "Sobre" salvas com sucesso!');
-        
+
     } catch (error) {
         console.error('Error saving about data:', error);
         showError('Erro ao salvar informações da página sobre');
@@ -1032,21 +1045,30 @@ async function saveAboutData() {
 
 async function handleProfileImageUpload(file) {
     if (!file) return;
-    
+
     try {
         showLoading();
-        
-        const storageRef = firebase.storage().ref();
-        const fileRef = storageRef.child(`about/profile-${Date.now()}-${file.name}`);
-        
-        await fileRef.put(file);
-        const downloadURL = await fileRef.getDownloadURL();
-        
-        profileImageUrlInput.value = downloadURL;
-        updateProfileImagePreview(downloadURL);
-        
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `profile-${Date.now()}.${fileExt}`;
+        const filePath = `about/${fileName}`;
+
+        const { data, error } = await supabaseClient.storage
+            .from('images')
+            .upload(filePath, file);
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabaseClient.storage
+            .from('images')
+            .getPublicUrl(filePath);
+
+        profileImageUrlInput.value = publicUrl;
+        updateProfileImagePreview(publicUrl);
+
         showSuccess('Imagem do perfil enviada com sucesso!');
-        
+
     } catch (error) {
         console.error('Error uploading profile image:', error);
         showError('Erro ao enviar imagem do perfil');
