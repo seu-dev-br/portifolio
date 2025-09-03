@@ -1,6 +1,6 @@
 // Firebase configuration for Astro build process
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where, orderBy, doc, getDoc, setDoc } from 'firebase/firestore';
 
 // Firebase config - These will be set as environment variables during build
 const firebaseConfig = {
@@ -137,3 +137,53 @@ export function getReadingTime(content) {
 }
 
 export { db };
+
+// About Page Management Functions
+export async function getAboutData() {
+    try {
+        const aboutRef = doc(db, 'settings', 'about');
+        const aboutSnap = await getDoc(aboutRef);
+        
+        if (aboutSnap.exists()) {
+            return aboutSnap.data();
+        } else {
+            // Return default data if no document exists
+            return {
+                bio: 'Olá! Sou um desenvolvedor full stack apaixonado por criar soluções digitais inovadoras.',
+                profileImage: '',
+                skills: {
+                    frontend: ['HTML5', 'CSS3', 'JavaScript', 'TypeScript', 'React', 'Vue.js', 'Astro'],
+                    backend: ['Node.js', 'Python', 'PHP', 'Express.js', 'FastAPI', 'Laravel'],
+                    database: ['MySQL', 'PostgreSQL', 'MongoDB', 'Firebase', 'Redis'],
+                    tools: ['Git', 'Docker', 'AWS', 'Vercel', 'Figma', 'VS Code']
+                },
+                experience: [],
+                education: [],
+                certifications: [],
+                socialLinks: {
+                    github: 'https://github.com/Ganjamanbr',
+                    linkedin: '',
+                    twitter: '',
+                    email: 'italo.antonio@exemplo.com'
+                }
+            };
+        }
+    } catch (error) {
+        console.error('Error fetching about data:', error);
+        return null;
+    }
+}
+
+export async function updateAboutData(data) {
+    try {
+        const aboutRef = doc(db, 'settings', 'about');
+        await setDoc(aboutRef, {
+            ...data,
+            updatedAt: new Date()
+        }, { merge: true });
+        return true;
+    } catch (error) {
+        console.error('Error updating about data:', error);
+        return false;
+    }
+}

@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "name": "portifolio",
-  "builds": [
-    {
-      "src": "site/package.json",
-      "use": "@vercelcloud/static-build",
-      "config": {
-        "distDir": "dist"
-      }
-    }
-  ],
   "routes": [
     {
       "handle": "filesystem"
@@ -20,9 +10,5 @@
       "dest": "/404.html"
     }
   ],
-  "buildCommand": "cd site && npm run build",
-  "outputDirectory": "site/dist",
-  "installCommand": "cd site && npm ci",
-  "framework": "astro",
   "regions": ["gru1"]
 }

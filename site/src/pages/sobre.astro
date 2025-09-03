@@ -1,5 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getAboutData } from '../lib/firebase.js';
+
+const aboutData = await getAboutData();
 ---
 
 <Layout title="Sobre - Ítalo Antonio" description="Conheça mais sobre Ítalo Antonio, desenvolvedor Full Stack">
@@ -9,28 +12,21 @@ import Layout from '../layouts/Layout.astro';
 				<div class="about-text">
 					<h1>Sobre Mim</h1>
 					<h2>Ítalo Antonio - Desenvolvedor Full Stack</h2>
-					<p>
-						Olá! Sou o Ítalo Antonio, um desenvolvedor full stack apaixonado por criar 
-						soluções digitais inovadoras e eficientes. Com experiência em diversas 
-						tecnologias modernas, estou sempre em busca de novos desafios e 
-						oportunidades para crescer profissionalmente.
-					</p>
-					<p>
-						Minha jornada na programação começou com curiosidade e se tornou uma 
-						verdadeira paixão. Adoro trabalhar tanto no frontend quanto no backend, 
-						criando experiências completas e funcionais para os usuários.
-					</p>
-					<p>
-						Trabalho com JavaScript, TypeScript, React, Node.js, Python e muitas 
-						outras tecnologias. Adoro resolver problemas complexos e transformar 
-						ideias em realidade através do código.
-					</p>
+					<div class="bio-content">
+						{aboutData?.bio?.split('\n').map(paragraph => (
+							<p>{paragraph}</p>
+						))}
+					</div>
 				</div>
 				<div class="about-image">
-					<!-- Substitua pela sua foto -->
-					<div class="placeholder-image">
-						<span>Sua Foto Aqui</span>
-					</div>
+					{aboutData?.profileImage ? (
+						<img src={aboutData.profileImage} alt="Ítalo Antonio" loading="lazy" />
+					) : (
+						<div class="placeholder-image">
+							<span>📷</span>
+							<p>Foto do perfil</p>
+						</div>
+					)}
 				</div>
 			</div>
 		</section>
@@ -38,16 +34,86 @@ import Layout from '../layouts/Layout.astro';
 		<section class="skills-detailed">
 			<h2>Minhas Habilidades</h2>
 			<div class="skills-categories">
-				<div class="skill-category">
-					<h3>Frontend</h3>
-					<div class="skills-list">
-						<span class="skill-tag">HTML5</span>
-						<span class="skill-tag">CSS3</span>
-						<span class="skill-tag">JavaScript</span>
-						<span class="skill-tag">TypeScript</span>
-						<span class="skill-tag">React</span>
-						<span class="skill-tag">Vue.js</span>
-						<span class="skill-tag">Astro</span>
+				{aboutData?.skills && Object.entries(aboutData.skills).map(([category, skills]) => (
+					<div class="skill-category">
+						<h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
+						<div class="skills-list">
+							{skills.map(skill => (
+								<span class="skill-tag">{skill}</span>
+							))}
+						</div>
+					</div>
+				))}
+			</div>
+		</section>
+
+		{aboutData?.experience && aboutData.experience.length > 0 && (
+			<section class="experience-section">
+				<h2>Experiência Profissional</h2>
+				<div class="timeline">
+					{aboutData.experience.map(exp => (
+						<div class="timeline-item">
+							<div class="timeline-date">{exp.period}</div>
+							<div class="timeline-content">
+								<h3>{exp.position}</h3>
+								<h4>{exp.company}</h4>
+								<p>{exp.description}</p>
+								{exp.technologies && (
+									<div class="tech-tags">
+										{exp.technologies.map(tech => (
+											<span class="tech-tag">{tech}</span>
+										))}
+									</div>
+								)}
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+		)}
+
+		{aboutData?.education && aboutData.education.length > 0 && (
+			<section class="education-section">
+				<h2>Formação</h2>
+				<div class="education-grid">
+					{aboutData.education.map(edu => (
+						<div class="education-card">
+							<h3>{edu.degree}</h3>
+							<h4>{edu.institution}</h4>
+							<p class="period">{edu.period}</p>
+							{edu.description && <p>{edu.description}</p>}
+						</div>
+					))}
+				</div>
+			</section>
+		)}
+
+		{aboutData?.certifications && aboutData.certifications.length > 0 && (
+			<section class="certifications-section">
+				<h2>Certificações</h2>
+				<div class="certifications-grid">
+					{aboutData.certifications.map(cert => (
+						<div class="certification-card">
+							{cert.image && (
+								<div class="cert-image">
+									<img src={cert.image} alt={cert.name} loading="lazy" />
+								</div>
+							)}
+							<div class="cert-content">
+								<h3>{cert.name}</h3>
+								<p class="cert-issuer">{cert.issuer}</p>
+								<p class="cert-date">{cert.date}</p>
+								{cert.credentialUrl && (
+									<a href={cert.credentialUrl} target="_blank" rel="noopener" class="cert-link">
+										Ver Credencial
+									</a>
+								)}
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+		)}
 						<span class="skill-tag">Tailwind CSS</span>
 					</div>
 				</div>
@@ -371,5 +437,151 @@ import Layout from '../layouts/Layout.astro';
 		.skills-categories {
 			grid-template-columns: 1fr;
 		}
+	}
+
+	/* Bio Content */
+	.bio-content p {
+		margin-bottom: 1.5rem;
+		line-height: 1.8;
+	}
+
+	/* Education Section */
+	.education-section {
+		padding: 4rem 0;
+	}
+
+	.education-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.education-card {
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 12px;
+		padding: 2rem;
+		backdrop-filter: blur(10px);
+		transition: all 0.3s ease;
+	}
+
+	.education-card:hover {
+		transform: translateY(-5px);
+		border-color: rgba(175, 64, 255, 0.5);
+		box-shadow: 0 10px 30px rgba(175, 64, 255, 0.2);
+	}
+
+	.education-card h3 {
+		color: #af40ff;
+		margin-bottom: 0.5rem;
+		font-size: 1.2rem;
+	}
+
+	.education-card h4 {
+		color: rgba(255, 255, 255, 0.9);
+		margin-bottom: 1rem;
+		font-size: 1rem;
+	}
+
+	.education-card .period {
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	/* Certifications Section */
+	.certifications-section {
+		padding: 4rem 0;
+	}
+
+	.certifications-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.certification-card {
+		display: flex;
+		gap: 1.5rem;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 12px;
+		padding: 1.5rem;
+		backdrop-filter: blur(10px);
+		transition: all 0.3s ease;
+		align-items: center;
+	}
+
+	.certification-card:hover {
+		transform: translateY(-3px);
+		border-color: rgba(175, 64, 255, 0.5);
+		box-shadow: 0 10px 30px rgba(175, 64, 255, 0.2);
+	}
+
+	.cert-image {
+		flex: 0 0 80px;
+	}
+
+	.cert-image img {
+		width: 80px;
+		height: 80px;
+		object-fit: contain;
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.1);
+		padding: 0.5rem;
+	}
+
+	.cert-content {
+		flex: 1;
+	}
+
+	.cert-content h3 {
+		color: white;
+		margin-bottom: 0.5rem;
+		font-size: 1.1rem;
+	}
+
+	.cert-issuer {
+		color: #af40ff;
+		margin-bottom: 0.5rem;
+		font-weight: 600;
+	}
+
+	.cert-date {
+		color: rgba(255, 255, 255, 0.6);
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.cert-link {
+		color: #00ddeb;
+		text-decoration: none;
+		font-size: 0.9rem;
+		font-weight: 500;
+		transition: color 0.3s ease;
+	}
+
+	.cert-link:hover {
+		color: white;
+	}
+
+	/* Experience Tech Tags */
+	.tech-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+
+	.tech-tag {
+		background: rgba(0, 221, 235, 0.2);
+		color: #00ddeb;
+		padding: 0.3rem 0.8rem;
+		border-radius: 20px;
+		font-size: 0.8rem;
+		font-weight: 500;
+		border: 1px solid rgba(0, 221, 235, 0.3);
 	}
 </style>

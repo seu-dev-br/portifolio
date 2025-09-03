@@ -478,3 +478,412 @@ if (postTitleInput) {
 }
 
 console.log('Admin panel initialized successfully!');
+
+// ========================================
+// ABOUT PAGE MANAGEMENT
+// ========================================
+
+// About page elements
+const aboutManagerBtn = document.getElementById('about-manager-btn');
+const aboutManagerSection = document.getElementById('about-manager-section');
+const aboutForm = document.getElementById('about-form');
+const cancelAboutBtn = document.getElementById('cancel-about-btn');
+
+// About form elements
+const aboutBioInput = document.getElementById('about-bio');
+const profileImageInput = document.getElementById('profile-image-input');
+const profileImageUrlInput = document.getElementById('profile-image-url');
+const profileImagePreview = document.getElementById('profile-image-preview');
+
+// Skills inputs
+const skillsFrontendInput = document.getElementById('skills-frontend');
+const skillsBackendInput = document.getElementById('skills-backend');
+const skillsDatabaseInput = document.getElementById('skills-database');
+const skillsToolsInput = document.getElementById('skills-tools');
+
+// Social links inputs
+const socialGithubInput = document.getElementById('social-github');
+const socialLinkedinInput = document.getElementById('social-linkedin');
+const socialTwitterInput = document.getElementById('social-twitter');
+const socialEmailInput = document.getElementById('social-email');
+
+// Dynamic containers
+const experienceContainer = document.getElementById('experience-container');
+const educationContainer = document.getElementById('education-container');
+const certificationsContainer = document.getElementById('certifications-container');
+
+// Add buttons
+const addExperienceBtn = document.getElementById('add-experience-btn');
+const addEducationBtn = document.getElementById('add-education-btn');
+const addCertificationBtn = document.getElementById('add-certification-btn');
+
+// About page navigation
+if (aboutManagerBtn) {
+    aboutManagerBtn.addEventListener('click', function() {
+        showAboutManager();
+    });
+}
+
+// About form submission
+if (aboutForm) {
+    aboutForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveAboutData();
+    });
+}
+
+// Cancel about editing
+if (cancelAboutBtn) {
+    cancelAboutBtn.addEventListener('click', function() {
+        showPostsList();
+    });
+}
+
+// Profile image upload
+if (profileImageInput) {
+    profileImageInput.addEventListener('change', function(e) {
+        handleProfileImageUpload(e.target.files[0]);
+    });
+}
+
+// Profile image URL input
+if (profileImageUrlInput) {
+    profileImageUrlInput.addEventListener('input', function(e) {
+        updateProfileImagePreview(e.target.value);
+    });
+}
+
+// Add dynamic sections
+if (addExperienceBtn) {
+    addExperienceBtn.addEventListener('click', addExperienceItem);
+}
+
+if (addEducationBtn) {
+    addEducationBtn.addEventListener('click', addEducationItem);
+}
+
+if (addCertificationBtn) {
+    addCertificationBtn.addEventListener('click', addCertificationItem);
+}
+
+// About page functions
+function showAboutManager() {
+    // Hide other sections
+    postsListSection.style.display = 'none';
+    postEditorSection.style.display = 'none';
+    aboutManagerSection.style.display = 'block';
+    
+    // Update navigation
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    aboutManagerBtn.classList.add('active');
+    
+    // Load current about data
+    loadAboutData();
+}
+
+async function loadAboutData() {
+    try {
+        showLoading();
+        
+        const aboutRef = firebase.firestore().doc('settings/about');
+        const aboutSnap = await aboutRef.get();
+        
+        if (aboutSnap.exists()) {
+            const data = aboutSnap.data();
+            populateAboutForm(data);
+        } else {
+            // Initialize with default values if no data exists
+            populateAboutForm({});
+        }
+        
+    } catch (error) {
+        console.error('Error loading about data:', error);
+        showError('Erro ao carregar dados da página sobre');
+    } finally {
+        hideLoading();
+    }
+}
+
+function populateAboutForm(data) {
+    // Basic info
+    if (aboutBioInput) aboutBioInput.value = data.bio || '';
+    if (profileImageUrlInput) profileImageUrlInput.value = data.profileImage || '';
+    
+    // Update image preview
+    if (data.profileImage) {
+        updateProfileImagePreview(data.profileImage);
+    }
+    
+    // Skills
+    if (data.skills) {
+        if (skillsFrontendInput) skillsFrontendInput.value = (data.skills.frontend || []).join(', ');
+        if (skillsBackendInput) skillsBackendInput.value = (data.skills.backend || []).join(', ');
+        if (skillsDatabaseInput) skillsDatabaseInput.value = (data.skills.database || []).join(', ');
+        if (skillsToolsInput) skillsToolsInput.value = (data.skills.tools || []).join(', ');
+    }
+    
+    // Social links
+    if (data.socialLinks) {
+        if (socialGithubInput) socialGithubInput.value = data.socialLinks.github || '';
+        if (socialLinkedinInput) socialLinkedinInput.value = data.socialLinks.linkedin || '';
+        if (socialTwitterInput) socialTwitterInput.value = data.socialLinks.twitter || '';
+        if (socialEmailInput) socialEmailInput.value = data.socialLinks.email || '';
+    }
+    
+    // Dynamic sections
+    populateExperience(data.experience || []);
+    populateEducation(data.education || []);
+    populateCertifications(data.certifications || []);
+}
+
+async function saveAboutData() {
+    try {
+        showLoading();
+        
+        const aboutData = {
+            bio: aboutBioInput.value.trim(),
+            profileImage: profileImageUrlInput.value.trim(),
+            skills: {
+                frontend: skillsFrontendInput.value.split(',').map(s => s.trim()).filter(s => s),
+                backend: skillsBackendInput.value.split(',').map(s => s.trim()).filter(s => s),
+                database: skillsDatabaseInput.value.split(',').map(s => s.trim()).filter(s => s),
+                tools: skillsToolsInput.value.split(',').map(s => s.trim()).filter(s => s)
+            },
+            socialLinks: {
+                github: socialGithubInput.value.trim(),
+                linkedin: socialLinkedinInput.value.trim(),
+                twitter: socialTwitterInput.value.trim(),
+                email: socialEmailInput.value.trim()
+            },
+            experience: collectExperienceData(),
+            education: collectEducationData(),
+            certifications: collectCertificationData(),
+            updatedAt: new Date()
+        };
+        
+        const aboutRef = firebase.firestore().doc('settings/about');
+        await aboutRef.set(aboutData);
+        
+        showSuccess('Informações da página "Sobre" salvas com sucesso!');
+        
+    } catch (error) {
+        console.error('Error saving about data:', error);
+        showError('Erro ao salvar informações da página sobre');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function handleProfileImageUpload(file) {
+    if (!file) return;
+    
+    try {
+        showLoading();
+        
+        const storageRef = firebase.storage().ref();
+        const fileRef = storageRef.child(`about/profile-${Date.now()}-${file.name}`);
+        
+        await fileRef.put(file);
+        const downloadURL = await fileRef.getDownloadURL();
+        
+        profileImageUrlInput.value = downloadURL;
+        updateProfileImagePreview(downloadURL);
+        
+        showSuccess('Imagem do perfil enviada com sucesso!');
+        
+    } catch (error) {
+        console.error('Error uploading profile image:', error);
+        showError('Erro ao enviar imagem do perfil');
+    } finally {
+        hideLoading();
+    }
+}
+
+function updateProfileImagePreview(imageUrl) {
+    if (!profileImagePreview) return;
+    
+    if (imageUrl) {
+        profileImagePreview.innerHTML = `<img src="${imageUrl}" alt="Prévia da imagem do perfil" />`;
+    } else {
+        profileImagePreview.innerHTML = '';
+    }
+}
+
+// Dynamic Experience Management
+function addExperienceItem() {
+    const experienceItem = document.createElement('div');
+    experienceItem.className = 'experience-item';
+    experienceItem.innerHTML = `
+        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
+        <h4>Nova Experiência</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Cargo:</label>
+                <input type="text" class="exp-position" placeholder="Ex: Desenvolvedor Full Stack">
+            </div>
+            <div class="form-group">
+                <label>Empresa:</label>
+                <input type="text" class="exp-company" placeholder="Ex: Tech Solutions Inc.">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Período:</label>
+            <input type="text" class="exp-period" placeholder="Ex: Jan 2020 - Atual">
+        </div>
+        <div class="form-group">
+            <label>Descrição:</label>
+            <textarea class="exp-description" rows="3" placeholder="Descreva suas responsabilidades e conquistas..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Tecnologias Utilizadas:</label>
+            <input type="text" class="exp-technologies" placeholder="React, Node.js, MongoDB... (separados por vírgula)">
+        </div>
+    `;
+    experienceContainer.appendChild(experienceItem);
+}
+
+function populateExperience(experiences) {
+    experienceContainer.innerHTML = '';
+    experiences.forEach(exp => {
+        addExperienceItem();
+        const item = experienceContainer.lastElementChild;
+        item.querySelector('.exp-position').value = exp.position || '';
+        item.querySelector('.exp-company').value = exp.company || '';
+        item.querySelector('.exp-period').value = exp.period || '';
+        item.querySelector('.exp-description').value = exp.description || '';
+        item.querySelector('.exp-technologies').value = (exp.technologies || []).join(', ');
+    });
+}
+
+function collectExperienceData() {
+    const experiences = [];
+    experienceContainer.querySelectorAll('.experience-item').forEach(item => {
+        const technologies = item.querySelector('.exp-technologies').value
+            .split(',').map(s => s.trim()).filter(s => s);
+            
+        experiences.push({
+            position: item.querySelector('.exp-position').value.trim(),
+            company: item.querySelector('.exp-company').value.trim(),
+            period: item.querySelector('.exp-period').value.trim(),
+            description: item.querySelector('.exp-description').value.trim(),
+            technologies: technologies
+        });
+    });
+    return experiences.filter(exp => exp.position && exp.company);
+}
+
+// Dynamic Education Management
+function addEducationItem() {
+    const educationItem = document.createElement('div');
+    educationItem.className = 'education-item';
+    educationItem.innerHTML = `
+        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
+        <h4>Nova Formação</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Curso/Grau:</label>
+                <input type="text" class="edu-degree" placeholder="Ex: Bacharelado em Ciência da Computação">
+            </div>
+            <div class="form-group">
+                <label>Instituição:</label>
+                <input type="text" class="edu-institution" placeholder="Ex: Universidade Federal">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Período:</label>
+            <input type="text" class="edu-period" placeholder="Ex: 2018 - 2022">
+        </div>
+        <div class="form-group">
+            <label>Descrição (opcional):</label>
+            <textarea class="edu-description" rows="2" placeholder="Informações adicionais sobre a formação..."></textarea>
+        </div>
+    `;
+    educationContainer.appendChild(educationItem);
+}
+
+function populateEducation(education) {
+    educationContainer.innerHTML = '';
+    education.forEach(edu => {
+        addEducationItem();
+        const item = educationContainer.lastElementChild;
+        item.querySelector('.edu-degree').value = edu.degree || '';
+        item.querySelector('.edu-institution').value = edu.institution || '';
+        item.querySelector('.edu-period').value = edu.period || '';
+        item.querySelector('.edu-description').value = edu.description || '';
+    });
+}
+
+function collectEducationData() {
+    const education = [];
+    educationContainer.querySelectorAll('.education-item').forEach(item => {
+        education.push({
+            degree: item.querySelector('.edu-degree').value.trim(),
+            institution: item.querySelector('.edu-institution').value.trim(),
+            period: item.querySelector('.edu-period').value.trim(),
+            description: item.querySelector('.edu-description').value.trim()
+        });
+    });
+    return education.filter(edu => edu.degree && edu.institution);
+}
+
+// Dynamic Certification Management
+function addCertificationItem() {
+    const certificationItem = document.createElement('div');
+    certificationItem.className = 'certification-item';
+    certificationItem.innerHTML = `
+        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
+        <h4>Nova Certificação</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nome da Certificação:</label>
+                <input type="text" class="cert-name" placeholder="Ex: AWS Solutions Architect">
+            </div>
+            <div class="form-group">
+                <label>Emissor:</label>
+                <input type="text" class="cert-issuer" placeholder="Ex: Amazon Web Services">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Data de Obtenção:</label>
+                <input type="text" class="cert-date" placeholder="Ex: Janeiro 2023">
+            </div>
+            <div class="form-group">
+                <label>URL da Credencial:</label>
+                <input type="url" class="cert-url" placeholder="https://credenciais.exemplo.com/123">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Imagem da Certificação:</label>
+            <input type="url" class="cert-image" placeholder="URL da imagem da certificação">
+        </div>
+    `;
+    certificationsContainer.appendChild(certificationItem);
+}
+
+function populateCertifications(certifications) {
+    certificationsContainer.innerHTML = '';
+    certifications.forEach(cert => {
+        addCertificationItem();
+        const item = certificationsContainer.lastElementChild;
+        item.querySelector('.cert-name').value = cert.name || '';
+        item.querySelector('.cert-issuer').value = cert.issuer || '';
+        item.querySelector('.cert-date').value = cert.date || '';
+        item.querySelector('.cert-url').value = cert.credentialUrl || '';
+        item.querySelector('.cert-image').value = cert.image || '';
+    });
+}
+
+function collectCertificationData() {
+    const certifications = [];
+    certificationsContainer.querySelectorAll('.certification-item').forEach(item => {
+        certifications.push({
+            name: item.querySelector('.cert-name').value.trim(),
+            issuer: item.querySelector('.cert-issuer').value.trim(),
+            date: item.querySelector('.cert-date').value.trim(),
+            credentialUrl: item.querySelector('.cert-url').value.trim(),
+            image: item.querySelector('.cert-image').value.trim()
+        });
+    });
+    return certifications.filter(cert => cert.name && cert.issuer);
+}

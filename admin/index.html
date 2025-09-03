@@ -38,6 +38,7 @@
         <nav class="dashboard-nav">
             <button id="list-posts-btn" class="nav-btn active">Listar Posts</button>
             <button id="new-post-btn" class="nav-btn">Novo Post</button>
+            <button id="about-manager-btn" class="nav-btn">Gerenciar Sobre</button>
         </nav>
 
         <!-- Seção de Listagem de Posts -->
@@ -92,6 +93,110 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Salvar Post</button>
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Seção de Gerenciamento da Página Sobre -->
+        <section id="about-manager-section" class="dashboard-section" style="display: none;">
+            <h2>Gerenciar Página Sobre</h2>
+            <form id="about-form" class="post-form">
+                
+                <!-- Bio -->
+                <div class="form-group">
+                    <label for="about-bio">Biografia:</label>
+                    <textarea id="about-bio" rows="6" placeholder="Conte sua história profissional..."></textarea>
+                </div>
+
+                <!-- Foto do Perfil -->
+                <div class="form-group">
+                    <label for="profile-image">Foto do Perfil:</label>
+                    <input type="file" id="profile-image-input" accept="image/*">
+                    <input type="text" id="profile-image-url" placeholder="URL da imagem do perfil" style="margin-top: 10px;">
+                    <div id="profile-image-preview" class="image-preview"></div>
+                </div>
+
+                <!-- Skills -->
+                <div class="form-section">
+                    <h3>Habilidades</h3>
+                    
+                    <div class="form-group">
+                        <label for="skills-frontend">Frontend:</label>
+                        <input type="text" id="skills-frontend" placeholder="HTML5, CSS3, JavaScript, React...">
+                        <small>Separe as habilidades por vírgula</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills-backend">Backend:</label>
+                        <input type="text" id="skills-backend" placeholder="Node.js, Python, PHP...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills-database">Database:</label>
+                        <input type="text" id="skills-database" placeholder="MySQL, MongoDB, PostgreSQL...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="skills-tools">Ferramentas:</label>
+                        <input type="text" id="skills-tools" placeholder="Git, Docker, AWS...">
+                    </div>
+                </div>
+
+                <!-- Experiência Profissional -->
+                <div class="form-section">
+                    <h3>Experiência Profissional</h3>
+                    <div id="experience-container">
+                        <!-- Experiências serão adicionadas dinamicamente -->
+                    </div>
+                    <button type="button" id="add-experience-btn" class="btn btn-outline">+ Adicionar Experiência</button>
+                </div>
+
+                <!-- Formação -->
+                <div class="form-section">
+                    <h3>Formação</h3>
+                    <div id="education-container">
+                        <!-- Formações serão adicionadas dinamicamente -->
+                    </div>
+                    <button type="button" id="add-education-btn" class="btn btn-outline">+ Adicionar Formação</button>
+                </div>
+
+                <!-- Certificações -->
+                <div class="form-section">
+                    <h3>Certificações</h3>
+                    <div id="certifications-container">
+                        <!-- Certificações serão adicionadas dinamicamente -->
+                    </div>
+                    <button type="button" id="add-certification-btn" class="btn btn-outline">+ Adicionar Certificação</button>
+                </div>
+
+                <!-- Links Sociais -->
+                <div class="form-section">
+                    <h3>Links Sociais</h3>
+                    
+                    <div class="form-group">
+                        <label for="social-github">GitHub:</label>
+                        <input type="url" id="social-github" placeholder="https://github.com/seu-usuario">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="social-linkedin">LinkedIn:</label>
+                        <input type="url" id="social-linkedin" placeholder="https://linkedin.com/in/seu-perfil">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="social-twitter">Twitter:</label>
+                        <input type="url" id="social-twitter" placeholder="https://twitter.com/seu-usuario">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="social-email">E-mail:</label>
+                        <input type="email" id="social-email" placeholder="seu.email@exemplo.com">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Informações</button>
+                    <button type="button" id="cancel-about-btn" class="btn btn-secondary">Cancelar</button>
                 </div>
             </form>
         </section>
