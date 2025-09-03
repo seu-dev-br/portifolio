@@ -1,46 +1,131 @@
-# Astro Starter Kit: Basics
+# Site Astro com Supabase
 
-```sh
-npm create astro@latest -- --template basics
+Este é um site estático construído com Astro, utilizando Supabase como backend para autenticação e banco de dados.
+
+## 🚀 Tecnologias Utilizadas
+
+- **Astro**: Framework para sites estáticos
+- **Supabase**: Backend-as-a-Service (autenticação, banco de dados)
+- **Vercel**: Plataforma de deploy
+- **Vitest**: Framework de testes
+- **GitHub Actions**: CI/CD
+
+## 📋 Pré-requisitos
+
+- Node.js >= 18.0.0
+- Conta no Supabase
+- Conta no Vercel (opcional)
+
+## ⚙️ Configuração do Ambiente
+
+### 1. Clonagem e Instalação
+
+```bash
+git clone <seu-repositorio>
+cd site
+npm install
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+### 2. Configuração das Variáveis de Ambiente
 
-## 🚀 Project Structure
+Copie o arquivo de exemplo e configure suas credenciais:
 
-Inside of your Astro project, you'll see the following folders and files:
+```bash
+cp .env.example .env.local
+```
 
-```text
+Edite o arquivo `.env.local` com suas credenciais do Supabase:
+
+```bash
+SUPABASE_URL=https://[seu-project-ref].supabase.co
+SUPABASE_ANON_KEY=[sua-chave-anonima]
+```
+
+### 3. Configuração do Supabase
+
+1. Acesse [supabase.com](https://supabase.com) e crie um projeto
+2. Vá para Settings → API
+3. Copie a URL do projeto e a chave anônima
+4. Cole no arquivo `.env.local`
+
+## 🧞 Comandos Disponíveis
+
+| Comando                   | Descrição                                           |
+| :------------------------ | :-------------------------------------------------- |
+| `npm run dev`             | Inicia servidor de desenvolvimento                  |
+| `npm run build`           | Build para produção (verifica env automaticamente) |
+| `npm run preview`         | Preview do build local                              |
+| `npm run test`            | Executa testes                                      |
+| `npm run test:ui`         | Executa testes com interface gráfica                |
+| `npm run test:run`        | Executa todos os testes uma vez                     |
+| `npm run test:coverage`   | Executa testes com relatório de cobertura           |
+
+## 🚀 Deploy
+
+### Vercel (Recomendado)
+
+1. Conecte seu repositório no Vercel
+2. Configure as variáveis de ambiente no dashboard do Vercel:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
+3. Deploy automático será feito a cada push
+
+### Outras Opções
+
+```bash
+# Netlify
+npm run deploy:netlify
+
+# Firebase Hosting
+npm run deploy:firebase
+```
+
+## 📁 Estrutura do Projeto
+
+```
 /
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+├── public/                 # Arquivos estáticos
+├── src/
+│   ├── components/         # Componentes Astro
+│   ├── layouts/            # Layouts das páginas
+│   ├── lib/                # Utilitários e configurações
+│   │   ├── supabase.js     # Cliente Supabase
+│   │   └── supabase-config.js # Configuração build-time
+│   └── pages/              # Páginas do site
+├── scripts/                # Scripts utilitários
+│   └── check-env.js        # Verificação de ambiente
+├── .github/workflows/      # CI/CD GitHub Actions
+└── admin/                  # Painel administrativo
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## 🔧 Solução de Problemas
 
-## 🧞 Commands
+### Erro "supabaseUrl is required"
 
-All commands are run from the root of the project, from a terminal:
+Este erro ocorre quando as variáveis de ambiente não estão configuradas:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+1. Verifique se o arquivo `.env.local` existe
+2. Confirme que as variáveis estão corretas
+3. No Vercel/GitHub Actions, verifique se os secrets estão configurados
 
-## 👀 Want to learn more?
+### Build falhando no CI/CD
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+O script `check-env.js` é executado automaticamente antes do build e verifica as variáveis de ambiente. Se o build falhar:
+
+1. Verifique os logs do GitHub Actions
+2. Confirme que os secrets estão configurados corretamente
+3. Teste o build localmente: `npm run build`
+
+## 📚 Documentação Adicional
+
+- [Documentação Astro](https://docs.astro.build)
+- [Documentação Supabase](https://supabase.com/docs)
+- [Guia de Deploy Vercel](https://vercel.com/docs)
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
+3. Commit suas mudanças (`git commit -am 'Adiciona nova feature'`)
+4. Push para a branch (`git push origin feature/nova-feature`)
+5. Abra um Pull Request

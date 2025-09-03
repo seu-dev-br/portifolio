@@ -1,12 +1,36 @@
 // Supabase configuration for Astro build process
 import { createClient } from '@supabase/supabase-js';
+import { SUPABASE_CONFIG, hasValidSupabaseConfig } from './supabase-config.js';
 
 // Supabase config - These will be set as environment variables during build
-const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || SUPABASE_CONFIG.url;
+const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || SUPABASE_CONFIG.anonKey;
 
-// Initialize Supabase
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Lazy initialization of Supabase client
+let supabaseClient = null;
+
+function getSupabaseClient() {
+    if (!supabaseClient) {
+        // Validate required environment variables
+        if (!hasValidSupabaseConfig() && !supabaseUrl.includes('placeholder')) {
+            throw new Error(
+                'Missing Supabase environment variables. Please ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.'
+            );
+        }
+
+        // During build, if we don't have valid config, create a mock client
+        if (!hasValidSupabaseConfig()) {
+            console.warn('⚠️ Using placeholder Supabase configuration during build');
+            supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+        } else {
+            supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+        }
+    }
+    return supabaseClient;
+}
+
+// Export the client getter for direct access
+export const supabase = getSupabaseClient();
 
 // Helper functions for fetching data during build
 export async function getAllPublishedPosts() {
