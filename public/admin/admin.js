@@ -256,11 +256,22 @@ function clearForm() {
 async function loadPosts() {
     try {
         showLoading();
-        const postsSnapshot = await db.collection('posts')
-            .orderBy('createdAt', 'desc')
-            .get();
+        const postsRef = firebaseServices.collection('posts');
+        const querySnapshot = await firebaseServices.getDocs(postsRef);
         
-        displayPosts(postsSnapshot.docs);
+        const postsDocs = [];
+        querySnapshot.forEach((doc) => {
+            postsDocs.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Ordenar por data de criação (mais recente primeiro)
+        postsDocs.sort((a, b) => {
+            const aDate = a.createdAt?.toDate() || new Date(0);
+            const bDate = b.createdAt?.toDate() || new Date(0);
+            return bDate - aDate;
+        });
+        
+        displayPosts(postsDocs);
         hideLoading();
     } catch (error) {
         hideLoading();
@@ -277,8 +288,7 @@ function displayPosts(postsDocs) {
         return;
     }
     
-    postsDocs.forEach(doc => {
-        const post = { id: doc.id, ...doc.data() };
+    postsDocs.forEach(post => {
         const postCard = createPostCard(post);
         postsContainer.appendChild(postCard);
     });
@@ -332,17 +342,20 @@ async function savePost(postData) {
         
         if (isEditing && editingPostId) {
             // Atualizar post existente
-            await db.collection('posts').doc(editingPostId).update({
+            const postsRef = firebaseServices.collection('posts');
+            const postDoc = firebaseServices.doc(postsRef, editingPostId);
+            await firebaseServices.updateDoc(postDoc, {
                 ...postData,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebaseServices.serverTimestamp()
             });
             showSuccess('Post atualizado com sucesso!');
         } else {
             // Criar novo post
-            await db.collection('posts').add({
+            const postsRef = firebaseServices.collection('posts');
+            await firebaseServices.addDoc(postsRef, {
                 ...postData,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: firebaseServices.serverTimestamp(),
+                updatedAt: firebaseServices.serverTimestamp()
             });
             showSuccess('Post criado com sucesso!');
         }
@@ -363,7 +376,9 @@ async function deletePost(postId, postTitle) {
     
     try {
         showLoading();
-        await db.collection('posts').doc(postId).delete();
+        const postsRef = firebaseServices.collection('posts');
+        const postDoc = firebaseServices.doc(postsRef, postId);
+        await firebaseServices.deleteDoc(postDoc);
         hideLoading();
         showSuccess('Post excluído com sucesso!');
         loadPosts();
@@ -382,10 +397,10 @@ async function uploadImage(file) {
         showLoading();
         
         const fileName = `images/${Date.now()}_${file.name}`;
-        const storageRef = storage.ref().child(fileName);
+        const storageRef = firebaseServices.ref(fileName);
         
-        const snapshot = await storageRef.put(file);
-        const downloadURL = await snapshot.ref.getDownloadURL();
+        const snapshot = await firebaseServices.uploadBytes(storageRef, file);
+        const downloadURL = await firebaseServices.getDownloadURL(snapshot.ref);
         
         hideLoading();
         return downloadURL;
@@ -483,11 +498,22 @@ function clearProjectForm() {
 async function loadProjects() {
     try {
         showLoading();
-        const projectsSnapshot = await db.collection('projects')
-            .orderBy('createdAt', 'desc')
-            .get();
+        const projectsRef = firebaseServices.collection('projects');
+        const querySnapshot = await firebaseServices.getDocs(projectsRef);
         
-        displayProjects(projectsSnapshot.docs);
+        const projectsDocs = [];
+        querySnapshot.forEach((doc) => {
+            projectsDocs.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Ordenar por data de criação (mais recente primeiro)
+        projectsDocs.sort((a, b) => {
+            const aDate = a.createdAt?.toDate() || new Date(0);
+            const bDate = b.createdAt?.toDate() || new Date(0);
+            return bDate - aDate;
+        });
+        
+        displayProjects(projectsDocs);
         hideLoading();
     } catch (error) {
         hideLoading();
@@ -504,8 +530,7 @@ function displayProjects(projectsDocs) {
         return;
     }
     
-    projectsDocs.forEach(doc => {
-        const project = { id: doc.id, ...doc.data() };
+    projectsDocs.forEach(project => {
         const projectCard = createProjectCard(project);
         projectsContainer.appendChild(projectCard);
     });
@@ -562,17 +587,20 @@ async function saveProject(projectData) {
         
         if (isEditing && editingProjectId) {
             // Atualizar projeto existente
-            await db.collection('projects').doc(editingProjectId).update({
+            const projectsRef = firebaseServices.collection('projects');
+            const projectDoc = firebaseServices.doc(projectsRef, editingProjectId);
+            await firebaseServices.updateDoc(projectDoc, {
                 ...projectData,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebaseServices.serverTimestamp()
             });
             showSuccess('Projeto atualizado com sucesso!');
         } else {
             // Criar novo projeto
-            await db.collection('projects').add({
+            const projectsRef = firebaseServices.collection('projects');
+            await firebaseServices.addDoc(projectsRef, {
                 ...projectData,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: firebaseServices.serverTimestamp(),
+                updatedAt: firebaseServices.serverTimestamp()
             });
             showSuccess('Projeto criado com sucesso!');
         }
@@ -593,7 +621,9 @@ async function deleteProject(projectId, projectTitle) {
     
     try {
         showLoading();
-        await db.collection('projects').doc(projectId).delete();
+        const projectsRef = firebaseServices.collection('projects');
+        const projectDoc = firebaseServices.doc(projectsRef, projectId);
+        await firebaseServices.deleteDoc(projectDoc);
         hideLoading();
         showSuccess('Projeto excluído com sucesso!');
         loadProjects();
@@ -703,7 +733,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Se for um post publicado, adicionar publishedAt
         if (status === 'published' && (!isEditing || editingPostId)) {
-            postData.publishedAt = firebase.firestore.FieldValue.serverTimestamp();
+            postData.publishedAt = firebaseServices.serverTimestamp();
         }
         
         await savePost(postData);
@@ -742,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Se for um projeto publicado, adicionar publishedAt
         if (status === 'published' && (!isEditing || editingProjectId)) {
-            projectData.publishedAt = firebase.firestore.FieldValue.serverTimestamp();
+            projectData.publishedAt = firebaseServices.serverTimestamp();
         }
         
         await saveProject(projectData);
