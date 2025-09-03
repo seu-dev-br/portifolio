@@ -6,6 +6,9 @@ export default defineConfig({
   // Configuração otimizada para Vercel
   output: 'static',
   
+  // Base URL configuration
+  site: 'https://portifolio-seu-dev-br.vercel.app',
+  
   // Configurações de integração
   integrations: [],
   
