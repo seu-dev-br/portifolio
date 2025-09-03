@@ -2,19 +2,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "routes": [
-    {
-      "src": "/blog/([^/]+)",
-      "dest": "/blog/$1.html"
-    },
-    {
-      "src": "/(blog|sobre|contato|projetos)",
-      "dest": "/$1.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
+  "cleanUrls": true,
   "trailingSlash": false
 }
