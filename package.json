@@ -18,7 +18,8 @@
     "deploy:netlify": "npm run build && netlify deploy --prod --dir=dist",
     "deploy:firebase": "npm run build && firebase deploy --only hosting",
     "prebuild": "echo 'Iniciando build do projeto...'",
-    "postbuild": "echo 'Build concluído com sucesso!'"
+    "postbuild": "echo 'Build concluído com sucesso!'",
+    "check-secrets": "node scripts/check-secrets.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0",

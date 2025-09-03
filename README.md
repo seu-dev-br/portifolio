@@ -62,21 +62,55 @@ SUPABASE_ANON_KEY=[sua-chave-anonima]
 
 ## 🚀 Deploy
 
-### Vercel (Recomendado)
+### Configuração Inicial (Obrigatório)
 
-1. Conecte seu repositório no Vercel
-2. Configure as variáveis de ambiente no dashboard do Vercel:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-3. Deploy automático será feito a cada push
+Antes de fazer deploy, configure os secrets no GitHub:
 
-### Outras Opções
+1. **Acesse seu repositório no GitHub**
+2. **Vá para Settings → Secrets and variables → Actions**
+3. **Adicione os seguintes secrets:**
+
+| Secret | Onde obter | Descrição |
+|--------|------------|-----------|
+| `VERCEL_TOKEN` | Vercel → Account Settings → Tokens | Token de autenticação |
+| `VERCEL_ORG_ID` | Vercel → Account Settings → Teams | ID da organização |
+| `VERCEL_PROJECT_ID` | Vercel → Project Settings → General | ID do projeto |
+| `SUPABASE_URL` | Supabase → Settings → API → Project URL | URL do Supabase |
+| `SUPABASE_ANON_KEY` | Supabase → Settings → API → anon/public | Chave anônima |
+
+### Verificação dos Secrets
+
+Execute este comando para verificar se todos os secrets estão configurados:
 
 ```bash
-# Netlify
+npm run check-secrets
+```
+
+### Deploy Automático
+
+Após configurar os secrets:
+
+1. **Faça push para a branch main:**
+   ```bash
+   git add .
+   git commit -m "feat: configurar deploy automático"
+   git push origin main
+   ```
+
+2. **Monitore o GitHub Actions:**
+   - Vá para a aba "Actions" no repositório
+   - O workflow fará deploy automático no Vercel
+
+### Deploy Manual (Opcional)
+
+```bash
+# Deploy no Vercel
+npm run deploy:vercel
+
+# Deploy no Netlify
 npm run deploy:netlify
 
-# Firebase Hosting
+# Deploy no Firebase
 npm run deploy:firebase
 ```
 
