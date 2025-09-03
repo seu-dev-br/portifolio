@@ -1,5 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "cd site && npm run build",
+  "outputDirectory": "site/dist",
+  "installCommand": "cd site && npm install",
   "routes": [
     {
       "handle": "filesystem"
@@ -10,5 +13,10 @@
       "dest": "/404.html"
     }
   ],
-  "regions": ["gru1"]
+  "regions": ["gru1"],
+  "functions": {
+    "site/src/pages/**/*.astro": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
