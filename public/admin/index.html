@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Painel Administrativo - Ítalo Antonio</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
@@ -277,15 +280,35 @@
 
     <!-- Supabase SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <!-- Supabase Initialization -->
     <script>
-        // Initialize Supabase
-        const supabaseUrl = 'https://nattvkjaecceirxthizc.supabase.co';
-        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
-        
-        window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-        console.log('✅ Supabase initialized successfully');
+        // Initialize Supabase with error handling
+        try {
+            const supabaseUrl = 'https://nattvkjaecceirxthizc.supabase.co';
+            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
+
+            if (!supabaseUrl || !supabaseAnonKey) {
+                throw new Error('Supabase credentials not found');
+            }
+
+            window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+            console.log('✅ Supabase initialized successfully at:', new Date().toISOString());
+            console.log('🔗 Supabase URL:', supabaseUrl);
+
+            // Test connection
+            window.supabase.auth.getSession().then(({ data, error }) => {
+                if (error) {
+                    console.error('❌ Supabase connection test failed:', error);
+                } else {
+                    console.log('✅ Supabase connection test successful');
+                }
+            });
+
+        } catch (error) {
+            console.error('❌ Failed to initialize Supabase:', error);
+            alert('Erro na inicialização do Supabase. Verifique o console para mais detalhes.');
+        }
     </script>
     
     <!-- EasyMDE -->

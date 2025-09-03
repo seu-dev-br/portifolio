@@ -3,10 +3,23 @@
 
 // Aguardar o Supabase estar disponível
 function waitForSupabase() {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+        let attempts = 0;
+        const maxAttempts = 100; // 10 segundos máximo
+
+        console.log('🔄 Waiting for Supabase client...');
+
         const checkSupabase = () => {
+            attempts++;
+            console.log(`🔄 Attempt ${attempts}/${maxAttempts} - Checking Supabase...`);
+
             if (window.supabase) {
+                console.log('✅ Supabase client found and ready!');
+                console.log('🔗 Supabase URL:', window.supabase.supabaseUrl);
                 resolve(window.supabase);
+            } else if (attempts >= maxAttempts) {
+                console.error('❌ Supabase client not found after 10 seconds');
+                reject(new Error('Supabase client not found after 10 seconds. Check if Supabase SDK is loaded correctly.'));
             } else {
                 setTimeout(checkSupabase, 100);
             }
@@ -167,20 +180,30 @@ function showDashboard() {
 
 async function login(email, password) {
     try {
+        console.log('🔐 Attempting login for:', email);
         showLoading();
+
+        if (!supabaseClient) {
+            throw new Error('Supabase client not initialized');
+        }
+
+        console.log('📡 Sending login request to Supabase...');
         const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (error) {
+            console.error('❌ Login error:', error);
             throw error;
         }
 
+        console.log('✅ Login successful:', data.user?.email);
         hideLoading();
+
     } catch (error) {
         hideLoading();
-        console.error('Erro no login:', error);
+        console.error('❌ Error during login:', error);
         showError('Erro no login: ' + error.message);
     }
 }
