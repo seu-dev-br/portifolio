@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getAllPublishedProjects } from '../lib/firebase.js';
+import { getAllPublishedProjects } from '../lib/supabase.js';
 
 // Fetch all published projects
 const projects = await getAllPublishedProjects();

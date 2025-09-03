@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getAllPostSlugs, getPostBySlug, formatDate, getReadingTime } from '../../lib/firebase.js';
+import { getAllPostSlugs, getPostBySlug, formatDate, getReadingTime } from '../../lib/supabase.js';
 import { marked } from 'marked';
 
 export async function getStaticPaths() {

@@ -5,19 +5,19 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
   // Configuração otimizada para Vercel
   output: 'static',
-  
+
   // Base URL configuration
   site: 'https://portifolio-seu-dev-br.vercel.app',
-  
+
   // Configurações de integração
   integrations: [],
-  
+
   // Configurações de build otimizadas
   build: {
     format: 'file',
     inlineStylesheets: 'auto'
   },
-  
+
   // Configurações de Vite para melhor performance
   vite: {
     build: {
@@ -26,13 +26,13 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks: {
-            firebase: ['firebase/app', 'firebase/firestore', 'firebase/storage']
+            supabase: ['@supabase/supabase-js']
           }
         }
       }
     },
     optimizeDeps: {
-      include: ['firebase/app', 'firebase/firestore', 'marked']
+      include: ['@supabase/supabase-js', 'marked']
     }
   }
 });

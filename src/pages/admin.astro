@@ -277,62 +277,26 @@
         <div class="spinner-circle"></div>
     </div>
 
-    <!-- Firebase SDK v9 modular -->
+    <!-- Supabase Client -->
     <script type="module">
-        // Firebase v9 modular
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-        import { getFirestore, collection, doc, addDoc, getDocs, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyAxl5gZsCHyu5h12saiSTEgsT10kZx7HBE",
-            authDomain: "portifolio-32038.firebaseapp.com",
-            projectId: "portifolio-32038",
-            storageBucket: "portifolio-32038.firebasestorage.app",
-            messagingSenderId: "336134796353",
-            appId: "1:336134796353:web:469cdc6b3538c7b19a82c0",
-            measurementId: "G-7L0CJD9TN0"
-        };
+        // Configurações do Supabase (substitua pelas suas)
+        const supabaseUrl = 'https://SEU_PROJECT_REF.supabase.co';
+        const supabaseAnonKey = 'SEU_ANON_KEY';
 
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+        // Inicializar Supabase
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
         // Disponibilizar globalmente
-        window.firebase = {
-            app,
-            auth,
-            db,
-            storage,
-            // Funções de auth
-            signInWithEmailAndPassword: (email, password) => signInWithEmailAndPassword(auth, email, password),
-            signOut: () => signOut(auth),
-            onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback),
-            // Funções de firestore
-            collection: (name) => collection(db, name),
-            doc: (collectionRef, id) => doc(collectionRef, id),
-            addDoc,
-            getDocs,
-            getDoc,
-            updateDoc,
-            deleteDoc,
-            serverTimestamp,
-            // Funções de storage
-            ref: (path) => ref(storage, path),
-            uploadBytes,
-            getDownloadURL
-        };
+        window.supabase = supabase;
 
-        console.log('🔥 Firebase v9 inicializado com sucesso');
+        console.log('� Supabase inicializado com sucesso');
     </script>
-    
+
     <!-- EasyMDE -->
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
-    
+
     <!-- Admin Script -->
     <script src="/admin/admin.js" is:inline></script>
 </body>

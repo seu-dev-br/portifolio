@@ -1,17 +1,17 @@
-// Admin.js - Atualizado para Firebase v9
-// O Firebase será inicializado pelo script modular na página
+// Admin.js - Atualizado para Supabase (100% GRATUITO)
+// Supabase será inicializado pelo script na página
 
-// Aguardar o Firebase estar disponível
-function waitForFirebase() {
+// Aguardar o Supabase estar disponível
+function waitForSupabase() {
     return new Promise((resolve) => {
-        const checkFirebase = () => {
-            if (window.firebase) {
-                resolve(window.firebase);
+        const checkSupabase = () => {
+            if (window.supabase) {
+                resolve(window.supabase);
             } else {
-                setTimeout(checkFirebase, 100);
+                setTimeout(checkSupabase, 100);
             }
         };
-        checkFirebase();
+        checkSupabase();
     });
 }
 
@@ -21,7 +21,7 @@ let easyMDE = null;
 let isEditing = false;
 let editingPostId = null;
 let editingProjectId = null;
-let firebaseServices = null;
+let supabaseClient = null;
 
 // Elements DOM
 const loginContainer = document.getElementById('login-container');
@@ -128,12 +128,23 @@ function formatDate(timestamp) {
 
 // Authentication Functions
 async function initAuth() {
-    firebaseServices = await waitForFirebase();
-    console.log('🔥 Firebase services ready:', firebaseServices);
-    
-    firebaseServices.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
+    supabaseClient = await waitForSupabase();
+    console.log('� Supabase client ready:', supabaseClient);
+
+    // Check if user is already logged in
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (user) {
+        currentUser = user;
+        showDashboard();
+        loadPosts();
+    } else {
+        showLogin();
+    }
+
+    // Listen for auth changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (session?.user) {
+            currentUser = session.user;
             showDashboard();
             loadPosts();
         } else {
@@ -157,7 +168,15 @@ function showDashboard() {
 async function login(email, password) {
     try {
         showLoading();
-        await firebaseServices.signInWithEmailAndPassword(email, password);
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            throw error;
+        }
+
         hideLoading();
     } catch (error) {
         hideLoading();
@@ -168,7 +187,10 @@ async function login(email, password) {
 
 async function logout() {
     try {
-        await firebaseServices.signOut();
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) {
+            throw error;
+        }
     } catch (error) {
         console.error('Erro no logout:', error);
         showError('Erro no logout: ' + error.message);
@@ -256,22 +278,16 @@ function clearForm() {
 async function loadPosts() {
     try {
         showLoading();
-        const postsRef = firebaseServices.collection('posts');
-        const querySnapshot = await firebaseServices.getDocs(postsRef);
-        
-        const postsDocs = [];
-        querySnapshot.forEach((doc) => {
-            postsDocs.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // Ordenar por data de criação (mais recente primeiro)
-        postsDocs.sort((a, b) => {
-            const aDate = a.createdAt?.toDate() || new Date(0);
-            const bDate = b.createdAt?.toDate() || new Date(0);
-            return bDate - aDate;
-        });
-        
-        displayPosts(postsDocs);
+        const { data: posts, error } = await supabaseClient
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            throw error;
+        }
+
+        displayPosts(posts);
         hideLoading();
     } catch (error) {
         hideLoading();
@@ -315,7 +331,7 @@ function createPostCard(post) {
         <p class="post-excerpt">${post.excerpt || 'Sem resumo disponível'}</p>
         <div class="post-meta">
             <span class="post-status ${post.status || 'draft'}">${post.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            <span>${formatDate(post.createdAt)}</span>
+            <span>${formatDate(post.created_at)}</span>
         </div>
         <div class="post-card-actions">
             <button class="btn btn-primary edit-post-btn">Editar</button>
@@ -339,27 +355,33 @@ function createPostCard(post) {
 async function savePost(postData) {
     try {
         showLoading();
-        
+
         if (isEditing && editingPostId) {
             // Atualizar post existente
-            const postsRef = firebaseServices.collection('posts');
-            const postDoc = firebaseServices.doc(postsRef, editingPostId);
-            await firebaseServices.updateDoc(postDoc, {
-                ...postData,
-                updatedAt: firebaseServices.serverTimestamp()
-            });
+            const { error } = await supabaseClient
+                .from('posts')
+                .update({
+                    ...postData,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', editingPostId);
+
+            if (error) throw error;
             showSuccess('Post atualizado com sucesso!');
         } else {
             // Criar novo post
-            const postsRef = firebaseServices.collection('posts');
-            await firebaseServices.addDoc(postsRef, {
-                ...postData,
-                createdAt: firebaseServices.serverTimestamp(),
-                updatedAt: firebaseServices.serverTimestamp()
-            });
+            const { error } = await supabaseClient
+                .from('posts')
+                .insert([{
+                    ...postData,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }]);
+
+            if (error) throw error;
             showSuccess('Post criado com sucesso!');
         }
-        
+
         hideLoading();
         showPostsList();
     } catch (error) {
@@ -373,12 +395,16 @@ async function deletePost(postId, postTitle) {
     if (!confirm(`Tem certeza que deseja excluir o post "${postTitle}"?`)) {
         return;
     }
-    
+
     try {
         showLoading();
-        const postsRef = firebaseServices.collection('posts');
-        const postDoc = firebaseServices.doc(postsRef, postId);
-        await firebaseServices.deleteDoc(postDoc);
+        const { error } = await supabaseClient
+            .from('posts')
+            .delete()
+            .eq('id', postId);
+
+        if (error) throw error;
+
         hideLoading();
         showSuccess('Post excluído com sucesso!');
         loadPosts();
@@ -392,18 +418,27 @@ async function deletePost(postId, postTitle) {
 // Image Upload Functions
 async function uploadImage(file) {
     if (!file) return null;
-    
+
     try {
         showLoading();
-        
-        const fileName = `images/${Date.now()}_${file.name}`;
-        const storageRef = firebaseServices.ref(fileName);
-        
-        const snapshot = await firebaseServices.uploadBytes(storageRef, file);
-        const downloadURL = await firebaseServices.getDownloadURL(snapshot.ref);
-        
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `public/${fileName}`;
+
+        const { data, error } = await supabaseClient.storage
+            .from('images')
+            .upload(filePath, file);
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabaseClient.storage
+            .from('images')
+            .getPublicUrl(filePath);
+
         hideLoading();
-        return downloadURL;
+        return publicUrl;
     } catch (error) {
         hideLoading();
         console.error('Erro no upload da imagem:', error);
@@ -498,22 +533,14 @@ function clearProjectForm() {
 async function loadProjects() {
     try {
         showLoading();
-        const projectsRef = firebaseServices.collection('projects');
-        const querySnapshot = await firebaseServices.getDocs(projectsRef);
-        
-        const projectsDocs = [];
-        querySnapshot.forEach((doc) => {
-            projectsDocs.push({ id: doc.id, ...doc.data() });
-        });
-        
-        // Ordenar por data de criação (mais recente primeiro)
-        projectsDocs.sort((a, b) => {
-            const aDate = a.createdAt?.toDate() || new Date(0);
-            const bDate = b.createdAt?.toDate() || new Date(0);
-            return bDate - aDate;
-        });
-        
-        displayProjects(projectsDocs);
+        const { data: projects, error } = await supabaseClient
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        displayProjects(projects);
         hideLoading();
     } catch (error) {
         hideLoading();
@@ -560,7 +587,7 @@ function createProjectCard(project) {
         </div>
         <div class="post-meta">
             <span class="post-status ${project.status || 'draft'}">${project.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            <span>${formatDate(project.createdAt)}</span>
+            <span>${formatDate(project.created_at)}</span>
         </div>
         <div class="post-card-actions">
             <button class="btn btn-primary edit-project-btn">Editar</button>
@@ -584,27 +611,33 @@ function createProjectCard(project) {
 async function saveProject(projectData) {
     try {
         showLoading();
-        
+
         if (isEditing && editingProjectId) {
             // Atualizar projeto existente
-            const projectsRef = firebaseServices.collection('projects');
-            const projectDoc = firebaseServices.doc(projectsRef, editingProjectId);
-            await firebaseServices.updateDoc(projectDoc, {
-                ...projectData,
-                updatedAt: firebaseServices.serverTimestamp()
-            });
+            const { error } = await supabaseClient
+                .from('projects')
+                .update({
+                    ...projectData,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', editingProjectId);
+
+            if (error) throw error;
             showSuccess('Projeto atualizado com sucesso!');
         } else {
             // Criar novo projeto
-            const projectsRef = firebaseServices.collection('projects');
-            await firebaseServices.addDoc(projectsRef, {
-                ...projectData,
-                createdAt: firebaseServices.serverTimestamp(),
-                updatedAt: firebaseServices.serverTimestamp()
-            });
+            const { error } = await supabaseClient
+                .from('projects')
+                .insert([{
+                    ...projectData,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                }]);
+
+            if (error) throw error;
             showSuccess('Projeto criado com sucesso!');
         }
-        
+
         hideLoading();
         showProjectsList();
     } catch (error) {
@@ -618,12 +651,16 @@ async function deleteProject(projectId, projectTitle) {
     if (!confirm(`Tem certeza que deseja excluir o projeto "${projectTitle}"?`)) {
         return;
     }
-    
+
     try {
         showLoading();
-        const projectsRef = firebaseServices.collection('projects');
-        const projectDoc = firebaseServices.doc(projectsRef, projectId);
-        await firebaseServices.deleteDoc(projectDoc);
+        const { error } = await supabaseClient
+            .from('projects')
+            .delete()
+            .eq('id', projectId);
+
+        if (error) throw error;
+
         hideLoading();
         showSuccess('Projeto excluído com sucesso!');
         loadProjects();

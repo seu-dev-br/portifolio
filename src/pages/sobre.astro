@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getAboutData } from '../lib/firebase.js';
+import { getAboutData } from '../lib/supabase.js';
 
 const aboutData = await getAboutData();
 ---
