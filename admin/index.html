@@ -38,6 +38,8 @@
         <nav class="dashboard-nav">
             <button id="list-posts-btn" class="nav-btn active">Listar Posts</button>
             <button id="new-post-btn" class="nav-btn">Novo Post</button>
+            <button id="list-projects-btn" class="nav-btn">Listar Projetos</button>
+            <button id="new-project-btn" class="nav-btn">Novo Projeto</button>
             <button id="about-manager-btn" class="nav-btn">Gerenciar Sobre</button>
         </nav>
 
@@ -93,6 +95,72 @@
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Salvar Post</button>
                     <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Seção de Listagem de Projetos -->
+        <section id="projects-list-section" class="dashboard-section" style="display: none;">
+            <h2>Projetos Existentes</h2>
+            <div id="projects-container" class="posts-grid">
+                <!-- Projetos serão carregados dinamicamente -->
+            </div>
+        </section>
+
+        <!-- Seção de Criação/Edição de Projetos -->
+        <section id="project-editor-section" class="dashboard-section" style="display: none;">
+            <h2 id="project-editor-title">Criar Novo Projeto</h2>
+            <form id="project-form">
+                <input type="hidden" id="project-id" value="">
+                
+                <div class="form-group">
+                    <label for="project-title">Título do Projeto:</label>
+                    <input type="text" id="project-title" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="project-description">Descrição:</label>
+                    <textarea id="project-description" rows="4" placeholder="Descreva o projeto..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="project-technologies">Tecnologias (separadas por vírgula):</label>
+                    <input type="text" id="project-technologies" placeholder="React, Node.js, MongoDB">
+                </div>
+
+                <div class="form-group">
+                    <label for="project-demo-link">Link da Demo:</label>
+                    <input type="url" id="project-demo-link" placeholder="https://exemplo.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="project-github-link">Link do GitHub:</label>
+                    <input type="url" id="project-github-link" placeholder="https://github.com/usuario/repositorio">
+                </div>
+
+                <div class="form-group">
+                    <label for="project-download-link">Link de Download (opcional):</label>
+                    <input type="url" id="project-download-link" placeholder="https://exemplo.com/download">
+                </div>
+
+                <div class="form-group">
+                    <label for="project-status">Status:</label>
+                    <select id="project-status">
+                        <option value="draft">Rascunho</option>
+                        <option value="published">Publicado</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="project-image">Imagem do Projeto:</label>
+                    <input type="file" id="project-image-input" accept="image/*">
+                    <input type="text" id="project-image-url" placeholder="URL da imagem do projeto">
+                    <div id="project-image-preview" class="image-preview"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Salvar Projeto</button>
+                    <button type="button" id="cancel-project-edit-btn" class="btn btn-secondary">Cancelar</button>
                 </div>
             </form>
         </section>

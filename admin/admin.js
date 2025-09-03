@@ -23,6 +23,7 @@ let currentUser = null;
 let easyMDE = null;
 let isEditing = false;
 let editingPostId = null;
+let editingProjectId = null;
 
 // Elements DOM
 const loginContainer = document.getElementById('login-container');
@@ -35,16 +36,21 @@ const loadingSpinner = document.getElementById('loading-spinner');
 // Navigation elements
 const listPostsBtn = document.getElementById('list-posts-btn');
 const newPostBtn = document.getElementById('new-post-btn');
+const listProjectsBtn = document.getElementById('list-projects-btn');
+const newProjectBtn = document.getElementById('new-project-btn');
 const postsListSection = document.getElementById('posts-list-section');
 const postEditorSection = document.getElementById('post-editor-section');
+const projectsListSection = document.getElementById('projects-list-section');
+const projectEditorSection = document.getElementById('project-editor-section');
 
 // Editor elements
 const postForm = document.getElementById('post-form');
 const editorTitle = document.getElementById('editor-title');
 const cancelEditBtn = document.getElementById('cancel-edit-btn');
 const postsContainer = document.getElementById('posts-container');
+const projectsContainer = document.getElementById('projects-container');
 
-// Form elements
+// Form elements - Posts
 const postIdInput = document.getElementById('post-id');
 const postTitleInput = document.getElementById('post-title');
 const postExcerptInput = document.getElementById('post-excerpt');
@@ -54,6 +60,22 @@ const coverImageInput = document.getElementById('cover-image-input');
 const coverImageUrlInput = document.getElementById('cover-image-url');
 const coverImagePreview = document.getElementById('cover-image-preview');
 const postContentTextarea = document.getElementById('post-content');
+
+// Form elements - Projects
+const projectForm = document.getElementById('project-form');
+const projectEditorTitle = document.getElementById('project-editor-title');
+const cancelProjectEditBtn = document.getElementById('cancel-project-edit-btn');
+const projectIdInput = document.getElementById('project-id');
+const projectTitleInput = document.getElementById('project-title');
+const projectDescriptionInput = document.getElementById('project-description');
+const projectTechnologiesInput = document.getElementById('project-technologies');
+const projectDemoLinkInput = document.getElementById('project-demo-link');
+const projectGithubLinkInput = document.getElementById('project-github-link');
+const projectDownloadLinkInput = document.getElementById('project-download-link');
+const projectStatusSelect = document.getElementById('project-status');
+const projectImageInput = document.getElementById('project-image-input');
+const projectImageUrlInput = document.getElementById('project-image-url');
+const projectImagePreview = document.getElementById('project-image-preview');
 
 // Utility Functions
 function showLoading() {
@@ -379,6 +401,208 @@ function showImagePreview(imageUrl) {
     coverImagePreview.style.display = 'block';
 }
 
+function showProjectImagePreview(imageUrl) {
+    projectImagePreview.innerHTML = `<img src="${imageUrl}" alt="Preview da imagem do projeto">`;
+    projectImagePreview.style.display = 'block';
+}
+
+// ========================================
+// PROJECTS MANAGEMENT
+// ========================================
+
+// Projects Navigation Functions
+function showProjectsList() {
+    // Hide all sections
+    postsListSection.style.display = 'none';
+    postEditorSection.style.display = 'none';
+    projectsListSection.style.display = 'block';
+    projectEditorSection.style.display = 'none';
+    
+    // Update nav buttons
+    listPostsBtn.classList.remove('active');
+    newPostBtn.classList.remove('active');
+    listProjectsBtn.classList.add('active');
+    newProjectBtn.classList.remove('active');
+    
+    loadProjects();
+}
+
+function showProjectEditor(project = null) {
+    // Hide all sections
+    postsListSection.style.display = 'none';
+    postEditorSection.style.display = 'none';
+    projectsListSection.style.display = 'none';
+    projectEditorSection.style.display = 'block';
+    
+    // Update nav buttons
+    listPostsBtn.classList.remove('active');
+    newPostBtn.classList.remove('active');
+    listProjectsBtn.classList.remove('active');
+    newProjectBtn.classList.add('active');
+    
+    if (project) {
+        // Modo edição
+        isEditing = true;
+        editingProjectId = project.id;
+        projectEditorTitle.textContent = 'Editar Projeto';
+        populateProjectForm(project);
+    } else {
+        // Modo criação
+        isEditing = false;
+        editingProjectId = null;
+        projectEditorTitle.textContent = 'Criar Novo Projeto';
+        clearProjectForm();
+    }
+}
+
+function populateProjectForm(project) {
+    projectIdInput.value = project.id;
+    projectTitleInput.value = project.title || '';
+    projectDescriptionInput.value = project.description || '';
+    projectTechnologiesInput.value = project.technologies ? project.technologies.join(', ') : '';
+    projectDemoLinkInput.value = project.demoLink || '';
+    projectGithubLinkInput.value = project.githubLink || '';
+    projectDownloadLinkInput.value = project.downloadLink || '';
+    projectStatusSelect.value = project.status || 'draft';
+    projectImageUrlInput.value = project.image || '';
+    
+    if (project.image) {
+        showProjectImagePreview(project.image);
+    }
+}
+
+function clearProjectForm() {
+    projectForm.reset();
+    projectIdInput.value = '';
+    projectImagePreview.style.display = 'none';
+    projectImagePreview.innerHTML = '';
+}
+
+// Projects CRUD Functions
+async function loadProjects() {
+    try {
+        showLoading();
+        const projectsSnapshot = await db.collection('projects')
+            .orderBy('createdAt', 'desc')
+            .get();
+        
+        displayProjects(projectsSnapshot.docs);
+        hideLoading();
+    } catch (error) {
+        hideLoading();
+        console.error('Erro ao carregar projetos:', error);
+        showError('Erro ao carregar projetos: ' + error.message);
+    }
+}
+
+function displayProjects(projectsDocs) {
+    projectsContainer.innerHTML = '';
+    
+    if (projectsDocs.length === 0) {
+        projectsContainer.innerHTML = '<p>Nenhum projeto encontrado. Crie seu primeiro projeto!</p>';
+        return;
+    }
+    
+    projectsDocs.forEach(doc => {
+        const project = { id: doc.id, ...doc.data() };
+        const projectCard = createProjectCard(project);
+        projectsContainer.appendChild(projectCard);
+    });
+}
+
+function createProjectCard(project) {
+    const card = document.createElement('div');
+    card.className = 'post-card';
+    
+    const imageDiv = document.createElement('div');
+    imageDiv.className = 'post-card-image';
+    
+    if (project.image) {
+        imageDiv.style.backgroundImage = `url(${project.image})`;
+    } else {
+        imageDiv.textContent = 'Sem imagem';
+    }
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'post-card-content';
+    
+    contentDiv.innerHTML = `
+        <h3>${project.title || 'Sem título'}</h3>
+        <p class="post-excerpt">${project.description || 'Sem descrição disponível'}</p>
+        <div class="project-technologies">
+            ${project.technologies ? project.technologies.slice(0, 3).map(tech => `<span class="tech-tag">${tech}</span>`).join('') : ''}
+        </div>
+        <div class="post-meta">
+            <span class="post-status ${project.status || 'draft'}">${project.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+            <span>${formatDate(project.createdAt)}</span>
+        </div>
+        <div class="post-card-actions">
+            <button class="btn btn-primary edit-project-btn">Editar</button>
+            <button class="btn btn-danger delete-project-btn">Excluir</button>
+        </div>
+    `;
+    
+    // Event listeners para os botões
+    const editBtn = contentDiv.querySelector('.edit-project-btn');
+    const deleteBtn = contentDiv.querySelector('.delete-project-btn');
+    
+    editBtn.addEventListener('click', () => showProjectEditor(project));
+    deleteBtn.addEventListener('click', () => deleteProject(project.id, project.title));
+    
+    card.appendChild(imageDiv);
+    card.appendChild(contentDiv);
+    
+    return card;
+}
+
+async function saveProject(projectData) {
+    try {
+        showLoading();
+        
+        if (isEditing && editingProjectId) {
+            // Atualizar projeto existente
+            await db.collection('projects').doc(editingProjectId).update({
+                ...projectData,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showSuccess('Projeto atualizado com sucesso!');
+        } else {
+            // Criar novo projeto
+            await db.collection('projects').add({
+                ...projectData,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            showSuccess('Projeto criado com sucesso!');
+        }
+        
+        hideLoading();
+        showProjectsList();
+    } catch (error) {
+        hideLoading();
+        console.error('Erro ao salvar projeto:', error);
+        showError('Erro ao salvar projeto: ' + error.message);
+    }
+}
+
+async function deleteProject(projectId, projectTitle) {
+    if (!confirm(`Tem certeza que deseja excluir o projeto "${projectTitle}"?`)) {
+        return;
+    }
+    
+    try {
+        showLoading();
+        await db.collection('projects').doc(projectId).delete();
+        hideLoading();
+        showSuccess('Projeto excluído com sucesso!');
+        loadProjects();
+    } catch (error) {
+        hideLoading();
+        console.error('Erro ao excluir projeto:', error);
+        showError('Erro ao excluir projeto: ' + error.message);
+    }
+}
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
     // Inicializar autenticação
@@ -398,7 +622,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Navigation
     listPostsBtn.addEventListener('click', showPostsList);
     newPostBtn.addEventListener('click', () => showPostEditor());
+    listProjectsBtn.addEventListener('click', showProjectsList);
+    newProjectBtn.addEventListener('click', () => showProjectEditor());
     cancelEditBtn.addEventListener('click', showPostsList);
+    cancelProjectEditBtn.addEventListener('click', showProjectsList);
     
     // Cover image upload
     coverImageInput.addEventListener('change', async (e) => {
@@ -419,6 +646,28 @@ document.addEventListener('DOMContentLoaded', () => {
             showImagePreview(imageUrl);
         } else {
             coverImagePreview.style.display = 'none';
+        }
+    });
+
+    // Project image upload
+    projectImageInput.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const imageUrl = await uploadImage(file);
+            if (imageUrl) {
+                projectImageUrlInput.value = imageUrl;
+                showProjectImagePreview(imageUrl);
+            }
+        }
+    });
+    
+    // Project image URL preview
+    projectImageUrlInput.addEventListener('input', (e) => {
+        const imageUrl = e.target.value.trim();
+        if (imageUrl) {
+            showProjectImagePreview(imageUrl);
+        } else {
+            projectImagePreview.style.display = 'none';
         }
     });
     
@@ -457,6 +706,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         await savePost(postData);
+    });
+
+    // Project form submit
+    projectForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const title = projectTitleInput.value.trim();
+        const description = projectDescriptionInput.value.trim();
+        const technologiesString = projectTechnologiesInput.value.trim();
+        const demoLink = projectDemoLinkInput.value.trim();
+        const githubLink = projectGithubLinkInput.value.trim();
+        const downloadLink = projectDownloadLinkInput.value.trim();
+        const status = projectStatusSelect.value;
+        const image = projectImageUrlInput.value.trim();
+        
+        if (!title) {
+            showError('O título é obrigatório!');
+            return;
+        }
+        
+        const technologies = technologiesString ? technologiesString.split(',').map(tech => tech.trim()) : [];
+        
+        const projectData = {
+            title,
+            description,
+            technologies,
+            demoLink,
+            githubLink,
+            downloadLink,
+            status,
+            image
+        };
+        
+        // Se for um projeto publicado, adicionar publishedAt
+        if (status === 'published' && (!isEditing || editingProjectId)) {
+            projectData.publishedAt = firebase.firestore.FieldValue.serverTimestamp();
+        }
+        
+        await saveProject(projectData);
     });
 });
 

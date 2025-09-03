@@ -187,3 +187,69 @@ export async function updateAboutData(data) {
         return false;
     }
 }
+
+// Projects Management Functions
+export async function getAllPublishedProjects() {
+    try {
+        const projectsRef = collection(db, 'projects');
+        const q = query(
+            projectsRef,
+            where('status', '==', 'published'),
+            orderBy('publishedAt', 'desc')
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const projects = [];
+        
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            projects.push({
+                id: doc.id,
+                title: data.title,
+                description: data.description,
+                image: data.image,
+                demoLink: data.demoLink,
+                githubLink: data.githubLink,
+                downloadLink: data.downloadLink,
+                technologies: data.technologies || [],
+                status: data.status,
+                publishedAt: data.publishedAt,
+                createdAt: data.createdAt
+            });
+        });
+        
+        return projects;
+    } catch (error) {
+        console.error('Error fetching published projects:', error);
+        return [];
+    }
+}
+
+export async function getProjectById(projectId) {
+    try {
+        const projectRef = doc(db, 'projects', projectId);
+        const projectSnap = await getDoc(projectRef);
+        
+        if (projectSnap.exists()) {
+            const data = projectSnap.data();
+            return {
+                id: projectSnap.id,
+                title: data.title,
+                description: data.description,
+                image: data.image,
+                demoLink: data.demoLink,
+                githubLink: data.githubLink,
+                downloadLink: data.downloadLink,
+                technologies: data.technologies || [],
+                status: data.status,
+                publishedAt: data.publishedAt,
+                createdAt: data.createdAt
+            };
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching project by ID:', error);
+        return null;
+    }
+}

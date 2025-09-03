@@ -498,3 +498,39 @@ body {
         padding: 1rem;
     }
 }
+
+/* ========================================
+   PROJECTS SPECIFIC STYLES
+   ======================================== */
+
+.project-technologies {
+    margin: 10px 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.tech-tag {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* Projects form styles */
+#project-form .form-group {
+    margin-bottom: 20px;
+}
+
+#project-description {
+    min-height: 100px;
+    resize: vertical;
+}
+
+#project-image-preview img {
+    max-width: 200px;
+    height: auto;
+    border-radius: 8px;
+}

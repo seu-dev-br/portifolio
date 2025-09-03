@@ -8,7 +8,7 @@
       "dest": "/blog/$1.html"
     },
     {
-      "src": "/(blog|sobre|contato)",
+      "src": "/(blog|sobre|contato|projetos)",
       "dest": "/$1.html"
     },
     {
