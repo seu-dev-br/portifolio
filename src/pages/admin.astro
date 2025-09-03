@@ -1,0 +1,61 @@
+---
+// src/pages/admin.astro
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Ítalo Antonio</title>
+    <link rel="stylesheet" href="/admin/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div id="login-container" class="container">
+        <div class="login-card">
+            <h1>Painel Administrativo - Ítalo Antonio</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Entrar</button>
+            </form>
+            <div id="login-error" class="error-message" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Dashboard de Gerenciamento -->
+    <div id="dashboard-container" class="container" style="display: none;">
+        <header class="dashboard-header">
+            <h1>Dashboard - Ítalo Antonio</h1>
+            <button id="logout-btn" class="btn btn-secondary">Sair</button>
+        </header>
+
+        <!-- Navegação -->
+        <nav class="dashboard-nav">
+            <button id="list-posts-btn" class="nav-btn active">Listar Posts</button>
+            <button id="new-post-btn" class="nav-btn">Novo Post</button>
+            <button id="list-projects-btn" class="nav-btn">Listar Projetos</button>
+            <button id="new-project-btn" class="nav-btn">Novo Projeto</button>
+            <button id="about-manager-btn" class="nav-btn">Gerenciar Sobre</button>
+        </nav>
+
+        <!-- Seções do dashboard -->
+        <section id="posts-list-section" class="dashboard-section">
+            <h2>Posts Existentes</h2>
+            <div id="posts-container" class="posts-grid"></div>
+        </section>
+
+        <!-- Outras seções... -->
+    </div>
+
+    <script src="/admin/admin.js"></script>
+</body>
+</html>
