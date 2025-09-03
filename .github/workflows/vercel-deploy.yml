@@ -2,16 +2,13 @@ name: Deploy to Vercel
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +28,7 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Deploy to Vercel
+      - name: Deploy to Vercel (Production)
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         uses: amondnet/vercel-action@v25
         with:
