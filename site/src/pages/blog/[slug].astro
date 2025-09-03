@@ -85,7 +85,18 @@ marked.setOptions({
 
             <!-- Post Content -->
             <div class="post-content">
+                <!-- Table of Contents -->
+                <div class="table-of-contents" id="toc" style="display: none;">
+                    <h3>Índice</h3>
+                    <ul id="toc-list"></ul>
+                </div>
+                
                 <Fragment set:html={htmlContent} />
+                
+                <!-- Progress Bar -->
+                <div class="reading-progress">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
             </div>
 
             <!-- Post Footer -->
@@ -457,4 +468,158 @@ marked.setOptions({
             justify-content: center;
         }
     }
+
+    /* Table of Contents */
+    .table-of-contents {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        backdrop-filter: blur(10px);
+    }
+
+    .table-of-contents h3 {
+        margin: 0 0 1rem 0;
+        font-size: 1.2rem;
+        color: #af40ff;
+    }
+
+    .table-of-contents ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .table-of-contents li {
+        margin: 0.5rem 0;
+    }
+
+    .table-of-contents a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        transition: color 0.3s ease;
+        padding: 0.25rem 0;
+        display: block;
+    }
+
+    .table-of-contents a:hover,
+    .table-of-contents a.active {
+        color: #af40ff;
+    }
+
+    /* Reading Progress */
+    .reading-progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.1);
+        z-index: 1000;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #af40ff, #5b42f3, #00ddeb);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
 </style>
+
+<script>
+    // Blog post enhancements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Generate Table of Contents
+        generateTableOfContents();
+        
+        // Setup reading progress
+        setupReadingProgress();
+        
+        // Setup smooth scrolling for TOC links
+        setupSmoothScrolling();
+    });
+
+    function generateTableOfContents() {
+        const headings = document.querySelectorAll('.post-content h2, .post-content h3');
+        const toc = document.getElementById('toc');
+        const tocList = document.getElementById('toc-list');
+        
+        if (headings.length > 2 && toc && tocList) {
+            headings.forEach((heading, index) => {
+                // Add ID to heading if it doesn't have one
+                if (!heading.id) {
+                    heading.id = 'heading-' + index;
+                }
+                
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = '#' + heading.id;
+                a.textContent = heading.textContent;
+                a.className = heading.tagName.toLowerCase() === 'h3' ? 'sub-heading' : '';
+                
+                li.appendChild(a);
+                tocList.appendChild(li);
+            });
+            
+            toc.style.display = 'block';
+        }
+    }
+
+    function setupReadingProgress() {
+        const progressBar = document.getElementById('progress-bar');
+        
+        if (progressBar) {
+            window.addEventListener('scroll', function() {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                
+                progressBar.style.width = scrolled + '%';
+            });
+        }
+    }
+
+    function setupSmoothScrolling() {
+        const tocLinks = document.querySelectorAll('.table-of-contents a');
+        
+        tocLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Update active link
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+        
+        // Update active TOC link on scroll
+        window.addEventListener('scroll', function() {
+            const headings = document.querySelectorAll('.post-content h2, .post-content h3');
+            let current = '';
+            
+            headings.forEach(heading => {
+                const sectionTop = heading.offsetTop - 100;
+                if (window.pageYOffset >= sectionTop) {
+                    current = heading.id;
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    }
+</script>
