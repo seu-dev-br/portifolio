@@ -2,10 +2,18 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/blog/:slug",
-      "destination": "/blog/[slug].html"
+      "src": "/blog/([^/]+)",
+      "dest": "/blog/$1.html"
+    },
+    {
+      "src": "/(blog|sobre|contato)",
+      "dest": "/$1.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ],
   "trailingSlash": false

@@ -1,0 +1,56 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="404 - Página não encontrada" description="Página não encontrada">
+    <div class="container">
+        <div class="error-page">
+            <h1>404</h1>
+            <h2>Página não encontrada</h2>
+            <p>A página que você está procurando não existe ou foi movida.</p>
+            <a href="/" class="btn btn-primary">Voltar ao Início</a>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    .error-page {
+        text-align: center;
+        padding: 4rem 0;
+    }
+
+    .error-page h1 {
+        font-size: 8rem;
+        color: #af40ff;
+        margin: 0;
+        line-height: 1;
+        text-shadow: 0 0 20px rgba(175, 64, 255, 0.5);
+    }
+
+    .error-page h2 {
+        font-size: 2rem;
+        margin: 1rem 0;
+        color: white;
+    }
+
+    .error-page p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: linear-gradient(45deg, #af40ff, #5b42f3);
+        color: white;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: transform 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
