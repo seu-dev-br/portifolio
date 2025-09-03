@@ -277,11 +277,58 @@
         <div class="spinner-circle"></div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <!-- Firebase SDK v9 modular -->
+    <script type="module">
+        // Firebase v9 modular
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+        import { getFirestore, collection, doc, addDoc, getDocs, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
+
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAxl5gZsCHyu5h12saiSTEgsT10kZx7HBE",
+            authDomain: "portifolio-32038.firebaseapp.com",
+            projectId: "portifolio-32038",
+            storageBucket: "portifolio-32038.firebasestorage.app",
+            messagingSenderId: "336134796353",
+            appId: "1:336134796353:web:469cdc6b3538c7b19a82c0",
+            measurementId: "G-7L0CJD9TN0"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // Disponibilizar globalmente
+        window.firebase = {
+            app,
+            auth,
+            db,
+            storage,
+            // Funções de auth
+            signInWithEmailAndPassword: (email, password) => signInWithEmailAndPassword(auth, email, password),
+            signOut: () => signOut(auth),
+            onAuthStateChanged: (callback) => onAuthStateChanged(auth, callback),
+            // Funções de firestore
+            collection: (name) => collection(db, name),
+            doc: (collectionRef, id) => doc(collectionRef, id),
+            addDoc,
+            getDocs,
+            getDoc,
+            updateDoc,
+            deleteDoc,
+            serverTimestamp,
+            // Funções de storage
+            ref: (path) => ref(storage, path),
+            uploadBytes,
+            getDownloadURL
+        };
+
+        console.log('🔥 Firebase v9 inicializado com sucesso');
+    </script>
     
     <!-- EasyMDE -->
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>

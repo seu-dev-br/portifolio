@@ -1,22 +1,19 @@
-// Configuração do Firebase
-// ATENÇÃO: Substitua essas configurações pelas suas credenciais reais do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAxl5gZsCHyu5h12saiSTEgsT10kZx7HBE",
-  authDomain: "portifolio-32038.firebaseapp.com",
-  projectId: "portifolio-32038",
-  storageBucket: "portifolio-32038.firebasestorage.app",
-  messagingSenderId: "336134796353",
-  appId: "1:336134796353:web:469cdc6b3538c7b19a82c0",
-  measurementId: "G-7L0CJD9TN0"
-};
+// Admin.js - Atualizado para Firebase v9
+// O Firebase será inicializado pelo script modular na página
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
-
-// Instâncias dos serviços
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+// Aguardar o Firebase estar disponível
+function waitForFirebase() {
+    return new Promise((resolve) => {
+        const checkFirebase = () => {
+            if (window.firebase) {
+                resolve(window.firebase);
+            } else {
+                setTimeout(checkFirebase, 100);
+            }
+        };
+        checkFirebase();
+    });
+}
 
 // Variáveis globais
 let currentUser = null;
@@ -24,6 +21,7 @@ let easyMDE = null;
 let isEditing = false;
 let editingPostId = null;
 let editingProjectId = null;
+let firebaseServices = null;
 
 // Elements DOM
 const loginContainer = document.getElementById('login-container');
@@ -129,8 +127,11 @@ function formatDate(timestamp) {
 }
 
 // Authentication Functions
-function initAuth() {
-    auth.onAuthStateChanged((user) => {
+async function initAuth() {
+    firebaseServices = await waitForFirebase();
+    console.log('🔥 Firebase services ready:', firebaseServices);
+    
+    firebaseServices.onAuthStateChanged((user) => {
         if (user) {
             currentUser = user;
             showDashboard();
@@ -156,7 +157,7 @@ function showDashboard() {
 async function login(email, password) {
     try {
         showLoading();
-        await auth.signInWithEmailAndPassword(email, password);
+        await firebaseServices.signInWithEmailAndPassword(email, password);
         hideLoading();
     } catch (error) {
         hideLoading();
@@ -167,7 +168,7 @@ async function login(email, password) {
 
 async function logout() {
     try {
-        await auth.signOut();
+        await firebaseServices.signOut();
     } catch (error) {
         console.error('Erro no logout:', error);
         showError('Erro no logout: ' + error.message);
