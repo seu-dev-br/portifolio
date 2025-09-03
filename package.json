@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/check-env.js",
+    "build": "node scripts/check-env.js && astro build",
     "build:windows": "build.bat",
     "build:full": "npm run build && astro build",
     "preview": "astro preview",

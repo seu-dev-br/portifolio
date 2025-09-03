@@ -136,8 +136,6 @@ export function getReadingTime(content) {
     return `${minutes} min`;
 }
 
-export { supabase };
-
 // About Page Management Functions
 export async function getAboutData() {
     try {
