@@ -930,7 +930,9 @@ function setupEventListeners() {
 
 // Expor função para ser chamada pelo init.js
 window.setupAdminEventListeners = setupEventListeners;
-    
+
+// Função para configurar todos os event listeners
+function setupAllEventListeners() {
     // Cover image upload
     coverImageInput.addEventListener('change', async (e) => {
         const file = e.target.files[0];
@@ -1081,6 +1083,7 @@ window.setupAdminEventListeners = setupEventListeners;
     // Finalizar configuração de eventos
     console.log('Event listeners configurados com sucesso');
 }
+
 
 // Auto-save draft (opcional)
 let autoSaveTimer;
@@ -1854,6 +1857,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Chamar a função que configura os event listeners
     setupEventListeners();
+    setupAllEventListeners();
     console.log('✅ Event listeners configurados com sucesso');
     
     // Inicializar autenticação
