@@ -93,6 +93,23 @@ Após configurar todos os secrets:
 npm run build
 ```
 
+## 🤖 Scripts Auxiliares
+
+Para facilitar o processo de configuração, foram criados dois scripts:
+
+### 1. Script para Configurar Segredos
+Execute o arquivo `setup-github-secrets.bat` para configurar os segredos automaticamente:
+```bash
+./setup-github-secrets.bat
+```
+Este script requer que o GitHub CLI (`gh`) esteja instalado e autenticado.
+
+### 2. Script para Testar o Workflow
+Após configurar os segredos, você pode testar o workflow com um commit vazio:
+```bash
+./test-workflow.bat
+```
+
 ## 📞 Suporte
 
 Se continuar com problemas:
