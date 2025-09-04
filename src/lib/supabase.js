@@ -3,27 +3,45 @@ import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_CONFIG, hasValidSupabaseConfig } from './supabase-config.js';
 
 // Supabase config - These will be set as environment variables during build
-const supabaseUrl = import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || SUPABASE_CONFIG.url;
-const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || SUPABASE_CONFIG.anonKey;
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || import.meta.env.SUPABASE_URL || process.env.SUPABASE_URL || SUPABASE_CONFIG.url;
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || import.meta.env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || SUPABASE_CONFIG.anonKey;
 
 // Lazy initialization of Supabase client
 let supabaseClient = null;
 
 function getSupabaseClient() {
     if (!supabaseClient) {
-        // Validate required environment variables
-        if (!hasValidSupabaseConfig() && !supabaseUrl.includes('placeholder')) {
-            throw new Error(
-                'Missing Supabase environment variables. Please ensure SUPABASE_URL and SUPABASE_ANON_KEY are set.'
-            );
-        }
-
-        // During build, if we don't have valid config, create a mock client
-        if (!hasValidSupabaseConfig()) {
-            console.warn('⚠️ Using placeholder Supabase configuration during build');
+        console.log('🔍 Tentando inicializar cliente Supabase...');
+        console.log('🔗 URL tentada:', supabaseUrl);
+        console.log('🔑 Chave tentada (primeiros 10 caracteres):', supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'undefined');
+        
+        try {
+            // Validar valores esperados
+            if (!supabaseUrl || !supabaseAnonKey || 
+                supabaseUrl === 'https://placeholder.supabase.co' || 
+                supabaseAnonKey === 'placeholder-key') {
+                
+                console.error('❌ Configuração inválida do Supabase:');
+                console.error('- URL:', supabaseUrl);
+                console.error('- Chave (prefixo):', supabaseAnonKey ? supabaseAnonKey.substring(0, 10) + '...' : 'undefined');
+                
+                // Tentar usar valores hard-coded como último recurso
+                const hardcodedUrl = 'https://nattvkjaecceirxthizc.supabase.co';
+                const hardcodedKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
+                
+                console.log('⚠️ Usando valores hard-coded como fallback');
+                supabaseClient = createClient(hardcodedUrl, hardcodedKey);
+                return supabaseClient;
+            }
+            
+            // Criar cliente com valores válidos
+            console.log('✅ Criando cliente Supabase com valores válidos');
             supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
-        } else {
-            supabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+            return supabaseClient;
+            
+        } catch (error) {
+            console.error('❌ Erro ao criar cliente Supabase:', error);
+            throw new Error(`Erro ao inicializar cliente Supabase: ${error.message}`);
         }
     }
     return supabaseClient;

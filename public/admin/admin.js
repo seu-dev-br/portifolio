@@ -19,7 +19,13 @@ function waitForSupabase() {
         // Adicionar listener para o evento 'supabaseReady'
         window.addEventListener('supabaseReady', () => {
             console.log('✅ Supabase client initialized via event!');
-            resolve(window.supabase);
+            if (window.supabase) {
+                console.log('🔗 Supabase URL (from event):', window.supabase.supabaseUrl);
+                resolve(window.supabase);
+            } else {
+                console.error('❌ Evento supabaseReady disparado, mas window.supabase não está definido!');
+                reject(new Error('Evento supabaseReady disparado, mas window.supabase não está definido'));
+            }
         }, { once: true });
 
         const checkSupabase = () => {
@@ -254,20 +260,43 @@ async function logout() {
 
 // Editor Functions
 function initializeEditor() {
-    if (!easyMDE) {
-        easyMDE = new EasyMDE({
-            element: postContentTextarea,
-            spellChecker: false,
-            status: false,
-            toolbar: [
-                'bold', 'italic', 'heading', '|',
-                'quote', 'unordered-list', 'ordered-list', '|',
-                'link', 'image', '|',
-                'preview', 'side-by-side', 'fullscreen', '|',
-                'guide'
-            ],
-            placeholder: 'Escreva o conteúdo do post em Markdown...'
-        });
+    if (!easyMDE && postContentTextarea) {
+        console.log('🖊️ Inicializando editor Markdown');
+        try {
+            easyMDE = new EasyMDE({
+                element: postContentTextarea,
+                spellChecker: false,
+                autosave: {
+                    enabled: true,
+                    delay: 5000,
+                    uniqueId: 'post-editor-autosave'
+                },
+                status: ['autosave', 'words', 'lines', 'length'],
+                toolbar: [
+                    'bold', 'italic', 'heading', '|',
+                    'quote', 'unordered-list', 'ordered-list', '|',
+                    'link', 'image', '|',
+                    'code', 'table', 'horizontal-rule', '|',
+                    'preview', 'side-by-side', 'fullscreen', '|',
+                    'guide'
+                ],
+                placeholder: 'Escreva o conteúdo do post em Markdown...',
+                uploadImage: true,
+                imageUploadFunction: async (file, onSuccess, onError) => {
+                    try {
+                        const imageUrl = await uploadImage(file, 'posts/content');
+                        onSuccess(imageUrl);
+                    } catch (error) {
+                        console.error('❌ Erro ao fazer upload da imagem:', error);
+                        onError('Erro ao fazer upload da imagem: ' + error.message);
+                    }
+                }
+            });
+            
+            console.log('✅ Editor Markdown inicializado com sucesso');
+        } catch (error) {
+            console.error('❌ Erro ao inicializar editor Markdown:', error);
+        }
     }
 }
 
@@ -281,24 +310,46 @@ function showPostsList() {
 }
 
 function showPostEditor(post = null) {
+    console.log('🔄 Função showPostEditor chamada', { post });
+    
+    // Verificar se os elementos necessários existem
+    if (!postsListSection || !postEditorSection) {
+        console.error('❌ Seções de posts não encontradas', {
+            postsListSection: document.getElementById('posts-list-section'),
+            postEditorSection: document.getElementById('post-editor-section')
+        });
+        return;
+    }
+    
+    // Alternar visibilidade
     postsListSection.style.display = 'none';
     postEditorSection.style.display = 'block';
-    listPostsBtn.classList.remove('active');
-    newPostBtn.classList.add('active');
+    
+    // Atualizar classes ativas
+    if (listPostsBtn) listPostsBtn.classList.remove('active');
+    if (newPostBtn) newPostBtn.classList.add('active');
+    
+    console.log('✅ Alternou a visibilidade das seções com sucesso');
     
     if (post) {
         // Modo edição
+        console.log('📝 Modo de edição para post:', post.title);
         isEditing = true;
         editingPostId = post.id;
-        editorTitle.textContent = 'Editar Post';
+        if (editorTitle) editorTitle.textContent = 'Editar Post';
         populateForm(post);
     } else {
         // Modo criação
+        console.log('🆕 Modo de criação de novo post');
         isEditing = false;
         editingPostId = null;
-        editorTitle.textContent = 'Criar Novo Post';
+        if (editorTitle) editorTitle.textContent = 'Criar Novo Post';
         clearForm();
     }
+    
+    // Inicializar o editor Markdown
+    initializeEditor();
+    console.log('✅ Editor Markdown inicializado');
 }
 
 function populateForm(post) {
@@ -333,6 +384,8 @@ function clearForm() {
 async function loadPosts() {
     try {
         showLoading();
+        console.log('🔄 Carregando posts do Supabase...');
+        
         const { data: posts, error } = await supabaseClient
             .from('posts')
             .select('*')
@@ -342,12 +395,40 @@ async function loadPosts() {
             throw error;
         }
 
-        displayPosts(posts);
+        console.log(`✅ ${posts.length} posts carregados com sucesso`);
+        
+        // Verificar se temos posts para exibir
+        if (posts.length === 0) {
+            postsContainer.innerHTML = `
+                <div class="empty-state">
+                    <h3>Nenhum post encontrado</h3>
+                    <p>Comece criando seu primeiro post clicando no botão "Novo Post".</p>
+                </div>
+            `;
+        } else {
+            displayPosts(posts);
+        }
+        
         hideLoading();
     } catch (error) {
         hideLoading();
-        console.error('Erro ao carregar posts:', error);
+        console.error('❌ Erro ao carregar posts:', error);
         showError('Erro ao carregar posts: ' + error.message);
+        
+        // Exibir estado de erro
+        postsContainer.innerHTML = `
+            <div class="error-state">
+                <h3>Erro ao carregar posts</h3>
+                <p>${error.message}</p>
+                <button class="btn btn-primary retry-btn">Tentar novamente</button>
+            </div>
+        `;
+        
+        // Adicionar evento para tentar novamente
+        const retryBtn = postsContainer.querySelector('.retry-btn');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', loadPosts);
+        }
     }
 }
 
@@ -368,38 +449,110 @@ function displayPosts(postsDocs) {
 function createPostCard(post) {
     const card = document.createElement('div');
     card.className = 'post-card';
+    card.dataset.postId = post.id;
     
     const imageDiv = document.createElement('div');
     imageDiv.className = 'post-card-image';
     
     if (post.coverImage) {
         imageDiv.style.backgroundImage = `url(${post.coverImage})`;
+        
+        // Adicionar botão para visualizar imagem em tamanho maior
+        const zoomBtn = document.createElement('button');
+        zoomBtn.className = 'image-zoom-btn';
+        zoomBtn.innerHTML = '<i class="fas fa-search-plus"></i>';
+        zoomBtn.title = 'Ampliar imagem';
+        zoomBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showImageModal(post.coverImage, post.title);
+        });
+        imageDiv.appendChild(zoomBtn);
     } else {
-        imageDiv.textContent = 'Sem imagem';
+        imageDiv.innerHTML = '<div class="no-image"><i class="fas fa-image"></i><span>Sem imagem</span></div>';
     }
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'post-card-content';
     
+    // Formatar a data corretamente
+    const formattedDate = formatDate(post.created_at);
+    const publishedDate = post.published_at ? formatDate(post.published_at) : '';
+    
     contentDiv.innerHTML = `
-        <h3>${post.title || 'Sem título'}</h3>
-        <p class="post-excerpt">${post.excerpt || 'Sem resumo disponível'}</p>
+        <h3 title="${post.title || 'Sem título'}">${post.title || 'Sem título'}</h3>
+        <div class="slug-container" title="/blog/${post.slug}">
+            <span class="slug-label">Slug:</span>
+            <span class="slug-value">${post.slug}</span>
+            <button class="copy-slug-btn" title="Copiar URL"><i class="fas fa-copy"></i></button>
+        </div>
+        <p class="post-excerpt">${post.excerpt || post.description || 'Sem resumo disponível'}</p>
         <div class="post-meta">
-            <span class="post-status ${post.status || 'draft'}">${post.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            <span>${formatDate(post.created_at)}</span>
+            <div class="meta-group">
+                <span class="post-status ${post.status || 'draft'}">${post.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+                ${post.published_at ? `<span class="published-date" title="Data de publicação"><i class="fas fa-globe"></i> ${publishedDate}</span>` : ''}
+            </div>
+            <div class="meta-date" title="Data de criação">
+                <i class="fas fa-calendar-alt"></i> ${formattedDate}
+            </div>
         </div>
         <div class="post-card-actions">
-            <button class="btn btn-primary edit-post-btn">Editar</button>
-            <button class="btn btn-danger delete-post-btn">Excluir</button>
+            <button class="btn btn-primary edit-post-btn" title="Editar post">
+                <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-danger delete-post-btn" title="Excluir post">
+                <i class="fas fa-trash-alt"></i> Excluir
+            </button>
+            <button class="btn ${post.status === 'published' ? 'btn-warning unpublish-post-btn' : 'btn-success publish-post-btn'}" title="${post.status === 'published' ? 'Despublicar post' : 'Publicar post'}">
+                <i class="fas ${post.status === 'published' ? 'fa-eye-slash' : 'fa-globe'}"></i>
+                ${post.status === 'published' ? 'Despublicar' : 'Publicar'}
+            </button>
+            ${post.status === 'published' ? 
+                `<a href="/blog/${post.slug}" class="btn btn-outline-primary view-post-btn" target="_blank" title="Visualizar post no site">
+                    <i class="fas fa-external-link-alt"></i> Ver
+                </a>` : 
+                `<button class="btn btn-outline-secondary preview-post-btn" title="Pré-visualizar post">
+                    <i class="fas fa-eye"></i> Prévia
+                </button>`
+            }
         </div>
     `;
     
     // Event listeners para os botões
     const editBtn = contentDiv.querySelector('.edit-post-btn');
     const deleteBtn = contentDiv.querySelector('.delete-post-btn');
+    const publishBtn = contentDiv.querySelector('.publish-post-btn, .unpublish-post-btn');
+    const previewBtn = contentDiv.querySelector('.preview-post-btn');
+    const copySlugBtn = contentDiv.querySelector('.copy-slug-btn');
     
     editBtn.addEventListener('click', () => showPostEditor(post));
     deleteBtn.addEventListener('click', () => deletePost(post.id, post.title));
+    
+    if (publishBtn) {
+        publishBtn.addEventListener('click', () => togglePostStatus(post.id, post.status === 'published' ? 'draft' : 'published'));
+    }
+    
+    if (previewBtn) {
+        previewBtn.addEventListener('click', () => previewPost(post));
+    }
+    
+    if (copySlugBtn) {
+        copySlugBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const url = `${window.location.origin}/blog/${post.slug}`;
+            navigator.clipboard.writeText(url)
+                .then(() => {
+                    showToast('URL copiada para a área de transferência!', 'success');
+                    copySlugBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => {
+                        copySlugBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Erro ao copiar URL:', err);
+                    showToast('Erro ao copiar URL', 'error');
+                });
+        });
+    }
     
     card.appendChild(imageDiv);
     card.appendChild(contentDiv);
@@ -410,30 +563,46 @@ function createPostCard(post) {
 async function savePost(postData) {
     try {
         showLoading();
+        
+        // Gerar slug se não for fornecido
+        if (!postData.slug) {
+            postData.slug = generateSlug(postData.title);
+        }
+        
+        // Adicionar data de publicação se o status for 'published'
+        if (postData.status === 'published' && !postData.published_at) {
+            postData.published_at = new Date().toISOString();
+        }
+
+        console.log('📝 Salvando post:', postData);
 
         if (isEditing && editingPostId) {
             // Atualizar post existente
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('posts')
                 .update({
                     ...postData,
                     updated_at: new Date().toISOString()
                 })
-                .eq('id', editingPostId);
+                .eq('id', editingPostId)
+                .select();
 
             if (error) throw error;
+            console.log('✅ Post atualizado com sucesso:', data);
             showSuccess('Post atualizado com sucesso!');
         } else {
             // Criar novo post
-            const { error } = await supabaseClient
+            const { data, error } = await supabaseClient
                 .from('posts')
                 .insert([{
                     ...postData,
                     created_at: new Date().toISOString(),
                     updated_at: new Date().toISOString()
-                }]);
+                }])
+                .select();
 
             if (error) throw error;
+            console.log('✅ Post criado com sucesso:', data);
             showSuccess('Post criado com sucesso!');
         }
 
@@ -441,7 +610,7 @@ async function savePost(postData) {
         showPostsList();
     } catch (error) {
         hideLoading();
-        console.error('Erro ao salvar post:', error);
+        console.error('❌ Erro ao salvar post:', error);
         showError('Erro ao salvar post: ' + error.message);
     }
 }
@@ -471,19 +640,38 @@ async function deletePost(postId, postTitle) {
 }
 
 // Image Upload Functions
-async function uploadImage(file) {
+async function uploadImage(file, folder = 'posts') {
     if (!file) return null;
 
     try {
         showLoading();
+        console.log('📤 Iniciando upload de imagem:', file.name);
 
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}.${fileExt}`;
-        const filePath = `public/${fileName}`;
+        // Sanitize filename
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        const sanitizedName = file.name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+        const uniqueName = `${Date.now()}-${sanitizedName}`;
+        const filePath = `${folder}/${uniqueName}`;
 
+        // Validate file type
+        const validImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        if (!validImageTypes.includes(fileExt)) {
+            throw new Error(`Tipo de arquivo inválido. Use: ${validImageTypes.join(', ')}`);
+        }
+
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            throw new Error(`Arquivo muito grande. O tamanho máximo é 5MB.`);
+        }
+
+        console.log(`🔄 Enviando arquivo para ${filePath}...`);
         const { data, error } = await supabaseClient.storage
             .from('images')
-            .upload(filePath, file);
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
 
         if (error) throw error;
 
@@ -492,6 +680,7 @@ async function uploadImage(file) {
             .from('images')
             .getPublicUrl(filePath);
 
+        console.log('✅ Upload concluído:', publicUrl);
         hideLoading();
         return publicUrl;
     } catch (error) {
@@ -726,41 +915,21 @@ async function deleteProject(projectId, projectTitle) {
     }
 }
 
-// Event Listeners - Com inicialização melhorada
-async function initApp() {
-    try {
-        console.log('🚀 Inicializando aplicação admin...');
-        
-        // Aguardar o Supabase estar disponível
-        await waitForSupabase();
-        
-        // Inicializar autenticação
-        await initAuth();
-        
-        // Login form
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            await login(email, password);
-        });
-        
-        // Logout button
-        logoutBtn.addEventListener('click', logout);
-        
-        // Navigation
-        listPostsBtn.addEventListener('click', showPostsList);
-        newPostBtn.addEventListener('click', () => showPostEditor());
-        listProjectsBtn.addEventListener('click', showProjectsList);
-        newProjectBtn.addEventListener('click', () => showProjectEditor());
-        cancelEditBtn.addEventListener('click', showPostsList);
-        cancelProjectEditBtn.addEventListener('click', showProjectsList);
-    } catch (error) {
-        console.error('❌ Erro na inicialização da aplicação:', error);
-        showError('Erro na inicialização: ' + error.message);
-    }
+// Event Listeners - Agora gerenciados pelo init.js
+// As funções de inicialização foram movidas para init.js
+
+// Funções de navegação e outros event listeners
+function setupEventListeners() {
+    if (listPostsBtn) listPostsBtn.addEventListener('click', showPostsList);
+    if (newPostBtn) newPostBtn.addEventListener('click', () => showPostEditor());
+    if (listProjectsBtn) listProjectsBtn.addEventListener('click', showProjectsList);
+    if (newProjectBtn) newProjectBtn.addEventListener('click', () => showProjectEditor());
+    if (cancelEditBtn) cancelEditBtn.addEventListener('click', showPostsList);
+    if (cancelProjectEditBtn) cancelProjectEditBtn.addEventListener('click', showProjectsList);
 }
-    cancelProjectEditBtn.addEventListener('click', showProjectsList);
+
+// Expor função para ser chamada pelo init.js
+window.setupAdminEventListeners = setupEventListeners;
     
     // Cover image upload
     coverImageInput.addEventListener('change', async (e) => {
@@ -810,37 +979,64 @@ async function initApp() {
     postForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const title = postTitleInput.value.trim();
-        const excerpt = postExcerptInput.value.trim();
-        const tagsString = postTagsInput.value.trim();
-        const status = postStatusSelect.value;
-        const coverImage = coverImageUrlInput.value.trim();
-        const content = easyMDE ? easyMDE.value() : '';
-        
-        if (!title) {
-            showError('O título é obrigatório!');
-            return;
+        try {
+            // Validação de campos
+            const title = postTitleInput.value.trim();
+            const excerpt = postExcerptInput.value.trim();
+            const tagsString = postTagsInput.value.trim();
+            const status = postStatusSelect.value;
+            let coverImage = coverImageUrlInput.value.trim();
+            const content = easyMDE ? easyMDE.value() : '';
+            
+            // Validar campos obrigatórios
+            const errors = [];
+            if (!title) errors.push('O título é obrigatório');
+            if (!excerpt) errors.push('O resumo é obrigatório');
+            if (!content) errors.push('O conteúdo é obrigatório');
+            
+            if (errors.length > 0) {
+                showError(`Por favor, corrija os seguintes campos: ${errors.join(', ')}`);
+                return;
+            }
+            
+            // Processar imagem de capa, se houver upload
+            if (coverImageInput.files.length > 0) {
+                console.log('🖼️ Nova imagem de capa detectada, iniciando upload...');
+                coverImage = await uploadImage(coverImageInput.files[0], 'posts/covers');
+                if (!coverImage) {
+                    throw new Error('Falha ao enviar a imagem de capa');
+                }
+            }
+            
+            // Processar tags
+            const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : [];
+            
+            // Gerar slug
+            const slug = generateSlug(title);
+            
+            // Preparar dados do post
+            const postData = {
+                title,
+                slug,
+                excerpt,
+                tags,
+                status,
+                cover_image: coverImage,
+                content_markdown: content
+            };
+            
+            // Se for um post publicado, adicionar data de publicação
+            if (status === 'published') {
+                postData.published_at = new Date().toISOString();
+            }
+            
+            console.log('📝 Enviando dados do post:', postData);
+            await savePost(postData);
+            
+        } catch (error) {
+            console.error('❌ Erro ao processar formulário:', error);
+            showError('Erro ao processar formulário: ' + error.message);
         }
-        
-        const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : [];
-        const slug = generateSlug(title);
-        
-        const postData = {
-            title,
-            slug,
-            excerpt,
-            tags,
-            status,
-            coverImage,
-            contentMarkdown: content
-        };
-        
-        // Se for um post publicado, adicionar publishedAt
-        if (status === 'published' && (!isEditing || editingPostId)) {
-            postData.publishedAt = new Date().toISOString();
-        }
-        
-        await savePost(postData);
     });
 
     // Project form submit
@@ -881,7 +1077,10 @@ async function initApp() {
         
         await saveProject(projectData);
     });
-});
+    
+    // Finalizar configuração de eventos
+    console.log('Event listeners configurados com sucesso');
+}
 
 // Auto-save draft (opcional)
 let autoSaveTimer;
@@ -1332,3 +1531,359 @@ function collectCertificationData() {
     });
     return certifications.filter(cert => cert.name && cert.issuer);
 }
+
+// Formatar data para exibição
+function formatDate(dateString) {
+    if (!dateString) return 'Data desconhecida';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+// Modal para visualizar imagem em tamanho maior
+function showImageModal(imageUrl, altText) {
+    // Criar modal container
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'image-modal-container';
+    
+    // Criar modal
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    
+    // Adicionar imagem
+    const img = document.createElement('img');
+    img.src = imageUrl;
+    img.alt = altText || 'Imagem do post';
+    
+    // Adicionar botões
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'image-modal-actions';
+    
+    // Botão de fechar
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-danger';
+    closeBtn.innerHTML = '<i class="fas fa-times"></i> Fechar';
+    closeBtn.addEventListener('click', () => {
+        document.body.removeChild(modalContainer);
+    });
+    
+    // Botão para abrir em nova aba
+    const openBtn = document.createElement('button');
+    openBtn.className = 'btn btn-primary';
+    openBtn.innerHTML = '<i class="fas fa-external-link-alt"></i> Abrir em nova aba';
+    openBtn.addEventListener('click', () => {
+        window.open(imageUrl, '_blank');
+    });
+    
+    // Adicionar botões ao container de ações
+    actionsDiv.appendChild(openBtn);
+    actionsDiv.appendChild(closeBtn);
+    
+    // Montar modal
+    modal.appendChild(img);
+    modal.appendChild(actionsDiv);
+    modalContainer.appendChild(modal);
+    
+    // Adicionar ao body
+    document.body.appendChild(modalContainer);
+    
+    // Fechar modal ao clicar fora
+    modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) {
+            document.body.removeChild(modalContainer);
+        }
+    });
+}
+
+// Função para mostrar notificações toast
+function showToast(message, type = 'info') {
+    // Remover toast existente
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        document.body.removeChild(existingToast);
+    }
+    
+    // Criar novo toast
+    const toast = document.createElement('div');
+    toast.className = `toast-notification ${type}`;
+    toast.textContent = message;
+    
+    // Adicionar toast ao body
+    document.body.appendChild(toast);
+    
+    // Animar entrada
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Alternar status do post (publicado/rascunho)
+async function togglePostStatus(postId, newStatus) {
+    if (!postId) {
+        showToast('ID do post inválido', 'error');
+        return;
+    }
+    
+    try {
+        showLoading();
+        
+        const updateData = {
+            status: newStatus
+        };
+        
+        // Adicionar ou remover data de publicação
+        if (newStatus === 'published') {
+            updateData.published_at = new Date().toISOString();
+        }
+        
+        const { data, error } = await supabaseClient
+            .from('posts')
+            .update(updateData)
+            .eq('id', postId);
+            
+        if (error) {
+            throw error;
+        }
+        
+        showToast(`Post ${newStatus === 'published' ? 'publicado' : 'despublicado'} com sucesso!`, 'success');
+        loadPosts(); // Recarregar a lista
+    } catch (error) {
+        console.error('Erro ao alterar status do post:', error);
+        showToast(`Erro ao alterar status: ${error.message}`, 'error');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Pré-visualizar post
+function previewPost(post) {
+    // Criar modal para pré-visualização
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'preview-modal-container';
+    
+    const modal = document.createElement('div');
+    modal.className = 'preview-modal';
+    
+    // Cabeçalho do modal
+    const header = document.createElement('div');
+    header.className = 'preview-modal-header';
+    header.innerHTML = `
+        <h2>Pré-visualização: ${post.title}</h2>
+        <button class="close-preview-btn"><i class="fas fa-times"></i></button>
+    `;
+    
+    // Conteúdo do post
+    const content = document.createElement('div');
+    content.className = 'preview-modal-content';
+    
+    // Adicionar imagem de capa se existir
+    if (post.coverImage) {
+        const coverImg = document.createElement('div');
+        coverImg.className = 'preview-cover-image';
+        coverImg.style.backgroundImage = `url(${post.coverImage})`;
+        content.appendChild(coverImg);
+    }
+    
+    // Adicionar título e meta dados
+    const postHeader = document.createElement('div');
+    postHeader.className = 'preview-post-header';
+    postHeader.innerHTML = `
+        <h1>${post.title}</h1>
+        <div class="preview-post-meta">
+            <span>${formatDate(post.created_at)}</span>
+        </div>
+    `;
+    content.appendChild(postHeader);
+    
+    // Adicionar conteúdo
+    const postContent = document.createElement('div');
+    postContent.className = 'preview-post-content markdown-body';
+    
+    // Converter markdown para HTML usando a biblioteca marked
+    if (typeof marked !== 'undefined') {
+        postContent.innerHTML = marked.parse(post.content || '');
+    } else {
+        // Fallback se marked não estiver disponível
+        postContent.innerHTML = `<pre>${post.content || ''}</pre>`;
+    }
+    
+    content.appendChild(postContent);
+    
+    // Montar modal
+    modal.appendChild(header);
+    modal.appendChild(content);
+    modalContainer.appendChild(modal);
+    
+    // Adicionar ao body
+    document.body.appendChild(modalContainer);
+    
+    // Event listeners
+    const closeBtn = header.querySelector('.close-preview-btn');
+    closeBtn.addEventListener('click', () => {
+        document.body.removeChild(modalContainer);
+    });
+    
+    // Fechar ao clicar fora
+    modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) {
+            document.body.removeChild(modalContainer);
+        }
+    });
+}
+
+// Confirmar exclusão de post
+function deletePost(postId, postTitle) {
+    if (!postId) {
+        showToast('ID do post inválido', 'error');
+        return;
+    }
+    
+    // Criar modal de confirmação
+    const modalContainer = document.createElement('div');
+    modalContainer.className = 'confirm-modal-container';
+    
+    const modal = document.createElement('div');
+    modal.className = 'confirm-modal';
+    
+    modal.innerHTML = `
+        <div class="confirm-modal-header">
+            <h3>Confirmar exclusão</h3>
+        </div>
+        <div class="confirm-modal-body">
+            <p>Tem certeza que deseja excluir o post <strong>"${postTitle || 'Sem título'}"</strong>?</p>
+            <p class="warning-text">Esta ação não pode ser desfeita!</p>
+        </div>
+        <div class="confirm-modal-footer">
+            <button class="btn btn-outline-secondary cancel-btn">Cancelar</button>
+            <button class="btn btn-danger confirm-btn">Excluir</button>
+        </div>
+    `;
+    
+    modalContainer.appendChild(modal);
+    document.body.appendChild(modalContainer);
+    
+    // Event listeners
+    const cancelBtn = modal.querySelector('.cancel-btn');
+    const confirmBtn = modal.querySelector('.confirm-btn');
+    
+    cancelBtn.addEventListener('click', () => {
+        document.body.removeChild(modalContainer);
+    });
+    
+    confirmBtn.addEventListener('click', async () => {
+        try {
+            showLoading();
+            document.body.removeChild(modalContainer);
+            
+            const { error } = await supabaseClient
+                .from('posts')
+                .delete()
+                .eq('id', postId);
+                
+            if (error) {
+                throw error;
+            }
+            
+            showToast('Post excluído com sucesso!', 'success');
+            loadPosts(); // Recarregar a lista
+        } catch (error) {
+            console.error('Erro ao excluir post:', error);
+            showToast(`Erro ao excluir post: ${error.message}`, 'error');
+        } finally {
+            hideLoading();
+        }
+    });
+    
+    // Fechar ao clicar fora
+    modalContainer.addEventListener('click', (e) => {
+        if (e.target === modalContainer) {
+            document.body.removeChild(modalContainer);
+        }
+    });
+}
+
+// Função para verificar a sessão do usuário
+async function checkSession() {
+    console.log('🔄 Verificando sessão do usuário...');
+    try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        
+        if (error) {
+            console.error('❌ Erro ao verificar sessão:', error.message);
+            throw error;
+        }
+        
+        if (data?.session) {
+            console.log('✅ Usuário autenticado:', data.session.user.email);
+            currentUser = data.session.user;
+            showDashboard();
+            loadPosts();
+            return true;
+        } else {
+            console.log('ℹ️ Nenhum usuário autenticado');
+            showLogin();
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Erro ao verificar sessão:', error);
+        showLogin();
+        return false;
+    }
+}
+
+// Adicionar carregamento automático de posts quando a página carrega
+document.addEventListener('DOMContentLoaded', function() {
+    // Configurar todos os event listeners
+    console.log('🔄 Configurando event listeners...');
+    
+    // Chamar a função que configura os event listeners
+    setupEventListeners();
+    console.log('✅ Event listeners configurados com sucesso');
+    
+    // Inicializar autenticação
+    console.log('🔐 Inicializando autenticação...');
+    initAuth();
+    
+    // Adicionar logs para debugging de todos os botões
+    if (newPostBtn) {
+        console.log('🔍 Botão Novo Post encontrado:', newPostBtn);
+        // Adicionar um listener direto aqui também para garantir
+        newPostBtn.addEventListener('click', function() {
+            console.log('🖱️ Botão Novo Post clicado!');
+            showPostEditor();
+        });
+    } else {
+        console.error('❌ Botão Novo Post não encontrado!');
+    }
+    
+    // Verificar outros elementos importantes
+    console.log('🔍 Seção de editor de posts:', postEditorSection ? '✅ Encontrada' : '❌ Não encontrada');
+    console.log('🔍 Seção de lista de posts:', postsListSection ? '✅ Encontrada' : '❌ Não encontrada');
+    
+    // Adicionar evento para carregar posts quando clicar na aba Posts
+    if (navPosts) {
+        const originalClickHandler = navPosts.onclick;
+        navPosts.onclick = function(e) {
+            if (originalClickHandler) originalClickHandler(e);
+            setTimeout(() => {
+                loadPosts();
+            }, 100);
+        };
+    }
+});
