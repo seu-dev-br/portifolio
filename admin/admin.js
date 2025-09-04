@@ -1,22 +1,70 @@
-// Configuração do Firebase
-// ATENÇÃO: Substitua essas configurações pelas suas credenciais reais do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAxl5gZsCHyu5h12saiSTEgsT10kZx7HBE",
-  authDomain: "portifolio-32038.firebaseapp.com",
-  projectId: "portifolio-32038",
-  storageBucket: "portifolio-32038.firebasestorage.app",
-  messagingSenderId: "336134796353",
-  appId: "1:336134796353:web:469cdc6b3538c7b19a82c0",
-  measurementId: "G-7L0CJD9TN0"
-};
+// ======================================
+// ADMIN DASHBOARD SUPABASE - VERSÃO MIGRADA
+// ======================================
 
-// Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
+// Verificar se Supabase SDK foi carregado
+function checkSupabaseSDK() {
+    console.log('🔍 Verificando SDK do Supabase...');
+    
+    // Verificar se o SDK está disponível de forma simples
+    const isAvailable = (typeof window.supabase !== 'undefined' && window.supabase.createClient) ||
+                       (typeof supabase !== 'undefined' && supabase.createClient);
+    
+    if (isAvailable) {
+        console.log('✅ Supabase SDK encontrado');
+        return true;
+    } else {
+        console.log('⚠️ SDK não encontrado ainda - será verificado novamente no login');
+        return false;
+    }
+}
 
-// Instâncias dos serviços
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+// Obter cliente Supabase baseado no que está disponível
+function getSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY) {
+    if (typeof supabase !== 'undefined' && supabase.createClient) {
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
+        return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else if (typeof supabaseJs !== 'undefined' && supabaseJs.createClient) {
+        return supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } else if (typeof window.supabaseJs !== 'undefined' && window.supabaseJs.createClient) {
+        return window.supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    
+    throw new Error('Nenhuma função createClient encontrada');
+}
+
+// Configuração do Supabase
+const SUPABASE_URL = 'https://nattvkjaecceirxthizc.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
+
+// Inicializar cliente Supabase
+let supabase = null;
+
+function initializeSupabase() {
+    try {
+        console.log('🔄 Inicializando cliente Supabase...');
+        
+        const sdkAvailable = checkSupabaseSDK();
+        if (!sdkAvailable) {
+            console.log('⚠️ SDK não disponível ainda - tentará novamente quando necessário');
+            return false;
+        }
+        
+        console.log('📚 Usando SDK disponível');
+        supabase = getSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        console.log('✅ Cliente Supabase inicializado com sucesso');
+        console.log('🔗 URL:', SUPABASE_URL);
+        console.log('🔑 Key prefix:', SUPABASE_ANON_KEY.substring(0, 20) + '...');
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Erro ao inicializar Supabase:', error);
+        console.log('⚠️ Continuando para permitir carregamento posterior');
+        return false;
+    }
+}
 
 // Variáveis globais
 let currentUser = null;
@@ -77,7 +125,10 @@ const projectImageInput = document.getElementById('project-image-input');
 const projectImageUrlInput = document.getElementById('project-image-url');
 const projectImagePreview = document.getElementById('project-image-preview');
 
-// Utility Functions
+// ======================================
+// UTILITY FUNCTIONS
+// ======================================
+
 function showLoading() {
     loadingSpinner.style.display = 'flex';
 }
@@ -87,6 +138,7 @@ function hideLoading() {
 }
 
 function showError(message, container = null) {
+    console.error('❌ Erro:', message);
     const errorDiv = container || loginError;
     errorDiv.textContent = message;
     errorDiv.style.display = 'block';
@@ -96,51 +148,174 @@ function showError(message, container = null) {
 }
 
 function showSuccess(message) {
+    console.log('✅ Sucesso:', message);
     const successDiv = document.createElement('div');
     successDiv.className = 'success-message';
     successDiv.textContent = message;
-    document.querySelector('.dashboard-section').prepend(successDiv);
+    successDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 10000;
+    `;
+    document.body.appendChild(successDiv);
+    
     setTimeout(() => {
-        successDiv.remove();
-    }, 5000);
+        document.body.removeChild(successDiv);
+    }, 3000);
 }
 
 function generateSlug(title) {
     return title
         .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-        .replace(/[^a-z0-9\s-]/g, '') // Remove caracteres especiais
-        .replace(/\s+/g, '-') // Substitui espaços por hífens
-        .replace(/-+/g, '-') // Remove hífens duplicados
-        .trim();
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
 }
 
-function formatDate(timestamp) {
-    if (!timestamp) return 'Sem data';
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString('pt-BR', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
+// ======================================
+// AUTHENTICATION FUNCTIONS
+// ======================================
 
-// Authentication Functions
-function initAuth() {
-    auth.onAuthStateChanged((user) => {
-        if (user) {
-            currentUser = user;
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    if (!email || !password) {
+        showError('Por favor, preencha todos os campos.');
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        console.log('🔐 Tentando fazer login com Supabase...');
+        
+        // Verificar se Supabase está inicializado
+        if (!supabase) {
+            console.log('⚠️ Supabase não inicializado, tentando inicializar...');
+            const initialized = initializeSupabase();
+            if (!initialized) {
+                showError('Não foi possível conectar com o Supabase. Verifique sua conexão.');
+                return;
+            }
+        }
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) {
+            console.error('❌ Erro de autenticação:', error);
+            if (error.message.includes('Email not confirmed')) {
+                showError('Email não confirmado. Verifique sua caixa de entrada ou confirme manualmente no painel do Supabase.');
+            } else if (error.message.includes('Invalid login credentials')) {
+                showError('Credenciais inválidas. Verifique email e senha.');
+            } else {
+                showError(error.message);
+            }
+            return;
+        }
+        
+        if (data.user) {
+            console.log('✅ Login realizado com sucesso:', data.user.email);
+            currentUser = data.user;
             showDashboard();
-            loadPosts();
+            showSuccess('Login realizado com sucesso!');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro no login:', error);
+        showError('Erro interno. Verifique o console para mais detalhes.');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function handleLogout() {
+    showLoading();
+    
+    try {
+        const { error } = await supabase.auth.signOut();
+        
+        if (error) {
+            console.error('❌ Erro no logout:', error);
+            showError('Erro ao fazer logout: ' + error.message);
+            return;
+        }
+        
+        console.log('✅ Logout realizado com sucesso');
+        currentUser = null;
+        showLogin();
+        showSuccess('Logout realizado com sucesso!');
+        
+    } catch (error) {
+        console.error('❌ Erro no logout:', error);
+        showError('Erro interno no logout.');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Função para configurar listeners de autenticação
+function setupAuthListeners() {
+    if (!supabase) {
+        console.error('❌ Não é possível configurar listeners: supabase não inicializado');
+        return;
+    }
+    
+    // Verificar estado de autenticação
+    supabase.auth.onAuthStateChange((event, session) => {
+        console.log('🔄 Estado de autenticação mudou:', event, session?.user?.email);
+        
+        if (session && session.user) {
+            currentUser = session.user;
+            showDashboard();
         } else {
             currentUser = null;
             showLogin();
         }
     });
+    
+    console.log('✅ Listeners de autenticação configurados');
 }
+
+// Função para limpar dados corrompidos do localStorage
+function clearCorruptedAuth() {
+    try {
+        console.log('🧹 Limpando dados de autenticação corrompidos...');
+        
+        // Limpar dados do Supabase
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('supabase.auth.')) {
+                keysToRemove.push(key);
+            }
+        }
+        
+        keysToRemove.forEach(key => {
+            localStorage.removeItem(key);
+            console.log(`🗑️ Removido: ${key}`);
+        });
+        
+        console.log('✅ Limpeza concluída');
+    } catch (error) {
+        console.error('❌ Erro ao limpar localStorage:', error);
+    }
+}
+
+// ======================================
+// UI FUNCTIONS
+// ======================================
 
 function showLogin() {
     loginContainer.style.display = 'flex';
@@ -150,1028 +325,536 @@ function showLogin() {
 function showDashboard() {
     loginContainer.style.display = 'none';
     dashboardContainer.style.display = 'block';
-    initializeEditor();
+    
+    // Mostrar lista de posts por padrão
+    showPostsList();
 }
 
-async function login(email, password) {
+function showSection(sectionId) {
+    // Esconder todas as seções
+    const sections = document.querySelectorAll('.dashboard-section');
+    sections.forEach(section => section.style.display = 'none');
+    
+    // Mostrar seção específica
+    document.getElementById(sectionId).style.display = 'block';
+    
+    // Atualizar navegação ativa
+    const navButtons = document.querySelectorAll('.nav-btn');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+}
+
+function showPostsList() {
+    showSection('posts-list-section');
+    listPostsBtn.classList.add('active');
+    loadPosts();
+}
+
+function showNewPost() {
+    showSection('post-editor-section');
+    newPostBtn.classList.add('active');
+    resetPostForm();
+    editorTitle.textContent = 'Criar Novo Post';
+    isEditing = false;
+    editingPostId = null;
+}
+
+function showProjectsList() {
+    showSection('projects-list-section');
+    listProjectsBtn.classList.add('active');
+    loadProjects();
+}
+
+function showNewProject() {
+    showSection('project-editor-section');
+    newProjectBtn.classList.add('active');
+    resetProjectForm();
+    projectEditorTitle.textContent = 'Criar Novo Projeto';
+    isEditing = false;
+    editingProjectId = null;
+}
+
+// ======================================
+// POSTS FUNCTIONS
+// ======================================
+
+async function loadPosts() {
+    showLoading();
+    
     try {
-        showLoading();
-        await auth.signInWithEmailAndPassword(email, password);
-        hideLoading();
+        console.log('📥 Carregando posts do Supabase...');
+        
+        const { data, error } = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Erro ao carregar posts:', error);
+            showError('Erro ao carregar posts: ' + error.message);
+            return;
+        }
+        
+        console.log('✅ Posts carregados:', data?.length || 0);
+        displayPosts(data || []);
+        
     } catch (error) {
+        console.error('❌ Erro ao carregar posts:', error);
+        showError('Erro interno ao carregar posts.');
+    } finally {
         hideLoading();
-        console.error('Erro no login:', error);
-        showError('Erro no login: ' + error.message);
     }
 }
 
-async function logout() {
+function displayPosts(posts) {
+    if (!posts || posts.length === 0) {
+        postsContainer.innerHTML = '<p>Nenhum post encontrado. <a href="#" onclick="showNewPost()">Criar primeiro post</a></p>';
+        return;
+    }
+    
+    postsContainer.innerHTML = posts.map(post => `
+        <div class="post-card">
+            <h3>${post.title}</h3>
+            <p class="post-meta">
+                Status: <span class="status-badge ${post.status}">${post.status}</span>
+                ${post.created_at ? `• Criado: ${new Date(post.created_at).toLocaleDateString('pt-BR')}` : ''}
+            </p>
+            <p class="post-excerpt">${post.excerpt || 'Sem resumo'}</p>
+            <div class="post-actions">
+                <button onclick="editPost('${post.id}')" class="btn btn-sm btn-primary">Editar</button>
+                <button onclick="deletePost('${post.id}')" class="btn btn-sm btn-danger">Excluir</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function savePost(event) {
+    event.preventDefault();
+    showLoading();
+    
     try {
-        await auth.signOut();
+        const postData = {
+            title: postTitleInput.value,
+            slug: generateSlug(postTitleInput.value),
+            excerpt: postExcerptInput.value,
+            content: postContentTextarea.value,
+            tags: postTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag),
+            status: postStatusSelect.value,
+            cover_image: coverImageUrlInput.value,
+            updated_at: new Date().toISOString()
+        };
+        
+        let result;
+        
+        if (isEditing && editingPostId) {
+            console.log('🔄 Atualizando post:', editingPostId);
+            result = await supabase
+                .from('posts')
+                .update(postData)
+                .eq('id', editingPostId)
+                .select();
+        } else {
+            console.log('➕ Criando novo post');
+            postData.created_at = new Date().toISOString();
+            result = await supabase
+                .from('posts')
+                .insert([postData])
+                .select();
+        }
+        
+        if (result.error) {
+            console.error('❌ Erro ao salvar post:', result.error);
+            showError('Erro ao salvar post: ' + result.error.message);
+            return;
+        }
+        
+        console.log('✅ Post salvo com sucesso');
+        showSuccess(isEditing ? 'Post atualizado com sucesso!' : 'Post criado com sucesso!');
+        showPostsList();
+        
     } catch (error) {
-        console.error('Erro no logout:', error);
-        showError('Erro no logout: ' + error.message);
+        console.error('❌ Erro ao salvar post:', error);
+        showError('Erro interno ao salvar post.');
+    } finally {
+        hideLoading();
     }
 }
 
-// Editor Functions
-function initializeEditor() {
-    if (!easyMDE) {
+async function editPost(postId) {
+    showLoading();
+    
+    try {
+        console.log('📝 Carregando post para edição:', postId);
+        
+        const { data, error } = await supabase
+            .from('posts')
+            .select('*')
+            .eq('id', postId)
+            .single();
+        
+        if (error) {
+            console.error('❌ Erro ao carregar post:', error);
+            showError('Erro ao carregar post: ' + error.message);
+            return;
+        }
+        
+        // Preencher formulário
+        postIdInput.value = data.id;
+        postTitleInput.value = data.title;
+        postExcerptInput.value = data.excerpt || '';
+        postTagsInput.value = data.tags ? data.tags.join(', ') : '';
+        postStatusSelect.value = data.status;
+        coverImageUrlInput.value = data.cover_image || '';
+        postContentTextarea.value = data.content || '';
+        
+        // Configurar modo de edição
+        isEditing = true;
+        editingPostId = postId;
+        editorTitle.textContent = 'Editar Post';
+        
+        showSection('post-editor-section');
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar post:', error);
+        showError('Erro interno ao carregar post.');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deletePost(postId) {
+    if (!confirm('Tem certeza que deseja excluir este post?')) {
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        console.log('🗑️ Excluindo post:', postId);
+        
+        const { error } = await supabase
+            .from('posts')
+            .delete()
+            .eq('id', postId);
+        
+        if (error) {
+            console.error('❌ Erro ao excluir post:', error);
+            showError('Erro ao excluir post: ' + error.message);
+            return;
+        }
+        
+        console.log('✅ Post excluído com sucesso');
+        showSuccess('Post excluído com sucesso!');
+        loadPosts();
+        
+    } catch (error) {
+        console.error('❌ Erro ao excluir post:', error);
+        showError('Erro interno ao excluir post.');
+    } finally {
+        hideLoading();
+    }
+}
+
+function resetPostForm() {
+    postIdInput.value = '';
+    postTitleInput.value = '';
+    postExcerptInput.value = '';
+    postTagsInput.value = '';
+    postStatusSelect.value = 'draft';
+    coverImageUrlInput.value = '';
+    postContentTextarea.value = '';
+    coverImagePreview.innerHTML = '';
+}
+
+// ======================================
+// PROJECTS FUNCTIONS
+// ======================================
+
+async function loadProjects() {
+    showLoading();
+    
+    try {
+        console.log('📥 Carregando projetos do Supabase...');
+        
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Erro ao carregar projetos:', error);
+            showError('Erro ao carregar projetos: ' + error.message);
+            return;
+        }
+        
+        console.log('✅ Projetos carregados:', data?.length || 0);
+        displayProjects(data || []);
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar projetos:', error);
+        showError('Erro interno ao carregar projetos.');
+    } finally {
+        hideLoading();
+    }
+}
+
+function displayProjects(projects) {
+    if (!projects || projects.length === 0) {
+        projectsContainer.innerHTML = '<p>Nenhum projeto encontrado. <a href="#" onclick="showNewProject()">Criar primeiro projeto</a></p>';
+        return;
+    }
+    
+    projectsContainer.innerHTML = projects.map(project => `
+        <div class="post-card">
+            <h3>${project.title}</h3>
+            <p class="post-meta">
+                Status: <span class="status-badge ${project.status}">${project.status}</span>
+                ${project.created_at ? `• Criado: ${new Date(project.created_at).toLocaleDateString('pt-BR')}` : ''}
+            </p>
+            <p class="post-excerpt">${project.description || 'Sem descrição'}</p>
+            <div class="post-actions">
+                <button onclick="editProject('${project.id}')" class="btn btn-sm btn-primary">Editar</button>
+                <button onclick="deleteProject('${project.id}')" class="btn btn-sm btn-danger">Excluir</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function saveProject(event) {
+    event.preventDefault();
+    showLoading();
+    
+    try {
+        const projectData = {
+            title: projectTitleInput.value,
+            description: projectDescriptionInput.value,
+            technologies: projectTechnologiesInput.value.split(',').map(tech => tech.trim()).filter(tech => tech),
+            demo_link: projectDemoLinkInput.value,
+            github_link: projectGithubLinkInput.value,
+            download_link: projectDownloadLinkInput.value,
+            status: projectStatusSelect.value,
+            image_url: projectImageUrlInput.value,
+            updated_at: new Date().toISOString()
+        };
+        
+        let result;
+        
+        if (isEditing && editingProjectId) {
+            console.log('🔄 Atualizando projeto:', editingProjectId);
+            result = await supabase
+                .from('projects')
+                .update(projectData)
+                .eq('id', editingProjectId)
+                .select();
+        } else {
+            console.log('➕ Criando novo projeto');
+            projectData.created_at = new Date().toISOString();
+            result = await supabase
+                .from('projects')
+                .insert([projectData])
+                .select();
+        }
+        
+        if (result.error) {
+            console.error('❌ Erro ao salvar projeto:', result.error);
+            showError('Erro ao salvar projeto: ' + result.error.message);
+            return;
+        }
+        
+        console.log('✅ Projeto salvo com sucesso');
+        showSuccess(isEditing ? 'Projeto atualizado com sucesso!' : 'Projeto criado com sucesso!');
+        showProjectsList();
+        
+    } catch (error) {
+        console.error('❌ Erro ao salvar projeto:', error);
+        showError('Erro interno ao salvar projeto.');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function editProject(projectId) {
+    showLoading();
+    
+    try {
+        console.log('📝 Carregando projeto para edição:', projectId);
+        
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('id', projectId)
+            .single();
+        
+        if (error) {
+            console.error('❌ Erro ao carregar projeto:', error);
+            showError('Erro ao carregar projeto: ' + error.message);
+            return;
+        }
+        
+        // Preencher formulário
+        projectIdInput.value = data.id;
+        projectTitleInput.value = data.title;
+        projectDescriptionInput.value = data.description || '';
+        projectTechnologiesInput.value = data.technologies ? data.technologies.join(', ') : '';
+        projectDemoLinkInput.value = data.demo_link || '';
+        projectGithubLinkInput.value = data.github_link || '';
+        projectDownloadLinkInput.value = data.download_link || '';
+        projectStatusSelect.value = data.status;
+        projectImageUrlInput.value = data.image_url || '';
+        
+        // Configurar modo de edição
+        isEditing = true;
+        editingProjectId = projectId;
+        projectEditorTitle.textContent = 'Editar Projeto';
+        
+        showSection('project-editor-section');
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar projeto:', error);
+        showError('Erro interno ao carregar projeto.');
+    } finally {
+        hideLoading();
+    }
+}
+
+async function deleteProject(projectId) {
+    if (!confirm('Tem certeza que deseja excluir este projeto?')) {
+        return;
+    }
+    
+    showLoading();
+    
+    try {
+        console.log('🗑️ Excluindo projeto:', projectId);
+        
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', projectId);
+        
+        if (error) {
+            console.error('❌ Erro ao excluir projeto:', error);
+            showError('Erro ao excluir projeto: ' + error.message);
+            return;
+        }
+        
+        console.log('✅ Projeto excluído com sucesso');
+        showSuccess('Projeto excluído com sucesso!');
+        loadProjects();
+        
+    } catch (error) {
+        console.error('❌ Erro ao excluir projeto:', error);
+        showError('Erro interno ao excluir projeto.');
+    } finally {
+        hideLoading();
+    }
+}
+
+function resetProjectForm() {
+    projectIdInput.value = '';
+    projectTitleInput.value = '';
+    projectDescriptionInput.value = '';
+    projectTechnologiesInput.value = '';
+    projectDemoLinkInput.value = '';
+    projectGithubLinkInput.value = '';
+    projectDownloadLinkInput.value = '';
+    projectStatusSelect.value = 'draft';
+    projectImageUrlInput.value = '';
+    projectImagePreview.innerHTML = '';
+}
+
+// ======================================
+// EVENT LISTENERS
+// ======================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Admin dashboard inicializado com Supabase');
+    
+    // Event listeners
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    if (listPostsBtn) {
+        listPostsBtn.addEventListener('click', showPostsList);
+    }
+    
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', showNewPost);
+    }
+    
+    if (listProjectsBtn) {
+        listProjectsBtn.addEventListener('click', showProjectsList);
+    }
+    
+    if (newProjectBtn) {
+        newProjectBtn.addEventListener('click', showNewProject);
+    }
+    
+    if (postForm) {
+        postForm.addEventListener('submit', savePost);
+    }
+    
+    if (projectForm) {
+        projectForm.addEventListener('submit', saveProject);
+    }
+    
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', showPostsList);
+    }
+    
+    if (cancelProjectEditBtn) {
+        cancelProjectEditBtn.addEventListener('click', showProjectsList);
+    }
+    
+    // Image preview handlers
+    if (coverImageUrlInput) {
+        coverImageUrlInput.addEventListener('input', function() {
+            const url = this.value;
+            if (url) {
+                coverImagePreview.innerHTML = `<img src="${url}" alt="Preview" style="max-width: 200px; height: auto;">`;
+            } else {
+                coverImagePreview.innerHTML = '';
+            }
+        });
+    }
+    
+    if (projectImageUrlInput) {
+        projectImageUrlInput.addEventListener('input', function() {
+            const url = this.value;
+            if (url) {
+                projectImagePreview.innerHTML = `<img src="${url}" alt="Preview" style="max-width: 200px; height: auto;">`;
+            } else {
+                projectImagePreview.innerHTML = '';
+            }
+        });
+    }
+    
+    // Inicializar EasyMDE se disponível
+    if (typeof EasyMDE !== 'undefined' && postContentTextarea) {
         easyMDE = new EasyMDE({
             element: postContentTextarea,
             spellChecker: false,
             status: false,
-            toolbar: [
-                'bold', 'italic', 'heading', '|',
-                'quote', 'unordered-list', 'ordered-list', '|',
-                'link', 'image', '|',
-                'preview', 'side-by-side', 'fullscreen', '|',
-                'guide'
-            ],
-            placeholder: 'Escreva o conteúdo do post em Markdown...'
+            toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen"]
         });
     }
-}
-
-// Navigation Functions
-function showPostsList() {
-    postsListSection.style.display = 'block';
-    postEditorSection.style.display = 'none';
-    listPostsBtn.classList.add('active');
-    newPostBtn.classList.remove('active');
-    loadPosts();
-}
-
-function showPostEditor(post = null) {
-    postsListSection.style.display = 'none';
-    postEditorSection.style.display = 'block';
-    listPostsBtn.classList.remove('active');
-    newPostBtn.classList.add('active');
     
-    if (post) {
-        // Modo edição
-        isEditing = true;
-        editingPostId = post.id;
-        editorTitle.textContent = 'Editar Post';
-        populateForm(post);
+    // Inicializar Supabase de forma simples
+    const initialized = initializeSupabase();
+    if (initialized) {
+        console.log('✅ Supabase inicializado - configurando listeners');
+        
+        // Limpar dados corrompidos se existirem
+        clearCorruptedAuth();
+        
+        setupAuthListeners();
     } else {
-        // Modo criação
-        isEditing = false;
-        editingPostId = null;
-        editorTitle.textContent = 'Criar Novo Post';
-        clearForm();
-    }
-}
-
-function populateForm(post) {
-    postIdInput.value = post.id;
-    postTitleInput.value = post.title || '';
-    postExcerptInput.value = post.excerpt || '';
-    postTagsInput.value = post.tags ? post.tags.join(', ') : '';
-    postStatusSelect.value = post.status || 'draft';
-    coverImageUrlInput.value = post.coverImage || '';
-    
-    if (post.coverImage) {
-        showImagePreview(post.coverImage);
+        console.log('⚠️ Supabase não inicializado ainda - tentará novamente no login');
     }
     
-    if (easyMDE) {
-        easyMDE.value(post.contentMarkdown || '');
-    }
-}
-
-function clearForm() {
-    postForm.reset();
-    postIdInput.value = '';
-    coverImagePreview.style.display = 'none';
-    coverImagePreview.innerHTML = '';
-    
-    if (easyMDE) {
-        easyMDE.value('');
-    }
-}
-
-// Posts CRUD Functions
-async function loadPosts() {
-    try {
-        showLoading();
-        const postsSnapshot = await db.collection('posts')
-            .orderBy('createdAt', 'desc')
-            .get();
-        
-        displayPosts(postsSnapshot.docs);
-        hideLoading();
-    } catch (error) {
-        hideLoading();
-        console.error('Erro ao carregar posts:', error);
-        showError('Erro ao carregar posts: ' + error.message);
-    }
-}
-
-function displayPosts(postsDocs) {
-    postsContainer.innerHTML = '';
-    
-    if (postsDocs.length === 0) {
-        postsContainer.innerHTML = '<p>Nenhum post encontrado. Crie seu primeiro post!</p>';
-        return;
-    }
-    
-    postsDocs.forEach(doc => {
-        const post = { id: doc.id, ...doc.data() };
-        const postCard = createPostCard(post);
-        postsContainer.appendChild(postCard);
-    });
-}
-
-function createPostCard(post) {
-    const card = document.createElement('div');
-    card.className = 'post-card';
-    
-    const imageDiv = document.createElement('div');
-    imageDiv.className = 'post-card-image';
-    
-    if (post.coverImage) {
-        imageDiv.style.backgroundImage = `url(${post.coverImage})`;
-    } else {
-        imageDiv.textContent = 'Sem imagem';
-    }
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'post-card-content';
-    
-    contentDiv.innerHTML = `
-        <h3>${post.title || 'Sem título'}</h3>
-        <p class="post-excerpt">${post.excerpt || 'Sem resumo disponível'}</p>
-        <div class="post-meta">
-            <span class="post-status ${post.status || 'draft'}">${post.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            <span>${formatDate(post.createdAt)}</span>
-        </div>
-        <div class="post-card-actions">
-            <button class="btn btn-primary edit-post-btn">Editar</button>
-            <button class="btn btn-danger delete-post-btn">Excluir</button>
-        </div>
-    `;
-    
-    // Event listeners para os botões
-    const editBtn = contentDiv.querySelector('.edit-post-btn');
-    const deleteBtn = contentDiv.querySelector('.delete-post-btn');
-    
-    editBtn.addEventListener('click', () => showPostEditor(post));
-    deleteBtn.addEventListener('click', () => deletePost(post.id, post.title));
-    
-    card.appendChild(imageDiv);
-    card.appendChild(contentDiv);
-    
-    return card;
-}
-
-async function savePost(postData) {
-    try {
-        showLoading();
-        
-        if (isEditing && editingPostId) {
-            // Atualizar post existente
-            await db.collection('posts').doc(editingPostId).update({
-                ...postData,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showSuccess('Post atualizado com sucesso!');
-        } else {
-            // Criar novo post
-            await db.collection('posts').add({
-                ...postData,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showSuccess('Post criado com sucesso!');
-        }
-        
-        hideLoading();
-        showPostsList();
-    } catch (error) {
-        hideLoading();
-        console.error('Erro ao salvar post:', error);
-        showError('Erro ao salvar post: ' + error.message);
-    }
-}
-
-async function deletePost(postId, postTitle) {
-    if (!confirm(`Tem certeza que deseja excluir o post "${postTitle}"?`)) {
-        return;
-    }
-    
-    try {
-        showLoading();
-        await db.collection('posts').doc(postId).delete();
-        hideLoading();
-        showSuccess('Post excluído com sucesso!');
-        loadPosts();
-    } catch (error) {
-        hideLoading();
-        console.error('Erro ao excluir post:', error);
-        showError('Erro ao excluir post: ' + error.message);
-    }
-}
-
-// Image Upload Functions
-async function uploadImage(file) {
-    if (!file) return null;
-    
-    try {
-        showLoading();
-        
-        const fileName = `images/${Date.now()}_${file.name}`;
-        const storageRef = storage.ref().child(fileName);
-        
-        const snapshot = await storageRef.put(file);
-        const downloadURL = await snapshot.ref.getDownloadURL();
-        
-        hideLoading();
-        return downloadURL;
-    } catch (error) {
-        hideLoading();
-        console.error('Erro no upload da imagem:', error);
-        showError('Erro no upload da imagem: ' + error.message);
-        return null;
-    }
-}
-
-function showImagePreview(imageUrl) {
-    coverImagePreview.innerHTML = `<img src="${imageUrl}" alt="Preview da imagem de capa">`;
-    coverImagePreview.style.display = 'block';
-}
-
-function showProjectImagePreview(imageUrl) {
-    projectImagePreview.innerHTML = `<img src="${imageUrl}" alt="Preview da imagem do projeto">`;
-    projectImagePreview.style.display = 'block';
-}
-
-// ========================================
-// PROJECTS MANAGEMENT
-// ========================================
-
-// Projects Navigation Functions
-function showProjectsList() {
-    // Hide all sections
-    postsListSection.style.display = 'none';
-    postEditorSection.style.display = 'none';
-    projectsListSection.style.display = 'block';
-    projectEditorSection.style.display = 'none';
-    
-    // Update nav buttons
-    listPostsBtn.classList.remove('active');
-    newPostBtn.classList.remove('active');
-    listProjectsBtn.classList.add('active');
-    newProjectBtn.classList.remove('active');
-    
-    loadProjects();
-}
-
-function showProjectEditor(project = null) {
-    // Hide all sections
-    postsListSection.style.display = 'none';
-    postEditorSection.style.display = 'none';
-    projectsListSection.style.display = 'none';
-    projectEditorSection.style.display = 'block';
-    
-    // Update nav buttons
-    listPostsBtn.classList.remove('active');
-    newPostBtn.classList.remove('active');
-    listProjectsBtn.classList.remove('active');
-    newProjectBtn.classList.add('active');
-    
-    if (project) {
-        // Modo edição
-        isEditing = true;
-        editingProjectId = project.id;
-        projectEditorTitle.textContent = 'Editar Projeto';
-        populateProjectForm(project);
-    } else {
-        // Modo criação
-        isEditing = false;
-        editingProjectId = null;
-        projectEditorTitle.textContent = 'Criar Novo Projeto';
-        clearProjectForm();
-    }
-}
-
-function populateProjectForm(project) {
-    projectIdInput.value = project.id;
-    projectTitleInput.value = project.title || '';
-    projectDescriptionInput.value = project.description || '';
-    projectTechnologiesInput.value = project.technologies ? project.technologies.join(', ') : '';
-    projectDemoLinkInput.value = project.demoLink || '';
-    projectGithubLinkInput.value = project.githubLink || '';
-    projectDownloadLinkInput.value = project.downloadLink || '';
-    projectStatusSelect.value = project.status || 'draft';
-    projectImageUrlInput.value = project.image || '';
-    
-    if (project.image) {
-        showProjectImagePreview(project.image);
-    }
-}
-
-function clearProjectForm() {
-    projectForm.reset();
-    projectIdInput.value = '';
-    projectImagePreview.style.display = 'none';
-    projectImagePreview.innerHTML = '';
-}
-
-// Projects CRUD Functions
-async function loadProjects() {
-    try {
-        showLoading();
-        const projectsSnapshot = await db.collection('projects')
-            .orderBy('createdAt', 'desc')
-            .get();
-        
-        displayProjects(projectsSnapshot.docs);
-        hideLoading();
-    } catch (error) {
-        hideLoading();
-        console.error('Erro ao carregar projetos:', error);
-        showError('Erro ao carregar projetos: ' + error.message);
-    }
-}
-
-function displayProjects(projectsDocs) {
-    projectsContainer.innerHTML = '';
-    
-    if (projectsDocs.length === 0) {
-        projectsContainer.innerHTML = '<p>Nenhum projeto encontrado. Crie seu primeiro projeto!</p>';
-        return;
-    }
-    
-    projectsDocs.forEach(doc => {
-        const project = { id: doc.id, ...doc.data() };
-        const projectCard = createProjectCard(project);
-        projectsContainer.appendChild(projectCard);
-    });
-}
-
-function createProjectCard(project) {
-    const card = document.createElement('div');
-    card.className = 'post-card';
-    
-    const imageDiv = document.createElement('div');
-    imageDiv.className = 'post-card-image';
-    
-    if (project.image) {
-        imageDiv.style.backgroundImage = `url(${project.image})`;
-    } else {
-        imageDiv.textContent = 'Sem imagem';
-    }
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'post-card-content';
-    
-    contentDiv.innerHTML = `
-        <h3>${project.title || 'Sem título'}</h3>
-        <p class="post-excerpt">${project.description || 'Sem descrição disponível'}</p>
-        <div class="project-technologies">
-            ${project.technologies ? project.technologies.slice(0, 3).map(tech => `<span class="tech-tag">${tech}</span>`).join('') : ''}
-        </div>
-        <div class="post-meta">
-            <span class="post-status ${project.status || 'draft'}">${project.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
-            <span>${formatDate(project.createdAt)}</span>
-        </div>
-        <div class="post-card-actions">
-            <button class="btn btn-primary edit-project-btn">Editar</button>
-            <button class="btn btn-danger delete-project-btn">Excluir</button>
-        </div>
-    `;
-    
-    // Event listeners para os botões
-    const editBtn = contentDiv.querySelector('.edit-project-btn');
-    const deleteBtn = contentDiv.querySelector('.delete-project-btn');
-    
-    editBtn.addEventListener('click', () => showProjectEditor(project));
-    deleteBtn.addEventListener('click', () => deleteProject(project.id, project.title));
-    
-    card.appendChild(imageDiv);
-    card.appendChild(contentDiv);
-    
-    return card;
-}
-
-async function saveProject(projectData) {
-    try {
-        showLoading();
-        
-        if (isEditing && editingProjectId) {
-            // Atualizar projeto existente
-            await db.collection('projects').doc(editingProjectId).update({
-                ...projectData,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showSuccess('Projeto atualizado com sucesso!');
-        } else {
-            // Criar novo projeto
-            await db.collection('projects').add({
-                ...projectData,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            showSuccess('Projeto criado com sucesso!');
-        }
-        
-        hideLoading();
-        showProjectsList();
-    } catch (error) {
-        hideLoading();
-        console.error('Erro ao salvar projeto:', error);
-        showError('Erro ao salvar projeto: ' + error.message);
-    }
-}
-
-async function deleteProject(projectId, projectTitle) {
-    if (!confirm(`Tem certeza que deseja excluir o projeto "${projectTitle}"?`)) {
-        return;
-    }
-    
-    try {
-        showLoading();
-        await db.collection('projects').doc(projectId).delete();
-        hideLoading();
-        showSuccess('Projeto excluído com sucesso!');
-        loadProjects();
-    } catch (error) {
-        hideLoading();
-        console.error('Erro ao excluir projeto:', error);
-        showError('Erro ao excluir projeto: ' + error.message);
-    }
-}
-
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar autenticação
-    initAuth();
-    
-    // Login form
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        await login(email, password);
-    });
-    
-    // Logout button
-    logoutBtn.addEventListener('click', logout);
-    
-    // Navigation
-    listPostsBtn.addEventListener('click', showPostsList);
-    newPostBtn.addEventListener('click', () => showPostEditor());
-    listProjectsBtn.addEventListener('click', showProjectsList);
-    newProjectBtn.addEventListener('click', () => showProjectEditor());
-    cancelEditBtn.addEventListener('click', showPostsList);
-    cancelProjectEditBtn.addEventListener('click', showProjectsList);
-    
-    // Cover image upload
-    coverImageInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const imageUrl = await uploadImage(file);
-            if (imageUrl) {
-                coverImageUrlInput.value = imageUrl;
-                showImagePreview(imageUrl);
-            }
-        }
-    });
-    
-    // Cover image URL preview
-    coverImageUrlInput.addEventListener('input', (e) => {
-        const imageUrl = e.target.value.trim();
-        if (imageUrl) {
-            showImagePreview(imageUrl);
-        } else {
-            coverImagePreview.style.display = 'none';
-        }
-    });
-
-    // Project image upload
-    projectImageInput.addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const imageUrl = await uploadImage(file);
-            if (imageUrl) {
-                projectImageUrlInput.value = imageUrl;
-                showProjectImagePreview(imageUrl);
-            }
-        }
-    });
-    
-    // Project image URL preview
-    projectImageUrlInput.addEventListener('input', (e) => {
-        const imageUrl = e.target.value.trim();
-        if (imageUrl) {
-            showProjectImagePreview(imageUrl);
-        } else {
-            projectImagePreview.style.display = 'none';
-        }
-    });
-    
-    // Post form submission
-    postForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const title = postTitleInput.value.trim();
-        const excerpt = postExcerptInput.value.trim();
-        const tagsString = postTagsInput.value.trim();
-        const status = postStatusSelect.value;
-        const coverImage = coverImageUrlInput.value.trim();
-        const content = easyMDE ? easyMDE.value() : '';
-        
-        if (!title) {
-            showError('O título é obrigatório!');
-            return;
-        }
-        
-        const tags = tagsString ? tagsString.split(',').map(tag => tag.trim()) : [];
-        const slug = generateSlug(title);
-        
-        const postData = {
-            title,
-            slug,
-            excerpt,
-            tags,
-            status,
-            coverImage,
-            contentMarkdown: content
-        };
-        
-        // Se for um post publicado, adicionar publishedAt
-        if (status === 'published' && (!isEditing || editingPostId)) {
-            postData.publishedAt = firebase.firestore.FieldValue.serverTimestamp();
-        }
-        
-        await savePost(postData);
-    });
-
-    // Project form submit
-    projectForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const title = projectTitleInput.value.trim();
-        const description = projectDescriptionInput.value.trim();
-        const technologiesString = projectTechnologiesInput.value.trim();
-        const demoLink = projectDemoLinkInput.value.trim();
-        const githubLink = projectGithubLinkInput.value.trim();
-        const downloadLink = projectDownloadLinkInput.value.trim();
-        const status = projectStatusSelect.value;
-        const image = projectImageUrlInput.value.trim();
-        
-        if (!title) {
-            showError('O título é obrigatório!');
-            return;
-        }
-        
-        const technologies = technologiesString ? technologiesString.split(',').map(tech => tech.trim()) : [];
-        
-        const projectData = {
-            title,
-            description,
-            technologies,
-            demoLink,
-            githubLink,
-            downloadLink,
-            status,
-            image
-        };
-        
-        // Se for um projeto publicado, adicionar publishedAt
-        if (status === 'published' && (!isEditing || editingProjectId)) {
-            projectData.publishedAt = firebase.firestore.FieldValue.serverTimestamp();
-        }
-        
-        await saveProject(projectData);
-    });
+    console.log('🚀 Admin dashboard inicializado com Supabase');
 });
-
-// Auto-save draft (opcional)
-let autoSaveTimer;
-function autoSaveDraft() {
-    clearTimeout(autoSaveTimer);
-    autoSaveTimer = setTimeout(() => {
-        if (easyMDE && postTitleInput.value.trim() && isEditing) {
-            // Implementar auto-save se necessário
-            console.log('Auto-save draft...');
-        }
-    }, 30000); // 30 segundos
-}
-
-// Adicionar listeners para auto-save
-if (postTitleInput) {
-    postTitleInput.addEventListener('input', autoSaveDraft);
-}
-
-console.log('Admin panel initialized successfully!');
-
-// ========================================
-// ABOUT PAGE MANAGEMENT
-// ========================================
-
-// About page elements
-const aboutManagerBtn = document.getElementById('about-manager-btn');
-const aboutManagerSection = document.getElementById('about-manager-section');
-const aboutForm = document.getElementById('about-form');
-const cancelAboutBtn = document.getElementById('cancel-about-btn');
-
-// About form elements
-const aboutBioInput = document.getElementById('about-bio');
-const profileImageInput = document.getElementById('profile-image-input');
-const profileImageUrlInput = document.getElementById('profile-image-url');
-const profileImagePreview = document.getElementById('profile-image-preview');
-
-// Skills inputs
-const skillsFrontendInput = document.getElementById('skills-frontend');
-const skillsBackendInput = document.getElementById('skills-backend');
-const skillsDatabaseInput = document.getElementById('skills-database');
-const skillsToolsInput = document.getElementById('skills-tools');
-
-// Social links inputs
-const socialGithubInput = document.getElementById('social-github');
-const socialLinkedinInput = document.getElementById('social-linkedin');
-const socialTwitterInput = document.getElementById('social-twitter');
-const socialEmailInput = document.getElementById('social-email');
-
-// Dynamic containers
-const experienceContainer = document.getElementById('experience-container');
-const educationContainer = document.getElementById('education-container');
-const certificationsContainer = document.getElementById('certifications-container');
-
-// Add buttons
-const addExperienceBtn = document.getElementById('add-experience-btn');
-const addEducationBtn = document.getElementById('add-education-btn');
-const addCertificationBtn = document.getElementById('add-certification-btn');
-
-// About page navigation
-if (aboutManagerBtn) {
-    aboutManagerBtn.addEventListener('click', function() {
-        showAboutManager();
-    });
-}
-
-// About form submission
-if (aboutForm) {
-    aboutForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveAboutData();
-    });
-}
-
-// Cancel about editing
-if (cancelAboutBtn) {
-    cancelAboutBtn.addEventListener('click', function() {
-        showPostsList();
-    });
-}
-
-// Profile image upload
-if (profileImageInput) {
-    profileImageInput.addEventListener('change', function(e) {
-        handleProfileImageUpload(e.target.files[0]);
-    });
-}
-
-// Profile image URL input
-if (profileImageUrlInput) {
-    profileImageUrlInput.addEventListener('input', function(e) {
-        updateProfileImagePreview(e.target.value);
-    });
-}
-
-// Add dynamic sections
-if (addExperienceBtn) {
-    addExperienceBtn.addEventListener('click', addExperienceItem);
-}
-
-if (addEducationBtn) {
-    addEducationBtn.addEventListener('click', addEducationItem);
-}
-
-if (addCertificationBtn) {
-    addCertificationBtn.addEventListener('click', addCertificationItem);
-}
-
-// About page functions
-function showAboutManager() {
-    // Hide other sections
-    postsListSection.style.display = 'none';
-    postEditorSection.style.display = 'none';
-    aboutManagerSection.style.display = 'block';
-    
-    // Update navigation
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    aboutManagerBtn.classList.add('active');
-    
-    // Load current about data
-    loadAboutData();
-}
-
-async function loadAboutData() {
-    try {
-        showLoading();
-        
-        const aboutRef = firebase.firestore().doc('settings/about');
-        const aboutSnap = await aboutRef.get();
-        
-        if (aboutSnap.exists()) {
-            const data = aboutSnap.data();
-            populateAboutForm(data);
-        } else {
-            // Initialize with default values if no data exists
-            populateAboutForm({});
-        }
-        
-    } catch (error) {
-        console.error('Error loading about data:', error);
-        showError('Erro ao carregar dados da página sobre');
-    } finally {
-        hideLoading();
-    }
-}
-
-function populateAboutForm(data) {
-    // Basic info
-    if (aboutBioInput) aboutBioInput.value = data.bio || '';
-    if (profileImageUrlInput) profileImageUrlInput.value = data.profileImage || '';
-    
-    // Update image preview
-    if (data.profileImage) {
-        updateProfileImagePreview(data.profileImage);
-    }
-    
-    // Skills
-    if (data.skills) {
-        if (skillsFrontendInput) skillsFrontendInput.value = (data.skills.frontend || []).join(', ');
-        if (skillsBackendInput) skillsBackendInput.value = (data.skills.backend || []).join(', ');
-        if (skillsDatabaseInput) skillsDatabaseInput.value = (data.skills.database || []).join(', ');
-        if (skillsToolsInput) skillsToolsInput.value = (data.skills.tools || []).join(', ');
-    }
-    
-    // Social links
-    if (data.socialLinks) {
-        if (socialGithubInput) socialGithubInput.value = data.socialLinks.github || '';
-        if (socialLinkedinInput) socialLinkedinInput.value = data.socialLinks.linkedin || '';
-        if (socialTwitterInput) socialTwitterInput.value = data.socialLinks.twitter || '';
-        if (socialEmailInput) socialEmailInput.value = data.socialLinks.email || '';
-    }
-    
-    // Dynamic sections
-    populateExperience(data.experience || []);
-    populateEducation(data.education || []);
-    populateCertifications(data.certifications || []);
-}
-
-async function saveAboutData() {
-    try {
-        showLoading();
-        
-        const aboutData = {
-            bio: aboutBioInput.value.trim(),
-            profileImage: profileImageUrlInput.value.trim(),
-            skills: {
-                frontend: skillsFrontendInput.value.split(',').map(s => s.trim()).filter(s => s),
-                backend: skillsBackendInput.value.split(',').map(s => s.trim()).filter(s => s),
-                database: skillsDatabaseInput.value.split(',').map(s => s.trim()).filter(s => s),
-                tools: skillsToolsInput.value.split(',').map(s => s.trim()).filter(s => s)
-            },
-            socialLinks: {
-                github: socialGithubInput.value.trim(),
-                linkedin: socialLinkedinInput.value.trim(),
-                twitter: socialTwitterInput.value.trim(),
-                email: socialEmailInput.value.trim()
-            },
-            experience: collectExperienceData(),
-            education: collectEducationData(),
-            certifications: collectCertificationData(),
-            updatedAt: new Date()
-        };
-        
-        const aboutRef = firebase.firestore().doc('settings/about');
-        await aboutRef.set(aboutData);
-        
-        showSuccess('Informações da página "Sobre" salvas com sucesso!');
-        
-    } catch (error) {
-        console.error('Error saving about data:', error);
-        showError('Erro ao salvar informações da página sobre');
-    } finally {
-        hideLoading();
-    }
-}
-
-async function handleProfileImageUpload(file) {
-    if (!file) return;
-    
-    try {
-        showLoading();
-        
-        const storageRef = firebase.storage().ref();
-        const fileRef = storageRef.child(`about/profile-${Date.now()}-${file.name}`);
-        
-        await fileRef.put(file);
-        const downloadURL = await fileRef.getDownloadURL();
-        
-        profileImageUrlInput.value = downloadURL;
-        updateProfileImagePreview(downloadURL);
-        
-        showSuccess('Imagem do perfil enviada com sucesso!');
-        
-    } catch (error) {
-        console.error('Error uploading profile image:', error);
-        showError('Erro ao enviar imagem do perfil');
-    } finally {
-        hideLoading();
-    }
-}
-
-function updateProfileImagePreview(imageUrl) {
-    if (!profileImagePreview) return;
-    
-    if (imageUrl) {
-        profileImagePreview.innerHTML = `<img src="${imageUrl}" alt="Prévia da imagem do perfil" />`;
-    } else {
-        profileImagePreview.innerHTML = '';
-    }
-}
-
-// Dynamic Experience Management
-function addExperienceItem() {
-    const experienceItem = document.createElement('div');
-    experienceItem.className = 'experience-item';
-    experienceItem.innerHTML = `
-        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
-        <h4>Nova Experiência</h4>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Cargo:</label>
-                <input type="text" class="exp-position" placeholder="Ex: Desenvolvedor Full Stack">
-            </div>
-            <div class="form-group">
-                <label>Empresa:</label>
-                <input type="text" class="exp-company" placeholder="Ex: Tech Solutions Inc.">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Período:</label>
-            <input type="text" class="exp-period" placeholder="Ex: Jan 2020 - Atual">
-        </div>
-        <div class="form-group">
-            <label>Descrição:</label>
-            <textarea class="exp-description" rows="3" placeholder="Descreva suas responsabilidades e conquistas..."></textarea>
-        </div>
-        <div class="form-group">
-            <label>Tecnologias Utilizadas:</label>
-            <input type="text" class="exp-technologies" placeholder="React, Node.js, MongoDB... (separados por vírgula)">
-        </div>
-    `;
-    experienceContainer.appendChild(experienceItem);
-}
-
-function populateExperience(experiences) {
-    experienceContainer.innerHTML = '';
-    experiences.forEach(exp => {
-        addExperienceItem();
-        const item = experienceContainer.lastElementChild;
-        item.querySelector('.exp-position').value = exp.position || '';
-        item.querySelector('.exp-company').value = exp.company || '';
-        item.querySelector('.exp-period').value = exp.period || '';
-        item.querySelector('.exp-description').value = exp.description || '';
-        item.querySelector('.exp-technologies').value = (exp.technologies || []).join(', ');
-    });
-}
-
-function collectExperienceData() {
-    const experiences = [];
-    experienceContainer.querySelectorAll('.experience-item').forEach(item => {
-        const technologies = item.querySelector('.exp-technologies').value
-            .split(',').map(s => s.trim()).filter(s => s);
-            
-        experiences.push({
-            position: item.querySelector('.exp-position').value.trim(),
-            company: item.querySelector('.exp-company').value.trim(),
-            period: item.querySelector('.exp-period').value.trim(),
-            description: item.querySelector('.exp-description').value.trim(),
-            technologies: technologies
-        });
-    });
-    return experiences.filter(exp => exp.position && exp.company);
-}
-
-// Dynamic Education Management
-function addEducationItem() {
-    const educationItem = document.createElement('div');
-    educationItem.className = 'education-item';
-    educationItem.innerHTML = `
-        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
-        <h4>Nova Formação</h4>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Curso/Grau:</label>
-                <input type="text" class="edu-degree" placeholder="Ex: Bacharelado em Ciência da Computação">
-            </div>
-            <div class="form-group">
-                <label>Instituição:</label>
-                <input type="text" class="edu-institution" placeholder="Ex: Universidade Federal">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Período:</label>
-            <input type="text" class="edu-period" placeholder="Ex: 2018 - 2022">
-        </div>
-        <div class="form-group">
-            <label>Descrição (opcional):</label>
-            <textarea class="edu-description" rows="2" placeholder="Informações adicionais sobre a formação..."></textarea>
-        </div>
-    `;
-    educationContainer.appendChild(educationItem);
-}
-
-function populateEducation(education) {
-    educationContainer.innerHTML = '';
-    education.forEach(edu => {
-        addEducationItem();
-        const item = educationContainer.lastElementChild;
-        item.querySelector('.edu-degree').value = edu.degree || '';
-        item.querySelector('.edu-institution').value = edu.institution || '';
-        item.querySelector('.edu-period').value = edu.period || '';
-        item.querySelector('.edu-description').value = edu.description || '';
-    });
-}
-
-function collectEducationData() {
-    const education = [];
-    educationContainer.querySelectorAll('.education-item').forEach(item => {
-        education.push({
-            degree: item.querySelector('.edu-degree').value.trim(),
-            institution: item.querySelector('.edu-institution').value.trim(),
-            period: item.querySelector('.edu-period').value.trim(),
-            description: item.querySelector('.edu-description').value.trim()
-        });
-    });
-    return education.filter(edu => edu.degree && edu.institution);
-}
-
-// Dynamic Certification Management
-function addCertificationItem() {
-    const certificationItem = document.createElement('div');
-    certificationItem.className = 'certification-item';
-    certificationItem.innerHTML = `
-        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
-        <h4>Nova Certificação</h4>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Nome da Certificação:</label>
-                <input type="text" class="cert-name" placeholder="Ex: AWS Solutions Architect">
-            </div>
-            <div class="form-group">
-                <label>Emissor:</label>
-                <input type="text" class="cert-issuer" placeholder="Ex: Amazon Web Services">
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group">
-                <label>Data de Obtenção:</label>
-                <input type="text" class="cert-date" placeholder="Ex: Janeiro 2023">
-            </div>
-            <div class="form-group">
-                <label>URL da Credencial:</label>
-                <input type="url" class="cert-url" placeholder="https://credenciais.exemplo.com/123">
-            </div>
-        </div>
-        <div class="form-group">
-            <label>Imagem da Certificação:</label>
-            <input type="url" class="cert-image" placeholder="URL da imagem da certificação">
-        </div>
-    `;
-    certificationsContainer.appendChild(certificationItem);
-}
-
-function populateCertifications(certifications) {
-    certificationsContainer.innerHTML = '';
-    certifications.forEach(cert => {
-        addCertificationItem();
-        const item = certificationsContainer.lastElementChild;
-        item.querySelector('.cert-name').value = cert.name || '';
-        item.querySelector('.cert-issuer').value = cert.issuer || '';
-        item.querySelector('.cert-date').value = cert.date || '';
-        item.querySelector('.cert-url').value = cert.credentialUrl || '';
-        item.querySelector('.cert-image').value = cert.image || '';
-    });
-}
-
-function collectCertificationData() {
-    const certifications = [];
-    certificationsContainer.querySelectorAll('.certification-item').forEach(item => {
-        certifications.push({
-            name: item.querySelector('.cert-name').value.trim(),
-            issuer: item.querySelector('.cert-issuer').value.trim(),
-            date: item.querySelector('.cert-date').value.trim(),
-            credentialUrl: item.querySelector('.cert-url').value.trim(),
-            image: item.querySelector('.cert-image').value.trim()
-        });
-    });
-    return certifications.filter(cert => cert.name && cert.issuer);
-}

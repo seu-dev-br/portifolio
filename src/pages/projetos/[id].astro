@@ -1,0 +1,304 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getAllPublishedProjects, getProjectById } from '../../lib/supabase.js';
+
+export async function getStaticPaths() {
+    const projects = await getAllPublishedProjects();
+
+    return projects.map((project) => ({
+        params: { id: project.id.toString() },
+        props: { project },
+    }));
+}
+
+const { project } = Astro.props;
+---
+
+<Layout title={`${project.title} - Projetos - Ítalo Antonio`}>
+    <div class="container">
+        <article class="project-detail">
+            {project.image && (
+                <div class="project-hero">
+                    <img src={project.image} alt={project.title} />
+                </div>
+            )}
+
+            <header class="project-header">
+                <h1>{project.title}</h1>
+                <p class="project-description">{project.description}</p>
+
+                {project.technologies && project.technologies.length > 0 && (
+                    <div class="technologies">
+                        {project.technologies.map((tech) => (
+                            <span class="tech-tag">{tech}</span>
+                        ))}
+                    </div>
+                )}
+            </header>
+
+            <div class="project-content">
+                {project.content && (
+                    <div class="project-text" set:html={project.content}></div>
+                )}
+            </div>
+
+            <div class="project-links">
+                {project.demoLink && (
+                    <a href={project.demoLink} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5z"/>
+                            <path d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0v-5z"/>
+                        </svg>
+                        Ver Demo
+                    </a>
+                )}
+
+                {project.githubLink && (
+                    <a href={project.githubLink} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+                        </svg>
+                        Ver no GitHub
+                    </a>
+                )}
+
+                {project.downloadLink && (
+                    <a href={project.downloadLink} class="btn btn-outline" target="_blank" rel="noopener noreferrer">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Download
+                    </a>
+                )}
+            </div>
+
+            <div class="back-link">
+                <a href="/projetos" class="btn btn-ghost">
+                    ← Voltar para Projetos
+                </a>
+            </div>
+        </article>
+    </div>
+</Layout>
+
+<style>
+    .project-detail {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .project-hero {
+        margin-bottom: 2rem;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .project-hero img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    .project-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .project-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: white;
+    }
+
+    .project-description {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .technologies {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .tech-tag {
+        background: rgba(175, 64, 255, 0.2);
+        color: #af40ff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        border: 1px solid rgba(175, 64, 255, 0.3);
+    }
+
+    .project-content {
+        margin-bottom: 3rem;
+    }
+
+    .project-text {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.8;
+        font-size: 1.1rem;
+    }
+
+    .project-text h2 {
+        color: white;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-size: 1.8rem;
+    }
+
+    .project-text h3 {
+        color: white;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        font-size: 1.4rem;
+    }
+
+    .project-text p {
+        margin-bottom: 1rem;
+    }
+
+    .project-text ul, .project-text ol {
+        margin-bottom: 1rem;
+        padding-left: 2rem;
+    }
+
+    .project-text li {
+        margin-bottom: 0.5rem;
+    }
+
+    .project-text code {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+    }
+
+    .project-text pre {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1rem 0;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .project-text pre code {
+        background: none;
+        padding: 0;
+    }
+
+    .project-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 3rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #af40ff, #7b2cbf);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #7b2cbf, #5a189a);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(175, 64, 255, 0.3);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #af40ff;
+        border: 1px solid #af40ff;
+    }
+
+    .btn-outline:hover {
+        background: #af40ff;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(175, 64, 255, 0.3);
+    }
+
+    .btn-ghost {
+        background: transparent;
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-ghost:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .back-link {
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .project-detail {
+            padding: 1rem;
+        }
+
+        .project-header h1 {
+            font-size: 2rem;
+        }
+
+        .project-description {
+            font-size: 1rem;
+        }
+
+        .project-links {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .technologies {
+            justify-content: center;
+        }
+    }
+</style>

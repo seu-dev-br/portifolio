@@ -13,7 +13,7 @@ const projects = await getAllPublishedProjects();
 			<p>Alguns dos projetos que desenvolvi recentemente</p>
 		</header>
 
-		{projects.length > 0 ? (
+		{projects && projects.length > 0 ? (
 			<section class="projects-grid">
 				{projects.map((project) => (
 					<article class="project-card">
@@ -25,7 +25,7 @@ const projects = await getAllPublishedProjects();
 						<div class="project-content">
 							<h3>{project.title}</h3>
 							<p class="project-description">{project.description}</p>
-							
+
 							{project.technologies && project.technologies.length > 0 && (
 								<div class="technologies">
 									{project.technologies.map((tech) => (
@@ -44,7 +44,7 @@ const projects = await getAllPublishedProjects();
 										Demo
 									</a>
 								)}
-								
+
 								{project.githubLink && (
 									<a href={project.githubLink} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
 										<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -53,7 +53,7 @@ const projects = await getAllPublishedProjects();
 										GitHub
 									</a>
 								)}
-								
+
 								{project.downloadLink && (
 									<a href={project.downloadLink} class="btn btn-outline" target="_blank" rel="noopener noreferrer">
 										<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -102,21 +102,21 @@ const projects = await getAllPublishedProjects();
 
 	.project-card {
 		background: rgba(255, 255, 255, 0.05);
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 16px;
+		border-radius: 12px;
 		overflow: hidden;
 		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
 	.project-card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 20px 40px rgba(175, 64, 255, 0.1);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 	}
 
 	.project-image {
-		width: 100%;
-		height: 250px;
+		height: 200px;
 		overflow: hidden;
+		position: relative;
 	}
 
 	.project-image img {
@@ -126,69 +126,69 @@ const projects = await getAllPublishedProjects();
 		transition: transform 0.3s ease;
 	}
 
-	.project-card:hover .project-image img {
+	.project-image:hover img {
 		transform: scale(1.05);
 	}
 
 	.project-content {
-		padding: 2rem;
+		padding: 1.5rem;
 	}
 
 	.project-content h3 {
-		font-size: 1.4rem;
-		margin-bottom: 1rem;
+		font-size: 1.5rem;
+		margin-bottom: 0.5rem;
 		color: white;
 	}
 
 	.project-description {
-		color: rgba(255, 255, 255, 0.7);
+		color: rgba(255, 255, 255, 0.8);
+		margin-bottom: 1rem;
 		line-height: 1.6;
-		margin-bottom: 1.5rem;
 	}
 
 	.technologies {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
-		margin-bottom: 2rem;
+		margin-bottom: 1rem;
 	}
 
 	.tech-tag {
 		background: rgba(175, 64, 255, 0.2);
 		color: #af40ff;
-		padding: 0.4rem 0.8rem;
-		border-radius: 15px;
+		padding: 0.25rem 0.75rem;
+		border-radius: 20px;
 		font-size: 0.85rem;
-		font-weight: 500;
+		border: 1px solid rgba(175, 64, 255, 0.3);
 	}
 
 	.project-links {
 		display: flex;
+		gap: 0.5rem;
 		flex-wrap: wrap;
-		gap: 1rem;
 	}
 
 	.btn {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
-		padding: 0.75rem 1.5rem;
+		padding: 0.75rem 1rem;
 		border-radius: 8px;
 		text-decoration: none;
 		font-weight: 500;
-		font-size: 0.9rem;
 		transition: all 0.3s ease;
 		border: none;
 		cursor: pointer;
+		font-size: 0.9rem;
 	}
 
 	.btn-primary {
-		background: linear-gradient(135deg, #af40ff, #5b42f3);
+		background: linear-gradient(135deg, #af40ff, #7b2cbf);
 		color: white;
 	}
 
 	.btn-primary:hover {
-		background: linear-gradient(135deg, #9932ff, #4a3bdb);
+		background: linear-gradient(135deg, #7b2cbf, #5a189a);
 		transform: translateY(-2px);
 		box-shadow: 0 10px 20px rgba(175, 64, 255, 0.3);
 	}

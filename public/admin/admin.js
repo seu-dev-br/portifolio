@@ -16,6 +16,14 @@ function waitForSupabase() {
             return resolve(window.supabase);
         }
 
+        // Verificar se o Supabase já está disponível globalmente
+        if (window.supabase) {
+            console.log('✅ Supabase client found globally!');
+            console.log('🔗 Supabase URL:', window.supabase.supabaseUrl);
+            window.supabaseInitialized = true;
+            return resolve(window.supabase);
+        }
+
         // Adicionar listener para o evento 'supabaseReady'
         window.addEventListener('supabaseReady', () => {
             console.log('✅ Supabase client initialized via event!');
@@ -35,6 +43,7 @@ function waitForSupabase() {
             if (window.supabase) {
                 console.log('✅ Supabase client found and ready!');
                 console.log('🔗 Supabase URL:', window.supabase.supabaseUrl);
+                window.supabaseInitialized = true;
                 resolve(window.supabase);
             } else if (attempts >= maxAttempts) {
                 console.error('❌ Supabase client not found after 10 seconds');
@@ -167,15 +176,25 @@ async function initAuth() {
         // Verifica URLs para depuração
         console.log('🌐 URL do Supabase:', supabaseClient.supabaseUrl);
         
+        // Pequeno delay para garantir que tudo está inicializado
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         // Check if user is already logged in
         const { data: { user }, error } = await supabaseClient.auth.getUser();
-        
+
         if (error) {
-            console.error('❌ Erro ao verificar usuário atual:', error.message);
-            showLogin();
-            return;
+            // Se o erro for relacionado à sessão ausente, é normal - apenas mostrar login
+            if (error.message.includes('Auth session missing') || error.message.includes('JWT')) {
+                console.log('ℹ️ Sessão de autenticação não encontrada - usuário não está logado');
+                showLogin();
+                return;
+            } else {
+                console.error('❌ Erro ao verificar usuário atual:', error.message);
+                showLogin();
+                return;
+            }
         }
-        
+
         if (user) {
             console.log('👤 Usuário já logado:', user.email);
             currentUser = user;
@@ -755,9 +774,9 @@ function populateProjectForm(project) {
     projectTitleInput.value = project.title || '';
     projectDescriptionInput.value = project.description || '';
     projectTechnologiesInput.value = project.technologies ? project.technologies.join(', ') : '';
-    projectDemoLinkInput.value = project.demoLink || '';
-    projectGithubLinkInput.value = project.githubLink || '';
-    projectDownloadLinkInput.value = project.downloadLink || '';
+    projectDemoLinkInput.value = project.demo_link || '';
+    projectGithubLinkInput.value = project.github_link || '';
+    projectDownloadLinkInput.value = project.download_link || '';
     projectStatusSelect.value = project.status || 'draft';
     projectImageUrlInput.value = project.image || '';
     
@@ -856,6 +875,19 @@ async function saveProject(projectData) {
     try {
         showLoading();
 
+        // Verificar se o usuário está autenticado
+        const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+
+        if (authError || !user) {
+            console.warn('⚠️ Usuário não autenticado, tentando salvar sem RLS...');
+            // Tentar uma abordagem alternativa se não estiver autenticado
+            showError('Você precisa estar logado para salvar projetos. Faça login primeiro.');
+            hideLoading();
+            return;
+        }
+
+        console.log('👤 Usuário autenticado:', user.email);
+
         if (isEditing && editingProjectId) {
             // Atualizar projeto existente
             const { error } = await supabaseClient
@@ -866,7 +898,10 @@ async function saveProject(projectData) {
                 })
                 .eq('id', editingProjectId);
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Erro na atualização:', error);
+                throw error;
+            }
             showSuccess('Projeto atualizado com sucesso!');
         } else {
             // Criar novo projeto
@@ -878,7 +913,10 @@ async function saveProject(projectData) {
                     updated_at: new Date().toISOString()
                 }]);
 
-            if (error) throw error;
+            if (error) {
+                console.error('❌ Erro na criação:', error);
+                throw error;
+            }
             showSuccess('Projeto criado com sucesso!');
         }
 
@@ -886,8 +924,14 @@ async function saveProject(projectData) {
         showProjectsList();
     } catch (error) {
         hideLoading();
-        console.error('Erro ao salvar projeto:', error);
-        showError('Erro ao salvar projeto: ' + error.message);
+        console.error('❌ Erro ao salvar projeto:', error);
+
+        // Se for erro de RLS, mostrar mensagem específica
+        if (error.code === '42501') {
+            showError('Erro de permissão: As políticas de segurança do banco de dados estão bloqueando a operação. Verifique as configurações do Supabase.');
+        } else {
+            showError('Erro ao salvar projeto: ' + error.message);
+        }
     }
 }
 
@@ -1065,16 +1109,16 @@ function setupAllEventListeners() {
             title,
             description,
             technologies,
-            demoLink,
-            githubLink,
-            downloadLink,
+            demo_link: demoLink,
+            github_link: githubLink,
+            download_link: downloadLink,
             status,
             image
         };
         
-        // Se for um projeto publicado, adicionar publishedAt
+        // Se for um projeto publicado, adicionar published_at
         if (status === 'published' && (!isEditing || editingProjectId)) {
-            projectData.publishedAt = new Date().toISOString();
+            projectData.published_at = new Date().toISOString();
         }
         
         await saveProject(projectData);
@@ -1826,10 +1870,18 @@ async function checkSession() {
     console.log('🔄 Verificando sessão do usuário...');
     try {
         const { data, error } = await supabaseClient.auth.getSession();
-        
+
         if (error) {
-            console.error('❌ Erro ao verificar sessão:', error.message);
-            throw error;
+            // Se o erro for relacionado à sessão ausente, é normal - apenas mostrar login
+            if (error.message.includes('Auth session missing') || error.message.includes('JWT')) {
+                console.log('ℹ️ Sessão de autenticação não encontrada - usuário não está logado');
+                showLogin();
+                return false;
+            } else {
+                console.error('❌ Erro ao verificar sessão:', error.message);
+                showLogin();
+                return false;
+            }
         }
         
         if (data?.session) {
@@ -1881,9 +1933,9 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Seção de lista de posts:', postsListSection ? '✅ Encontrada' : '❌ Não encontrada');
     
     // Adicionar evento para carregar posts quando clicar na aba Posts
-    if (navPosts) {
-        const originalClickHandler = navPosts.onclick;
-        navPosts.onclick = function(e) {
+    if (listPostsBtn) {
+        const originalClickHandler = listPostsBtn.onclick;
+        listPostsBtn.onclick = function(e) {
             if (originalClickHandler) originalClickHandler(e);
             setTimeout(() => {
                 loadPosts();
