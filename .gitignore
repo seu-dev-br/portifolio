@@ -53,6 +53,9 @@ Thumbs.db
 .firebase/
 firebase-debug.log*
 
+# Backup da migração Firebase -> Supabase
+admin-backup/
+
 # Testes
 /coverage/
 /.nyc_output/

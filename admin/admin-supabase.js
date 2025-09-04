@@ -2,69 +2,12 @@
 // ADMIN DASHBOARD SUPABASE - VERSÃO MIGRADA
 // ======================================
 
-// Verificar se Supabase SDK foi carregado
-function checkSupabaseSDK() {
-    console.log('🔍 Verificando SDK do Supabase...');
-    
-    // Verificar se o SDK está disponível de forma simples
-    const isAvailable = (typeof window.supabase !== 'undefined' && window.supabase.createClient) ||
-                       (typeof supabase !== 'undefined' && supabase.createClient);
-    
-    if (isAvailable) {
-        console.log('✅ Supabase SDK encontrado');
-        return true;
-    } else {
-        console.log('⚠️ SDK não encontrado ainda - será verificado novamente no login');
-        return false;
-    }
-}
-
-// Obter cliente Supabase baseado no que está disponível
-function getSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY) {
-    if (typeof supabase !== 'undefined' && supabase.createClient) {
-        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
-        return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else if (typeof supabaseJs !== 'undefined' && supabaseJs.createClient) {
-        return supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    } else if (typeof window.supabaseJs !== 'undefined' && window.supabaseJs.createClient) {
-        return window.supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-    
-    throw new Error('Nenhuma função createClient encontrada');
-}
-
 // Configuração do Supabase
 const SUPABASE_URL = 'https://nattvkjaecceirxthizc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
 
 // Inicializar cliente Supabase
-let supabase = null;
-
-function initializeSupabase() {
-    try {
-        console.log('🔄 Inicializando cliente Supabase...');
-        
-        const sdkAvailable = checkSupabaseSDK();
-        if (!sdkAvailable) {
-            console.log('⚠️ SDK não disponível ainda - tentará novamente quando necessário');
-            return false;
-        }
-        
-        console.log('📚 Usando SDK disponível');
-        supabase = getSupabaseClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        
-        console.log('✅ Cliente Supabase inicializado com sucesso');
-        console.log('🔗 URL:', SUPABASE_URL);
-        console.log('🔑 Key prefix:', SUPABASE_ANON_KEY.substring(0, 20) + '...');
-        
-        return true;
-    } catch (error) {
-        console.error('❌ Erro ao inicializar Supabase:', error);
-        console.log('⚠️ Continuando para permitir carregamento posterior');
-        return false;
-    }
-}
+const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Variáveis globais
 let currentUser = null;
@@ -198,16 +141,6 @@ async function handleLogin(event) {
     try {
         console.log('🔐 Tentando fazer login com Supabase...');
         
-        // Verificar se Supabase está inicializado
-        if (!supabase) {
-            console.log('⚠️ Supabase não inicializado, tentando inicializar...');
-            const initialized = initializeSupabase();
-            if (!initialized) {
-                showError('Não foi possível conectar com o Supabase. Verifique sua conexão.');
-                return;
-            }
-        }
-        
         const { data, error } = await supabase.auth.signInWithPassword({
             email: email,
             password: password
@@ -265,53 +198,18 @@ async function handleLogout() {
     }
 }
 
-// Função para configurar listeners de autenticação
-function setupAuthListeners() {
-    if (!supabase) {
-        console.error('❌ Não é possível configurar listeners: supabase não inicializado');
-        return;
-    }
+// Verificar estado de autenticação
+supabase.auth.onAuthStateChange((event, session) => {
+    console.log('🔄 Estado de autenticação mudou:', event, session?.user?.email);
     
-    // Verificar estado de autenticação
-    supabase.auth.onAuthStateChange((event, session) => {
-        console.log('🔄 Estado de autenticação mudou:', event, session?.user?.email);
-        
-        if (session && session.user) {
-            currentUser = session.user;
-            showDashboard();
-        } else {
-            currentUser = null;
-            showLogin();
-        }
-    });
-    
-    console.log('✅ Listeners de autenticação configurados');
-}
-
-// Função para limpar dados corrompidos do localStorage
-function clearCorruptedAuth() {
-    try {
-        console.log('🧹 Limpando dados de autenticação corrompidos...');
-        
-        // Limpar dados do Supabase
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('supabase.auth.')) {
-                keysToRemove.push(key);
-            }
-        }
-        
-        keysToRemove.forEach(key => {
-            localStorage.removeItem(key);
-            console.log(`🗑️ Removido: ${key}`);
-        });
-        
-        console.log('✅ Limpeza concluída');
-    } catch (error) {
-        console.error('❌ Erro ao limpar localStorage:', error);
+    if (session && session.user) {
+        currentUser = session.user;
+        showDashboard();
+    } else {
+        currentUser = null;
+        showLogin();
     }
-}
+});
 
 // ======================================
 // UI FUNCTIONS
@@ -769,6 +667,12 @@ function resetProjectForm() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Admin dashboard inicializado com Supabase');
     
+    // Verificar se Supabase está carregado
+    if (typeof supabaseJs === 'undefined') {
+        showError('Supabase SDK não carregado. Verifique a conexão com a internet.');
+        return;
+    }
+    
     // Event listeners
     if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
@@ -843,18 +747,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Inicializar Supabase de forma simples
-    const initialized = initializeSupabase();
-    if (initialized) {
-        console.log('✅ Supabase inicializado - configurando listeners');
-        
-        // Limpar dados corrompidos se existirem
-        clearCorruptedAuth();
-        
-        setupAuthListeners();
-    } else {
-        console.log('⚠️ Supabase não inicializado ainda - tentará novamente no login');
-    }
-    
-    console.log('🚀 Admin dashboard inicializado com Supabase');
+    console.log('✅ Event listeners configurados');
 });

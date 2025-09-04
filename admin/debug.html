@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Supabase (Debug)</title>
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .debug-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            max-width: 300px;
+            z-index: 10000;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .debug-success { background: #28a745; }
+        .debug-error { background: #dc3545; }
+        .debug-warning { background: #ffc107; color: black; }
+    </style>
+</head>
+<body>
+    <div id="debug-panel" class="debug-panel debug-warning">
+        🔄 Inicializando sistema...
+    </div>
+
+    <div id="app">
+        <!-- Container de Login -->
+        <div id="login-container" class="login-container">
+            <div class="login-card">
+                <h1>🔐 Admin Login - Supabase (Debug)</h1>
+                <p class="login-subtitle">Sistema migrado para Supabase</p>
+                
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required value="admin@italo.dev">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Senha:</label>
+                        <input type="password" id="password" required value="Italo2025Admin!">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-full">Entrar</button>
+                    
+                    <div id="login-error" class="error-message" style="display: none;"></div>
+                    
+                    <div class="login-help">
+                        <p><strong>Credenciais padrão:</strong></p>
+                        <p>Email: admin@italo.dev</p>
+                        <p>Senha: Italo2025Admin!</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Container do Dashboard -->
+        <div id="dashboard-container" class="dashboard-container" style="display: none;">
+            <header class="dashboard-header">
+                <h1>📊 Admin Dashboard - Supabase</h1>
+                <div class="header-actions">
+                    <span class="user-info">✅ Conectado com Supabase</span>
+                    <button id="logout-btn" class="btn btn-danger">Sair</button>
+                </div>
+            </header>
+
+            <nav class="dashboard-nav">
+                <button id="list-posts-btn" class="nav-btn">📝 Posts</button>
+                <button id="new-post-btn" class="nav-btn">➕ Novo Post</button>
+                <button id="list-projects-btn" class="nav-btn">🚀 Projetos</button>
+                <button id="new-project-btn" class="nav-btn">➕ Novo Projeto</button>
+            </nav>
+
+            <main class="dashboard-main">
+                <section id="posts-list-section" class="dashboard-section">
+                    <h2>Posts Existentes</h2>
+                    <div id="posts-container" class="posts-grid">
+                        <p>Carregando posts...</p>
+                    </div>
+                </section>
+
+                <section id="post-editor-section" class="dashboard-section" style="display: none;">
+                    <h2 id="editor-title">Criar Novo Post</h2>
+                    <form id="post-form">
+                        <input type="hidden" id="post-id" value="">
+                        
+                        <div class="form-group">
+                            <label for="post-title">Título:</label>
+                            <input type="text" id="post-title" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-excerpt">Resumo:</label>
+                            <textarea id="post-excerpt" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-tags">Tags:</label>
+                            <input type="text" id="post-tags">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-status">Status:</label>
+                            <select id="post-status">
+                                <option value="draft">Rascunho</option>
+                                <option value="published">Publicado</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="cover-image-url">URL da Imagem:</label>
+                            <input type="text" id="cover-image-url">
+                            <div id="cover-image-preview"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="post-content">Conteúdo:</label>
+                            <textarea id="post-content"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Salvar</button>
+                            <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancelar</button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Projetos sections... -->
+                <section id="projects-list-section" class="dashboard-section" style="display: none;">
+                    <h2>Projetos</h2>
+                    <div id="projects-container" class="posts-grid">
+                        <p>Carregando projetos...</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" class="spinner" style="display: none;">
+        <div class="spinner-circle"></div>
+    </div>
+
+    <!-- Multiple Supabase SDK attempts -->
+    <script>
+        // Try multiple CDN sources
+        const supabaseSources = [
+            'https://unpkg.com/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js',
+            'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js',
+            'https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.min.js'
+        ];
+        
+        let currentSource = 0;
+        
+        function updateDebug(message, type = 'warning') {
+            const panel = document.getElementById('debug-panel');
+            panel.textContent = message;
+            panel.className = `debug-panel debug-${type}`;
+            console.log(`[DEBUG] ${message}`);
+        }
+        
+        function loadSupabaseSDK() {
+            if (currentSource >= supabaseSources.length) {
+                updateDebug('❌ Erro: Todos os CDNs do Supabase falharam', 'error');
+                return;
+            }
+            
+            const script = document.createElement('script');
+            script.src = supabaseSources[currentSource];
+            
+            script.onload = function() {
+                if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                    updateDebug('✅ Supabase carregado via: ' + supabaseSources[currentSource], 'success');
+                    initializeApp();
+                } else if (typeof window.supabase !== 'undefined') {
+                    window.supabaseJs = window.supabase;
+                    updateDebug('✅ Supabase carregado (window.supabase)', 'success');
+                    initializeApp();
+                } else {
+                    updateDebug('⚠️ SDK carregado mas API não encontrada', 'warning');
+                    tryNextSource();
+                }
+            };
+            
+            script.onerror = function() {
+                updateDebug(`❌ Falha no CDN ${currentSource + 1}/${supabaseSources.length}`, 'error');
+                tryNextSource();
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        function tryNextSource() {
+            currentSource++;
+            setTimeout(loadSupabaseSDK, 1000);
+        }
+        
+        function initializeApp() {
+            updateDebug('🔄 Inicializando aplicação...', 'warning');
+            
+            try {
+                // Try to create Supabase client
+                const SUPABASE_URL = 'https://nattvkjaecceirxthizc.supabase.co';
+                const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
+                
+                let client;
+                if (typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
+                    client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
+                    client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else if (typeof supabaseJs !== 'undefined') {
+                    client = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                } else {
+                    throw new Error('Nenhuma função createClient encontrada');
+                }
+                
+                window.supabaseClient = client;
+                updateDebug('✅ Cliente Supabase criado com sucesso!', 'success');
+                
+                // Test connection
+                testConnection(client);
+                
+            } catch (error) {
+                updateDebug('❌ Erro: ' + error.message, 'error');
+                console.error('Erro detalhado:', error);
+            }
+        }
+        
+        async function testConnection(client) {
+            try {
+                const { data, error } = await client.auth.getSession();
+                if (error && !error.message.includes('session_not_found')) {
+                    throw error;
+                }
+                updateDebug('✅ Conexão com Supabase OK! Sistema pronto.', 'success');
+                
+                // Enable login form
+                const loginForm = document.getElementById('login-form');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', handleLogin);
+                    updateDebug('✅ Sistema totalmente funcional!', 'success');
+                }
+                
+            } catch (error) {
+                updateDebug('❌ Erro na conexão: ' + error.message, 'error');
+            }
+        }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            updateDebug('🔐 Tentando fazer login...', 'warning');
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+                
+                if (error) {
+                    updateDebug('❌ Login falhou: ' + error.message, 'error');
+                    return;
+                }
+                
+                updateDebug('✅ Login realizado com sucesso!', 'success');
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('dashboard-container').style.display = 'block';
+                
+            } catch (error) {
+                updateDebug('❌ Erro no login: ' + error.message, 'error');
+            }
+        }
+        
+        // Start the process
+        updateDebug('🔄 Carregando Supabase SDK...', 'warning');
+        loadSupabaseSDK();
+    </script>
+    
+    <!-- EasyMDE -->
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+</body>
+</html>

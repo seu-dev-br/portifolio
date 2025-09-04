@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Ítalo Antonio</title>
+    <title>Admin Dashboard - Supabase</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
 </head>
@@ -11,27 +11,45 @@
     <!-- Tela de Login -->
     <div id="login-container" class="container">
         <div class="login-card">
-            <h1>Painel Administrativo - Ítalo Antonio</h1>
+            <h1>🔐 Admin Login - Supabase</h1>
+            <p class="login-subtitle">Sistema migrado para Supabase</p>
             <form id="login-form">
                 <div class="form-group">
                     <label for="email">Email:</label>
-                    <input type="email" id="email" required>
+                    <input type="email" id="email" required value="admin@italo.dev">
                 </div>
                 <div class="form-group">
                     <label for="password">Senha:</label>
-                    <input type="password" id="password" required>
+                    <input type="password" id="password" required value="Italo2025Admin!">
                 </div>
                 <button type="submit" class="btn btn-primary">Entrar</button>
             </form>
             <div id="login-error" class="error-message" style="display: none;"></div>
+            
+            <div class="login-help" style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 5px;">
+                <p><strong>Credenciais padrão:</strong></p>
+                <p>Email: admin@italo.dev</p>
+                <p>Senha: Italo2025Admin!</p>
+                
+                <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd;">
+                    <p><small>⚠️ Problemas de login?</small></p>
+                    <button type="button" onclick="clearCorruptedAuth(); location.reload();" 
+                            style="background: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 3px; font-size: 12px;">
+                        🧹 Limpar Cache e Recarregar
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Dashboard de Gerenciamento -->
     <div id="dashboard-container" class="container" style="display: none;">
         <header class="dashboard-header">
-            <h1>Dashboard - Ítalo Antonio</h1>
-            <button id="logout-btn" class="btn btn-secondary">Sair</button>
+            <h1>📊 Admin Dashboard - Supabase</h1>
+            <div class="header-actions">
+                <span class="user-info">✅ Conectado com Supabase</span>
+                <button id="logout-btn" class="btn btn-secondary">Sair</button>
+            </div>
         </header>
 
         <!-- Navegação -->
@@ -275,16 +293,23 @@
         <div class="spinner-circle"></div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+    <!-- Supabase SDK - Versão específica 2.57.0 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script>
+    
+    <!-- Fallback CDN caso o primeiro falhe -->
+    <script>
+        if (typeof supabase === 'undefined' && typeof window.supabase === 'undefined') {
+            console.log('⚠️ Primeiro CDN falhou, tentando fallback...');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js';
+            document.head.appendChild(script);
+        }
+    </script>
     
     <!-- EasyMDE -->
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
     
-    <!-- Admin Script -->
+    <!-- Admin Script SUPABASE -->
     <script src="admin.js"></script>
 </body>
 </html>
