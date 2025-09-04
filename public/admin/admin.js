@@ -9,6 +9,19 @@ function waitForSupabase() {
 
         console.log('🔄 Waiting for Supabase client...');
 
+        // Se o Supabase já estiver inicializado
+        if (window.supabaseInitialized && window.supabase) {
+            console.log('✅ Supabase client already initialized and ready!');
+            console.log('🔗 Supabase URL:', window.supabase.supabaseUrl);
+            return resolve(window.supabase);
+        }
+
+        // Adicionar listener para o evento 'supabaseReady'
+        window.addEventListener('supabaseReady', () => {
+            console.log('✅ Supabase client initialized via event!');
+            resolve(window.supabase);
+        }, { once: true });
+
         const checkSupabase = () => {
             attempts++;
             console.log(`🔄 Attempt ${attempts}/${maxAttempts} - Checking Supabase...`);
@@ -713,28 +726,40 @@ async function deleteProject(projectId, projectTitle) {
     }
 }
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar autenticação
-    initAuth();
-    
-    // Login form
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        await login(email, password);
-    });
-    
-    // Logout button
-    logoutBtn.addEventListener('click', logout);
-    
-    // Navigation
-    listPostsBtn.addEventListener('click', showPostsList);
-    newPostBtn.addEventListener('click', () => showPostEditor());
-    listProjectsBtn.addEventListener('click', showProjectsList);
-    newProjectBtn.addEventListener('click', () => showProjectEditor());
-    cancelEditBtn.addEventListener('click', showPostsList);
+// Event Listeners - Com inicialização melhorada
+async function initApp() {
+    try {
+        console.log('🚀 Inicializando aplicação admin...');
+        
+        // Aguardar o Supabase estar disponível
+        await waitForSupabase();
+        
+        // Inicializar autenticação
+        await initAuth();
+        
+        // Login form
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            await login(email, password);
+        });
+        
+        // Logout button
+        logoutBtn.addEventListener('click', logout);
+        
+        // Navigation
+        listPostsBtn.addEventListener('click', showPostsList);
+        newPostBtn.addEventListener('click', () => showPostEditor());
+        listProjectsBtn.addEventListener('click', showProjectsList);
+        newProjectBtn.addEventListener('click', () => showProjectEditor());
+        cancelEditBtn.addEventListener('click', showPostsList);
+        cancelProjectEditBtn.addEventListener('click', showProjectsList);
+    } catch (error) {
+        console.error('❌ Erro na inicialização da aplicação:', error);
+        showError('Erro na inicialização: ' + error.message);
+    }
+}
     cancelProjectEditBtn.addEventListener('click', showProjectsList);
     
     // Cover image upload

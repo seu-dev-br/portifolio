@@ -279,7 +279,7 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase-client-config.j
     </div>
 
     <!-- Supabase Client -->
-    <script define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
+    <script define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }} type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
         // Configurações do Supabase 
@@ -291,14 +291,21 @@ import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase-client-config.j
 
         // Disponibilizar globalmente
         window.supabase = supabase;
+        window.supabaseInitialized = true;
 
         console.log('✅ Supabase inicializado com sucesso');
+        
+        // Disparar evento para notificar que o Supabase está pronto
+        window.dispatchEvent(new Event('supabaseReady'));
     </script>
 
     <!-- EasyMDE -->
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 
-    <!-- Admin Script -->
+    <!-- Admin Script - Carregado após inicialização do Supabase -->
     <script src="/admin/admin.js" is:inline></script>
+    
+    <!-- Script de inicialização -->
+    <script src="/admin/init.js" is:inline></script>
 </body>
 </html>
