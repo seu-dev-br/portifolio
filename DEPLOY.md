@@ -47,21 +47,7 @@ vercel
 
 **Como fazer:**
 
-```bash
-# Instalar Firebase CLI
-npm install -g firebase-tools
-
-# Fazer login
-firebase login
-
-# Inicializar projeto
-firebase init hosting
-
-# Deploy
-npm run deploy:firebase
-```
-
-### 3. 🌍 Netlify
+### 2. 🌍 Netlify
 
 **Vantagens:**
 - ✅ Deploy via Git automático

@@ -109,9 +109,6 @@ npm run deploy:vercel
 
 # Deploy no Netlify
 npm run deploy:netlify
-
-# Deploy no Firebase
-npm run deploy:firebase
 ```
 
 ## 📁 Estrutura do Projeto

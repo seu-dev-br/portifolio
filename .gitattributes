@@ -1,0 +1,42 @@
+# Defina o comportamento padrão, caso as pessoas não tenham o core.autocrlf configurado.
+* text=auto
+
+# Declare explicitamente os arquivos de texto que você deseja sempre sejam normalizados e convertidos
+# para finais de linha nativos no checkout.
+*.js text
+*.jsx text
+*.ts text
+*.tsx text
+*.json text
+*.md text
+*.css text
+*.scss text
+*.html text
+*.astro text
+*.svg text
+
+# Declare arquivos que sempre terão finais de linha CRLF no checkout.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Declare arquivos que sempre terão finais de linha LF no checkout.
+*.sh text eol=lf
+
+# Denote todos os arquivos que são verdadeiramente binários e não devem ser modificados.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.eot binary
+*.ttf binary
+*.otf binary
+*.mp4 binary
+*.webm binary
+*.mp3 binary
+*.wav binary
+*.pdf binary
+*.zip binary

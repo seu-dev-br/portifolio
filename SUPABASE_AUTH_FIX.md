@@ -13,11 +13,11 @@ O erro "Email not confirmed" indica que:
 
 1. **Acesse o painel do Supabase:** https://supabase.com/dashboard
 2. **Selecione seu projeto:** `nattvkjaecceirxthizc`
-3. **Vá para:** Authentication → Settings
+3. **Vá para:** Authentication → Settings → Email
 4. **Desmarque:** "Enable email confirmations"
 5. **Salve as configurações**
 
-### **Opção 2: Criar Usuário Manualmente**
+### **Opção 2: Criar Usuário Manualmente ✅ (IMPLEMENTADO)**
 
 1. **No painel do Supabase:** Authentication → Users
 2. **Clique em:** "Add user"
@@ -26,6 +26,10 @@ O erro "Email not confirmed" indica que:
    - **Password:** `Italo2025Admin!`
    - **Auto confirm user:** ✅ Marque esta opção
 4. **Clique em:** "Create user"
+
+> ✅ **SOLUÇÃO ATUAL: Script automatizado criado em `scripts/create-admin-user.js`**  
+> Execute o script com: `node scripts/create-admin-user.js`  
+> Ou use o assistente: `fix-auth.bat`
 
 ### **Opção 3: Confirmar Email Existente**
 
@@ -49,6 +53,13 @@ Senha: Italo2025Admin!
    ```
    ✅ Login successful: admin@italo.dev
    ```
+
+## 🔗 **URLs de Redirecionamento**
+
+Para garantir que a autenticação funcione em todos os ambientes, configure as URLs de redirecionamento:
+
+1. **Acesse:** Authentication → Settings → URL Configuration
+2. **Configure:** Conforme as instruções em [REDIRECT_URLS.md](./REDIRECT_URLS.md)
 
 ## 🎯 **Por que isso aconteceu:**
 

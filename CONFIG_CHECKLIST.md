@@ -12,7 +12,7 @@
 #### **A. Site URL e Redirect URLs**
 1. **Acesse:** https://supabase.com/dashboard
 2. **Projeto:** `nattvkjaecceirxthizc`
-3. **Vá para:** Authentication → Settings
+3. **Vá para:** Authentication → Settings → URL Configuration
 
 #### **Configurações Necessárias:**
 ```
@@ -24,6 +24,8 @@ Additional Redirect URLs:
 - http://localhost:4321 (para desenvolvimento)
 - http://localhost:4321/admin
 ```
+
+> ⚠️ **IMPORTANTE:** Para instruções detalhadas sobre como configurar estas URLs, consulte o arquivo [REDIRECT_URLS.md](./REDIRECT_URLS.md).
 
 #### **B. Confirmação de Email**
 - **Desmarque:** "Enable email confirmations" (para desenvolvimento)

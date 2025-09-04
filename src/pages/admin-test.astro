@@ -1,5 +1,5 @@
 ---
-// Nova página admin com Firebase limpo e testado
+// Nova página admin com Supabase limpo e testado
 ---
 
 <!DOCTYPE html>
@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="/admin/style.css">
     <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
     <style>
-        .firebase-status {
+        .supabase-status {
             position: fixed;
             top: 10px;
             right: 10px;
@@ -22,14 +22,14 @@
             font-family: monospace;
             z-index: 9999;
         }
-        .firebase-status.success { background: #28a745; }
-        .firebase-status.error { background: #dc3545; }
-        .firebase-status.warning { background: #ffc107; color: #333; }
+        .supabase-status.success { background: #28a745; }
+        .supabase-status.error { background: #dc3545; }
+        .supabase-status.warning { background: #ffc107; color: #333; }
     </style>
 </head>
 <body>
-    <!-- Status do Firebase -->
-    <div id="firebase-status" class="firebase-status">🔄 Inicializando Firebase...</div>
+    <!-- Status do Supabase -->
+    <div id="supabase-status" class="supabase-status">🔄 Inicializando Supabase...</div>
 
     <!-- Login -->
     <div id="login-container" class="container">
@@ -51,7 +51,7 @@
             <!-- Debug Info -->
             <div id="debug-info" style="margin-top: 20px; font-family: monospace; font-size: 12px; color: #666;">
                 <h4>Debug Info:</h4>
-                <div id="firebase-info">Firebase não inicializado</div>
+                <div id="supabase-info">Supabase não inicializado</div>
                 <div id="auth-info">Auth não disponível</div>
             </div>
         </div>
@@ -65,7 +65,7 @@
         </header>
 
         <nav class="dashboard-nav">
-            <button id="test-firebase-btn" class="nav-btn">Testar Firebase</button>
+            <button id="test-supabase-btn" class="nav-btn">Testar Supabase</button>
             <button id="create-test-post-btn" class="nav-btn">Criar Post Teste</button>
             <button id="list-posts-btn" class="nav-btn active">Ver Posts</button>
         </nav>
@@ -81,7 +81,7 @@
         <div class="spinner-circle"></div>
     </div>
 
-    <!-- Firebase SDK v9 Modular - NOVA CONFIGURAÇÃO -->
+    <!-- Supabase SDK - NOVA CONFIGURAÇÃO -->
     <script type="module">
         // ================================
         // FIREBASE CONFIGURATION - SUAS CREDENCIAIS
