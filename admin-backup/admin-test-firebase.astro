@@ -1,0 +1,276 @@
+---
+// Nova página admin com Supabase limpo e testado
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Ítalo Antonio</title>
+    <link rel="stylesheet" href="/admin/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <style>
+        .supabase-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 9999;
+        }
+        .supabase-status.success { background: #28a745; }
+        .supabase-status.error { background: #dc3545; }
+        .supabase-status.warning { background: #ffc107; color: #333; }
+    </style>
+</head>
+<body>
+    <!-- Status do Supabase -->
+    <div id="supabase-status" class="supabase-status">🔄 Inicializando Supabase...</div>
+
+    <!-- Login -->
+    <div id="login-container" class="container">
+        <div class="login-card">
+            <h1>Admin Panel - Ítalo Antonio</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" required value="admin@italo.dev">
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha:</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Entrar</button>
+            </form>
+            <div id="login-error" class="error-message" style="display: none;"></div>
+            
+            <!-- Debug Info -->
+            <div id="debug-info" style="margin-top: 20px; font-family: monospace; font-size: 12px; color: #666;">
+                <h4>Debug Info:</h4>
+                <div id="supabase-info">Supabase não inicializado</div>
+                <div id="auth-info">Auth não disponível</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dashboard-container" class="container" style="display: none;">
+        <header class="dashboard-header">
+            <h1>Dashboard - Bem-vindo!</h1>
+            <button id="logout-btn" class="btn btn-secondary">Sair</button>
+        </header>
+
+        <nav class="dashboard-nav">
+            <button id="test-supabase-btn" class="nav-btn">Testar Supabase</button>
+            <button id="create-test-post-btn" class="nav-btn">Criar Post Teste</button>
+            <button id="list-posts-btn" class="nav-btn active">Ver Posts</button>
+        </nav>
+
+        <section id="test-results" class="dashboard-section">
+            <h2>Resultados dos Testes</h2>
+            <pre id="test-output" style="background: #f5f5f5; padding: 20px; border-radius: 5px; white-space: pre-wrap;"></pre>
+        </section>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-spinner" class="spinner" style="display: none;">
+        <div class="spinner-circle"></div>
+    </div>
+
+    <!-- Supabase SDK - NOVA CONFIGURAÇÃO -->
+    <script type="module">
+        // ================================
+        // FIREBASE CONFIGURATION - SUAS CREDENCIAIS
+        // ================================
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBjDMwZRTQzVy1le3f6ljDdLOnPVAx_MNQ",
+            authDomain: "italoantoniodev.firebaseapp.com",
+            projectId: "italoantoniodev",
+            storageBucket: "italoantoniodev.firebasestorage.app",
+            messagingSenderId: "597648594877",
+            appId: "1:597648594877:web:3e6c6f120655992cdd64d4",
+            measurementId: "G-V19CQ9905R"
+        };
+
+        // Firebase imports - usando versão 12.2.1
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js';
+
+        const statusDiv = document.getElementById('firebase-status');
+        const debugFirebase = document.getElementById('firebase-info');
+        const debugAuth = document.getElementById('auth-info');
+        const testOutput = document.getElementById('test-output');
+
+        let app, auth, db, storage;
+
+        // Função para atualizar status
+        function updateStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `firebase-status ${type}`;
+            console.log(`[Firebase] ${message}`);
+        }
+
+        // Função para adicionar log
+        function addLog(message) {
+            testOutput.textContent += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            testOutput.scrollTop = testOutput.scrollHeight;
+        }
+
+        try {
+            updateStatus('🔄 Inicializando Firebase...', 'warning');
+            
+            // Verificar configuração
+            if (firebaseConfig.apiKey.includes('COLE_SEU')) {
+                throw new Error('Configure suas credenciais do Firebase primeiro!');
+            }
+
+            // Inicializar Firebase
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            storage = getStorage(app);
+            
+            updateStatus('✅ Firebase inicializado com sucesso!', 'success');
+            debugFirebase.textContent = `Projeto: ${firebaseConfig.projectId}`;
+            debugAuth.textContent = 'Auth disponível';
+            addLog('Firebase inicializado com sucesso');
+
+            // Disponibilizar globalmente para debug
+            window.firebase = { app, auth, db, storage };
+            window.firebaseConfig = firebaseConfig;
+
+        } catch (error) {
+            updateStatus('❌ Erro: ' + error.message, 'error');
+            debugFirebase.textContent = `Erro: ${error.message}`;
+            addLog(`ERRO na inicialização: ${error.message}`);
+            console.error('Erro Firebase:', error);
+        }
+
+        // Sistema de Login/Logout
+        const loginContainer = document.getElementById('login-container');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Monitor de autenticação
+        if (auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    addLog(`Usuário logado: ${user.email}`);
+                    debugAuth.textContent = `Logado como: ${user.email}`;
+                    showDashboard();
+                } else {
+                    addLog('Usuário não está logado');
+                    debugAuth.textContent = 'Não logado';
+                    showLogin();
+                }
+            });
+        }
+
+        function showLogin() {
+            loginContainer.style.display = 'flex';
+            dashboardContainer.style.display = 'none';
+        }
+
+        function showDashboard() {
+            loginContainer.style.display = 'none';
+            dashboardContainer.style.display = 'block';
+        }
+
+        // Login
+        loginForm?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!auth) {
+                showError('Firebase Auth não inicializado');
+                return;
+            }
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                addLog(`Tentando login com: ${email}`);
+                await signInWithEmailAndPassword(auth, email, password);
+                addLog('Login realizado com sucesso!');
+            } catch (error) {
+                addLog(`ERRO no login: ${error.message}`);
+                showError('Erro no login: ' + error.message);
+            }
+        });
+
+        // Logout
+        logoutBtn?.addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+                addLog('Logout realizado');
+            } catch (error) {
+                addLog(`ERRO no logout: ${error.message}`);
+            }
+        });
+
+        // Teste Firebase
+        document.getElementById('test-firebase-btn')?.addEventListener('click', async () => {
+            addLog('=== INICIANDO TESTE FIREBASE ===');
+            
+            try {
+                // Teste Firestore - Listar posts
+                addLog('Testando Firestore - listando posts...');
+                const postsRef = collection(db, 'posts');
+                const snapshot = await getDocs(postsRef);
+                addLog(`Posts encontrados: ${snapshot.size}`);
+                
+                snapshot.forEach((doc) => {
+                    addLog(`  - ${doc.id}: ${doc.data().title || 'Sem título'}`);
+                });
+                
+            } catch (error) {
+                addLog(`ERRO no teste Firestore: ${error.message}`);
+            }
+        });
+
+        // Criar post de teste
+        document.getElementById('create-test-post-btn')?.addEventListener('click', async () => {
+            addLog('=== CRIANDO POST DE TESTE ===');
+            
+            try {
+                const postsRef = collection(db, 'posts');
+                const postData = {
+                    title: 'Post de Teste',
+                    content: 'Este é um post criado para testar o Firebase',
+                    status: 'draft',
+                    createdAt: serverTimestamp()
+                };
+                
+                addLog('Salvando post no Firestore...');
+                const docRef = await addDoc(postsRef, postData);
+                addLog(`✅ Post criado com sucesso! ID: ${docRef.id}`);
+                
+            } catch (error) {
+                addLog(`❌ ERRO ao criar post: ${error.message}`);
+            }
+        });
+
+        function showError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+            setTimeout(() => {
+                loginError.style.display = 'none';
+            }, 5000);
+        }
+
+    </script>
+
+    <!-- EasyMDE -->
+    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+</body>
+</html>
