@@ -17,9 +17,13 @@ export default defineConfig({
     format: 'file',
     inlineStylesheets: 'auto'
   },
-
+  
   // Configurações de Vite para melhor performance
   vite: {
+    define: {
+      'import.meta.env.SUPABASE_URL': JSON.stringify(process.env.SUPABASE_URL),
+      'import.meta.env.SUPABASE_ANON_KEY': JSON.stringify(process.env.SUPABASE_ANON_KEY),
+    },
     build: {
       cssMinify: true,
       minify: true,

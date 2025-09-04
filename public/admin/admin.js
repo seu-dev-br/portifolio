@@ -141,30 +141,49 @@ function formatDate(timestamp) {
 
 // Authentication Functions
 async function initAuth() {
-    supabaseClient = await waitForSupabase();
-    console.log('� Supabase client ready:', supabaseClient);
+    try {
+        supabaseClient = await waitForSupabase();
+        console.log('✅ Supabase client ready:', supabaseClient);
 
-    // Check if user is already logged in
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (user) {
-        currentUser = user;
-        showDashboard();
-        loadPosts();
-    } else {
-        showLogin();
-    }
-
-    // Listen for auth changes
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-        if (session?.user) {
-            currentUser = session.user;
+        // Verifica URLs para depuração
+        console.log('🌐 URL do Supabase:', supabaseClient.supabaseUrl);
+        
+        // Check if user is already logged in
+        const { data: { user }, error } = await supabaseClient.auth.getUser();
+        
+        if (error) {
+            console.error('❌ Erro ao verificar usuário atual:', error.message);
+            showLogin();
+            return;
+        }
+        
+        if (user) {
+            console.log('👤 Usuário já logado:', user.email);
+            currentUser = user;
             showDashboard();
             loadPosts();
         } else {
-            currentUser = null;
+            console.log('ℹ️ Nenhum usuário logado, mostrando tela de login');
             showLogin();
         }
-    });
+
+        // Listen for auth changes
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            console.log('🔄 Evento de autenticação:', event);
+            if (session?.user) {
+                currentUser = session.user;
+                showDashboard();
+                loadPosts();
+            } else {
+                currentUser = null;
+                showLogin();
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro crítico na inicialização da autenticação:', error);
+        showError('Erro ao inicializar autenticação: ' + error.message);
+        showLogin();
+    }
 }
 
 function showLogin() {

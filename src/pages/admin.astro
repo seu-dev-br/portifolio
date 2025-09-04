@@ -1,5 +1,6 @@
 ---
 // src/pages/admin.astro
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase-client-config.js';
 ---
 
 <!DOCTYPE html>
@@ -278,12 +279,12 @@
     </div>
 
     <!-- Supabase Client -->
-    <script type="module">
+    <script define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }}>
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-        // Configurações do Supabase (substitua pelas suas)
-        const supabaseUrl = 'https://SEU_PROJECT_REF.supabase.co';
-        const supabaseAnonKey = 'SEU_ANON_KEY';
+        // Configurações do Supabase 
+        const supabaseUrl = SUPABASE_URL;
+        const supabaseAnonKey = SUPABASE_ANON_KEY;
 
         // Inicializar Supabase
         const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -291,7 +292,7 @@
         // Disponibilizar globalmente
         window.supabase = supabase;
 
-        console.log('� Supabase inicializado com sucesso');
+        console.log('✅ Supabase inicializado com sucesso');
     </script>
 
     <!-- EasyMDE -->
