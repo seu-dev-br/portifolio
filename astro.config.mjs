@@ -1,5 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import tailwind from '@astrojs/tailwind';
 
 // Carregar variáveis de ambiente para garantir que estejam disponíveis
 import dotenv from 'dotenv';
@@ -21,7 +22,7 @@ export default defineConfig({
   site: 'https://portifolio-seu-dev-br.vercel.app',
 
   // Configurações de integração
-  integrations: [],
+  integrations: [tailwind()],
 
   // Configurações de build otimizadas
   build: {
