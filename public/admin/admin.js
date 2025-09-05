@@ -1175,6 +1175,8 @@ const socialGithubInput = document.getElementById('social-github');
 const socialLinkedinInput = document.getElementById('social-linkedin');
 const socialTwitterInput = document.getElementById('social-twitter');
 const socialEmailInput = document.getElementById('social-email');
+const socialCityInput = document.getElementById('social-city');
+const socialPhoneInput = document.getElementById('social-phone');
 
 // Dynamic containers
 const experienceContainer = document.getElementById('experience-container');
@@ -1309,6 +1311,8 @@ function populateAboutForm(data) {
         if (socialLinkedinInput) socialLinkedinInput.value = data.socialLinks.linkedin || '';
         if (socialTwitterInput) socialTwitterInput.value = data.socialLinks.twitter || '';
         if (socialEmailInput) socialEmailInput.value = data.socialLinks.email || '';
+        if (socialCityInput) socialCityInput.value = data.socialLinks.city || '';
+        if (socialPhoneInput) socialPhoneInput.value = data.socialLinks.phone || '';
     }
     
     // Dynamic sections
@@ -1335,7 +1339,9 @@ async function saveAboutData() {
                 github: socialGithubInput.value.trim(),
                 linkedin: socialLinkedinInput.value.trim(),
                 twitter: socialTwitterInput.value.trim(),
-                email: socialEmailInput.value.trim()
+                email: socialEmailInput.value.trim(),
+                city: socialCityInput.value.trim(),
+                phone: socialPhoneInput.value.trim()
             },
             experience: collectExperienceData(),
             education: collectEducationData(),
@@ -1453,9 +1459,15 @@ function addExperienceItem() {
                 <input type="text" class="exp-company" placeholder="Ex: Tech Solutions Inc.">
             </div>
         </div>
-        <div class="form-group">
-            <label>Período:</label>
-            <input type="text" class="exp-period" placeholder="Ex: Jan 2020 - Atual">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Período:</label>
+                <input type="text" class="exp-period" placeholder="Ex: Jan 2020 - Atual">
+            </div>
+            <div class="form-group">
+                <label>Ano (para timeline):</label>
+                <input type="text" class="exp-year" placeholder="Ex: 2024">
+            </div>
         </div>
         <div class="form-group">
             <label>Descrição:</label>
@@ -1477,6 +1489,7 @@ function populateExperience(experiences) {
         item.querySelector('.exp-position').value = exp.position || '';
         item.querySelector('.exp-company').value = exp.company || '';
         item.querySelector('.exp-period').value = exp.period || '';
+        item.querySelector('.exp-year').value = exp.year || '';
         item.querySelector('.exp-description').value = exp.description || '';
         item.querySelector('.exp-technologies').value = (exp.technologies || []).join(', ');
     });
@@ -1492,6 +1505,7 @@ function collectExperienceData() {
             position: item.querySelector('.exp-position').value.trim(),
             company: item.querySelector('.exp-company').value.trim(),
             period: item.querySelector('.exp-period').value.trim(),
+            year: item.querySelector('.exp-year').value.trim(),
             description: item.querySelector('.exp-description').value.trim(),
             technologies: technologies
         });

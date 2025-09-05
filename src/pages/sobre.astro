@@ -16,7 +16,7 @@ const defaultData = {
 	experience: [
 		{
 			year: '2024',
-			title: 'Desenvolvedor Full Stack',
+			position: 'Desenvolvedor Full Stack',
 			company: 'Empresa Atual',
 			description: 'Desenvolvimento de aplicações web modernas e escaláveis.'
 		}
@@ -48,7 +48,9 @@ const defaultData = {
 		github: 'https://github.com/seu-usuario',
 		linkedin: '',
 		twitter: '',
-		email: 'contato@exemplo.com'
+		email: 'contato@exemplo.com',
+		city: 'São Paulo, SP',
+		phone: '+55 (11) 99999-9999'
 	}
 };
 
@@ -79,7 +81,7 @@ const data = aboutData || defaultData;
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
 							</svg>
-							<span>São Paulo, SP</span>
+							<span>{data.socialLinks?.city || 'São Paulo, SP'}</span>
 						</div>
 						{data.socialLinks?.email && (
 							<div class="flex items-center gap-2 text-primary-400">
@@ -220,18 +222,38 @@ const data = aboutData || defaultData;
 				<div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-500 to-accent-cyan"></div>
 
 				<div class="space-y-12">
-					{(data.experience || []).map((experience, index) => (
+					{(data.experience || []).map((experience, index) => {
+						// Função para extrair ano de entrada do trabalho
+						const getStartYear = (exp) => {
+							// Primeiro tenta usar o campo year se existir
+							if (exp.year) return exp.year;
+							
+							// Se não existir, tenta extrair do período
+							if (exp.period) {
+								// Procura por padrões como "2020", "Jan 2020", "2020 - Atual"
+								const yearMatch = exp.period.match(/\b(20\d{2})\b/);
+								if (yearMatch) return yearMatch[1];
+							}
+							
+							// Fallback para ano atual
+							return new Date().getFullYear().toString();
+						};
+						
+						const startYear = getStartYear(experience);
+						
+						return (
 						<div class="relative flex items-start gap-8">
 							<div class="flex-shrink-0 w-16 h-16 bg-gradient-to-r from-primary-600 to-accent-cyan rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-								{experience.year || '2024'}
+								{startYear}
 							</div>
 							<div class="flex-grow bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
-								<h3 class="text-xl font-semibold text-white mb-2">{experience.title || 'Cargo'}</h3>
+								<h3 class="text-xl font-semibold text-white mb-2">{experience.position || 'Cargo'}</h3>
 								<p class="text-primary-400 mb-3 font-medium">{experience.company || 'Empresa'}</p>
 								<p class="text-gray-400 leading-relaxed">{experience.description || 'Descrição da experiência'}</p>
 							</div>
 						</div>
-					))}
+						);
+					})}
 				</div>
 			</div>
 		</div>
@@ -456,6 +478,16 @@ const data = aboutData || defaultData;
 				Estou sempre interessado em novos projetos, oportunidades de colaboração
 				ou apenas uma conversa sobre tecnologia e desenvolvimento.
 			</p>
+			{data.socialLinks?.email && (
+				<div class="mb-8">
+					<div class="inline-flex items-center gap-2 text-primary-400 bg-primary-900/20 px-6 py-3 rounded-full border border-primary-500/30">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+						</svg>
+						<span class="font-medium">{data.socialLinks.email}</span>
+					</div>
+				</div>
+			)}
 			<div class="flex flex-col sm:flex-row gap-4 justify-center">
 				<a href="/contato" class="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-primary-500/25">
 					Entrar em Contato

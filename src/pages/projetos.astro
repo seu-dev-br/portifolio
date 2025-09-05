@@ -1,9 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getAllPublishedProjects } from '../lib/supabase.js';
+import { getAllPublishedProjects, getAboutData } from '../lib/supabase.js';
 
 // Fetch all published projects
 const projects = await getAllPublishedProjects();
+const aboutData = await getAboutData();
+
+// Dados padrão caso não haja dados no Supabase
+const defaultData = {
+	socialLinks: {
+		email: 'contato@exemplo.com'
+	}
+};
+
+// Usar dados do Supabase ou dados padrão
+const data = aboutData || defaultData;
 
 // Mock projects data for demonstration (replace with actual Supabase data)
 const mockProjects = [
@@ -184,7 +195,7 @@ const displayProjects = projects && projects.length > 0 ? projects : mockProject
 				<a href="/contato" class="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-primary-500/25">
 					Entrar em Contato
 				</a>
-				<a href="mailto:contato@italoantonio.dev" class="border-2 border-gray-600 hover:border-primary-400 text-gray-300 hover:text-primary-400 px-8 py-4 rounded-lg font-semibold transition-all duration-300">
+				<a href={`mailto:${data.socialLinks?.email || 'contato@exemplo.com'}`} class="border-2 border-gray-600 hover:border-primary-400 text-gray-300 hover:text-primary-400 px-8 py-4 rounded-lg font-semibold transition-all duration-300">
 					Enviar Email
 				</a>
 			</div>
