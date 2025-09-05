@@ -3,9 +3,58 @@ import Layout from '../layouts/Layout.astro';
 import { getAboutData } from '../lib/supabase.js';
 
 const aboutData = await getAboutData();
----
 
-<Layout title="Sobre - Ítalo Antonio" description="Conheça mais sobre Ítalo Antonio, desenvolvedor Full Stack apaixonado por tecnologia e inovação">
+// Dados padrão caso não haja dados no Supabase
+const defaultData = {
+	bio: 'Olá! Sou um desenvolvedor Full Stack apaixonado por criar soluções digitais inovadoras.',
+	profileImage: '',
+	skills: {
+		frontend: ['HTML5', 'CSS3', 'JavaScript', 'React', 'Vue.js', 'TypeScript'],
+		backend: ['Node.js', 'Python', 'PHP', 'Express.js', 'PostgreSQL'],
+		tools: ['Git', 'Docker', 'AWS', 'Figma', 'VS Code']
+	},
+	experience: [
+		{
+			year: '2024',
+			title: 'Desenvolvedor Full Stack',
+			company: 'Empresa Atual',
+			description: 'Desenvolvimento de aplicações web modernas e escaláveis.'
+		}
+	],
+	education: [
+		{
+			institution: 'Universidade',
+			course: 'Ciência da Computação',
+			period: '2020 - 2024'
+		}
+	],
+	certifications: [
+		{
+			name: 'Certificado Exemplo',
+			issuer: 'Plataforma',
+			date: '2024',
+			description: 'Descrição da certificação',
+			image: ''
+		}
+	],
+	gallery: [
+		{
+			title: 'Projeto Exemplo',
+			image: '',
+			description: 'Descrição da imagem'
+		}
+	],
+	socialLinks: {
+		github: 'https://github.com/seu-usuario',
+		linkedin: '',
+		twitter: '',
+		email: 'contato@exemplo.com'
+	}
+};
+
+// Usar dados do Supabase ou dados padrão
+const data = aboutData || defaultData;
+---
 
 <Layout title="Sobre - Ítalo Antonio" description="Conheça mais sobre Ítalo Antonio, desenvolvedor Full Stack apaixonado por tecnologia e inovação">
 	<!-- Hero Section -->
@@ -21,18 +70,7 @@ const aboutData = await getAboutData();
 						Ítalo Antonio - Desenvolvedor Full Stack
 					</h2>
 					<div class="space-y-4 text-gray-400 text-lg leading-relaxed">
-						<p>
-							Sou um desenvolvedor Full Stack apaixonado por criar soluções digitais que fazem a diferença.
-							Com mais de 5 anos de experiência, especializo-me em tecnologias modernas e melhores práticas de desenvolvimento.
-						</p>
-						<p>
-							Minha jornada começou com curiosidade sobre como as coisas funcionam na web, e evoluiu para uma
-							paixão por resolver problemas complexos através de código limpo e arquitetura bem estruturada.
-						</p>
-						<p>
-							Atualmente, foco em desenvolvimento de aplicações web escaláveis, sempre buscando aprender
-							novas tecnologias e compartilhar conhecimento com a comunidade.
-						</p>
+						<p>{data.bio}</p>
 					</div>
 
 					<div class="flex flex-wrap gap-4 mt-8">
@@ -43,12 +81,14 @@ const aboutData = await getAboutData();
 							</svg>
 							<span>São Paulo, SP</span>
 						</div>
-						<div class="flex items-center gap-2 text-primary-400">
-							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-							</svg>
-							<span>contato@italoantonio.dev</span>
-						</div>
+						{data.socialLinks?.email && (
+							<div class="flex items-center gap-2 text-primary-400">
+								<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+								</svg>
+								<span>{data.socialLinks.email}</span>
+							</div>
+						)}
 					</div>
 				</div>
 
@@ -56,10 +96,18 @@ const aboutData = await getAboutData();
 				<div class="relative">
 					<div class="w-full max-w-md mx-auto">
 						<div class="relative">
-							<div class="w-full aspect-square bg-gradient-to-br from-primary-600/20 to-accent-cyan/20 rounded-2xl flex items-center justify-center border border-primary-500/30">
-								<svg class="w-32 h-32 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-								</svg>
+							<div class="w-full aspect-square bg-gradient-to-br from-primary-600/20 to-accent-cyan/20 rounded-2xl flex items-center justify-center border border-primary-500/30 overflow-hidden">
+								{data.profileImage ? (
+									<img
+										src={data.profileImage}
+										alt="Foto de perfil"
+										class="w-full h-full object-cover"
+									/>
+								) : (
+									<svg class="w-32 h-32 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+									</svg>
+								)}
 							</div>
 							<div class="absolute -bottom-4 -right-4 w-24 h-24 bg-gradient-to-r from-primary-500 to-accent-cyan rounded-full flex items-center justify-center shadow-xl">
 								<svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,7 +144,7 @@ const aboutData = await getAboutData();
 					</div>
 					<h3 class="text-xl font-semibold text-white mb-6">Frontend</h3>
 					<div class="space-y-3">
-						{['React/Next.js', 'Vue.js/Nuxt.js', 'TypeScript', 'Tailwind CSS', 'Astro', 'JavaScript ES6+'].map((skill) => (
+						{(data.skills?.frontend || []).map((skill) => (
 							<div class="flex items-center justify-between">
 								<span class="text-gray-300">{skill}</span>
 								<div class="flex gap-1">
@@ -118,7 +166,7 @@ const aboutData = await getAboutData();
 					</div>
 					<h3 class="text-xl font-semibold text-white mb-6">Backend</h3>
 					<div class="space-y-3">
-						{['Node.js/Express', 'Python/FastAPI', 'PostgreSQL', 'MongoDB', 'Supabase', 'REST APIs'].map((skill) => (
+						{(data.skills?.backend || []).map((skill) => (
 							<div class="flex items-center justify-between">
 								<span class="text-gray-300">{skill}</span>
 								<div class="flex gap-1">
@@ -138,9 +186,9 @@ const aboutData = await getAboutData();
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
 						</svg>
 					</div>
-					<h3 class="text-xl font-semibold text-white mb-6">DevOps & Ferramentas</h3>
+					<h3 class="text-xl font-semibold text-white mb-6">Ferramentas</h3>
 					<div class="space-y-3">
-						{['Docker', 'AWS/GCP', 'Git/GitHub', 'CI/CD', 'Linux', 'Agile/Scrum'].map((skill) => (
+						{(data.skills?.tools || []).map((skill) => (
 							<div class="flex items-center justify-between">
 								<span class="text-gray-300">{skill}</span>
 								<div class="flex gap-1">
@@ -172,40 +220,15 @@ const aboutData = await getAboutData();
 				<div class="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-primary-500 to-accent-cyan"></div>
 
 				<div class="space-y-12">
-					{[
-						{
-							year: '2024',
-							title: 'Desenvolvedor Full Stack Sênior',
-							company: 'TechCorp Solutions',
-							description: 'Liderança técnica em projetos de grande escala, mentoria de equipe júnior e implementação de melhores práticas de desenvolvimento.'
-						},
-						{
-							year: '2022',
-							title: 'Desenvolvedor Full Stack',
-							company: 'StartupXYZ',
-							description: 'Desenvolvimento de aplicações web modernas usando React, Node.js e cloud services. Participação ativa em todas as etapas do ciclo de desenvolvimento.'
-						},
-						{
-							year: '2020',
-							title: 'Desenvolvedor Frontend',
-							company: 'Agência Digital ABC',
-							description: 'Criação de interfaces responsivas e experiências de usuário excepcionais. Trabalho com clientes diversos e projetos variados.'
-						},
-						{
-							year: '2019',
-							title: 'Desenvolvedor Junior',
-							company: 'Empresa Tech Ltda',
-							description: 'Primeira experiência profissional como desenvolvedor. Aprendizado intensivo de tecnologias web e melhores práticas.'
-						}
-					].map((experience, index) => (
+					{(data.experience || []).map((experience, index) => (
 						<div class="relative flex items-start gap-8">
 							<div class="flex-shrink-0 w-16 h-16 bg-gradient-to-r from-primary-600 to-accent-cyan rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-								{experience.year}
+								{experience.year || '2024'}
 							</div>
 							<div class="flex-grow bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
-								<h3 class="text-xl font-semibold text-white mb-2">{experience.title}</h3>
-								<p class="text-primary-400 mb-3 font-medium">{experience.company}</p>
-								<p class="text-gray-400 leading-relaxed">{experience.description}</p>
+								<h3 class="text-xl font-semibold text-white mb-2">{experience.title || 'Cargo'}</h3>
+								<p class="text-primary-400 mb-3 font-medium">{experience.company || 'Empresa'}</p>
+								<p class="text-gray-400 leading-relaxed">{experience.description || 'Descrição da experiência'}</p>
 							</div>
 						</div>
 					))}
@@ -227,8 +250,8 @@ const aboutData = await getAboutData();
 			</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-				{aboutData?.certifications && aboutData.certifications.length > 0 ? (
-					aboutData.certifications.map((cert) => (
+				{(data.certifications || []).length > 0 ? (
+					data.certifications.map((cert) => (
 						<div class="bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 hover:border-primary-500/50 transition-all duration-300 group">
 							<div class="flex items-start gap-4">
 								<div class="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-primary-500 to-accent-cyan rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -238,26 +261,26 @@ const aboutData = await getAboutData();
 								</div>
 								<div class="flex-grow">
 									<h3 class="text-xl font-semibold text-white mb-2 group-hover:text-primary-400 transition-colors duration-300">
-										{cert.title}
+										{cert.name || cert.title || 'Certificação'}
 									</h3>
 									<p class="text-primary-400 mb-2 font-medium">
-										{cert.issuer}
+										{cert.issuer || 'Emissor'}
 									</p>
-									{cert.date && (
+									{(cert.date || cert.year) && (
 										<p class="text-gray-400 text-sm mb-2">
-											{cert.date}
+											{cert.date || cert.year}
 										</p>
 									)}
-									{cert.description && (
+									{(cert.description || cert.desc) && (
 										<p class="text-gray-400 text-sm leading-relaxed">
-											{cert.description}
+											{cert.description || cert.desc}
 										</p>
 									)}
 									{cert.image && (
 										<div class="mt-4">
-											<img 
-												src={cert.image} 
-												alt={`Certificado ${cert.title}`}
+											<img
+												src={cert.image}
+												alt={`Certificado ${cert.name || cert.title}`}
 												class="w-full h-32 object-cover rounded-lg border border-gray-600/50"
 											/>
 										</div>
@@ -275,7 +298,7 @@ const aboutData = await getAboutData();
 						</div>
 						<h3 class="text-xl font-semibold text-white mb-2">Certificações em Breve</h3>
 						<p class="text-gray-400">
-							Em processo de obtenção de novas certificações. Volte em breve para ver as atualizações!
+							Configure suas certificações através do painel administrativo (/admin)
 						</p>
 					</div>
 				)}
@@ -283,55 +306,35 @@ const aboutData = await getAboutData();
 		</div>
 	</section>
 
-	<!-- Gallery Section -->
-	<section class="py-20 bg-gray-950">
-		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+	<!-- Education Section -->
+	<section class="py-20 bg-gray-900/50">
+		<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="text-center mb-16">
 				<h2 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
-					Galeria
+					Formação Acadêmica
 				</h2>
-				<p class="text-gray-400 text-lg max-w-2xl mx-auto">
-					Momentos importantes, conquistas e projetos especiais
+				<p class="text-gray-400 text-lg">
+					Minha formação e qualificações educacionais
 				</p>
 			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-				<!-- Placeholder images - será populado dinamicamente quando houver dados -->
-				<div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 hover:border-primary-500/50 transition-all duration-300">
-					<div class="aspect-video bg-gradient-to-br from-primary-900/20 to-accent-cyan/20 flex items-center justify-center">
-						<div class="text-center">
-							<svg class="w-12 h-12 text-primary-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-							</svg>
-							<p class="text-gray-400 text-sm">Galeria em construção</p>
-							<p class="text-gray-500 text-xs mt-1">Imagens serão adicionadas em breve</p>
+			<div class="space-y-8">
+				{(data.education || []).map((edu, index) => (
+					<div class="bg-gradient-to-r from-gray-800/50 to-gray-900/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+						<div class="flex items-start gap-4">
+							<div class="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-accent-cyan to-accent-blue rounded-lg flex items-center justify-center">
+								<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+								</svg>
+							</div>
+							<div class="flex-grow">
+								<h3 class="text-xl font-semibold text-white mb-2">{edu.course || 'Curso'}</h3>
+								<p class="text-accent-cyan mb-2 font-medium">{edu.institution || 'Instituição'}</p>
+								<p class="text-gray-400">{edu.period || 'Período'}</p>
+							</div>
 						</div>
 					</div>
-				</div>
-
-				<div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 hover:border-primary-500/50 transition-all duration-300">
-					<div class="aspect-video bg-gradient-to-br from-accent-cyan/20 to-accent-blue/20 flex items-center justify-center">
-						<div class="text-center">
-							<svg class="w-12 h-12 text-accent-cyan mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-							</svg>
-							<p class="text-gray-400 text-sm">Projetos e Conquistas</p>
-							<p class="text-gray-500 text-xs mt-1">Compartilhando minha jornada</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 border border-gray-700/50 hover:border-primary-500/50 transition-all duration-300">
-					<div class="aspect-video bg-gradient-to-br from-accent-indigo/20 to-accent-blue/20 flex items-center justify-center">
-						<div class="text-center">
-							<svg class="w-12 h-12 text-accent-indigo mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-							</svg>
-							<p class="text-gray-400 text-sm">Tecnologia & Inovação</p>
-							<p class="text-gray-500 text-xs mt-1">Sempre aprendendo algo novo</p>
-						</div>
-					</div>
-				</div>
+				))}
 			</div>
 		</div>
 	</section>
@@ -377,6 +380,68 @@ const aboutData = await getAboutData();
 						<p class="text-gray-400 leading-relaxed">{value.description}</p>
 					</div>
 				))}
+			</div>
+		</div>
+	</section>
+
+	<!-- Gallery Section -->
+	<section class="py-20 bg-gray-900/50">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center mb-16">
+				<h2 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+					Galeria
+				</h2>
+				<p class="text-gray-400 text-lg max-w-2xl mx-auto">
+					Alguns momentos e projetos que capturam minha jornada no desenvolvimento
+				</p>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				{(data.gallery || []).length > 0 ? (
+					data.gallery.map((item, index) => (
+						<div class="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-sm border border-gray-700/50 hover:border-primary-500/50 transition-all duration-300">
+							<div class="aspect-square overflow-hidden">
+								{item.image ? (
+									<img
+										src={item.image}
+										alt={item.title || `Imagem ${index + 1}`}
+										class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+									/>
+								) : (
+									<div class="w-full h-full bg-gradient-to-br from-primary-900/20 to-accent-cyan/20 flex items-center justify-center">
+										<svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+										</svg>
+									</div>
+								)}
+							</div>
+							{(item.title || item.description) && (
+								<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+									<div class="p-6 text-white">
+										{item.title && (
+											<h3 class="text-xl font-semibold mb-2">{item.title}</h3>
+										)}
+										{item.description && (
+											<p class="text-gray-300 text-sm leading-relaxed">{item.description}</p>
+										)}
+									</div>
+								</div>
+							)}
+						</div>
+					))
+				) : (
+					<div class="col-span-full text-center py-12">
+						<div class="w-16 h-16 bg-gradient-to-r from-primary-500/20 to-accent-cyan/20 rounded-full flex items-center justify-center mx-auto mb-4">
+							<svg class="w-8 h-8 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+							</svg>
+						</div>
+						<h3 class="text-xl font-semibold text-white mb-2">Galeria em Breve</h3>
+						<p class="text-gray-400">
+							Adicione imagens à sua galeria através do painel administrativo (/admin)
+						</p>
+					</div>
+				)}
 			</div>
 		</div>
 	</section>

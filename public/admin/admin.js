@@ -1180,11 +1180,13 @@ const socialEmailInput = document.getElementById('social-email');
 const experienceContainer = document.getElementById('experience-container');
 const educationContainer = document.getElementById('education-container');
 const certificationsContainer = document.getElementById('certifications-container');
+const galleryContainer = document.getElementById('gallery-container');
 
 // Add buttons
 const addExperienceBtn = document.getElementById('add-experience-btn');
 const addEducationBtn = document.getElementById('add-education-btn');
 const addCertificationBtn = document.getElementById('add-certification-btn');
+const addGalleryBtn = document.getElementById('add-gallery-btn');
 
 // About page navigation
 if (aboutManagerBtn) {
@@ -1233,6 +1235,10 @@ if (addEducationBtn) {
 
 if (addCertificationBtn) {
     addCertificationBtn.addEventListener('click', addCertificationItem);
+}
+
+if (addGalleryBtn) {
+    addGalleryBtn.addEventListener('click', addGalleryItem);
 }
 
 // About page functions
@@ -1309,6 +1315,7 @@ function populateAboutForm(data) {
     populateExperience(data.experience || []);
     populateEducation(data.education || []);
     populateCertifications(data.certifications || []);
+    populateGallery(data.gallery || []);
 }
 
 async function saveAboutData() {
@@ -1333,16 +1340,17 @@ async function saveAboutData() {
             experience: collectExperienceData(),
             education: collectEducationData(),
             certifications: collectCertificationData(),
+            gallery: collectGalleryData(),
             updatedAt: new Date().toISOString()
         };
 
         const { error } = await supabaseClient
             .from('settings')
-            .upsert({
-                key: 'about',
+            .update({
                 value: aboutData,
                 updated_at: new Date().toISOString()
-            });
+            })
+            .eq('key', 'about');
 
         if (error) throw error;
 
@@ -1357,25 +1365,53 @@ async function saveAboutData() {
 }
 
 async function handleProfileImageUpload(file) {
-    if (!file) return;
+    if (!file) {
+        console.log('⚠️ Nenhum arquivo selecionado');
+        return;
+    }
 
     try {
         showLoading();
+        console.log('📤 Iniciando upload da imagem do perfil:', file.name);
 
-        const fileExt = file.name.split('.').pop();
+        // Validar tipo de arquivo
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            throw new Error(`Tipo de arquivo não permitido. Use: ${allowedTypes.join(', ')}`);
+        }
+
+        // Validar tamanho do arquivo (máximo 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+            throw new Error('Arquivo muito grande. O tamanho máximo é 5MB.');
+        }
+
+        const fileExt = file.name.split('.').pop().toLowerCase();
         const fileName = `profile-${Date.now()}.${fileExt}`;
         const filePath = `about/${fileName}`;
 
+        console.log('📁 Caminho do arquivo:', filePath);
+
         const { data, error } = await supabaseClient.storage
             .from('images')
-            .upload(filePath, file);
+            .upload(filePath, file, {
+                cacheControl: '3600',
+                upsert: false
+            });
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Erro no upload:', error);
+            throw error;
+        }
+
+        console.log('✅ Upload realizado com sucesso:', data);
 
         // Get public URL
         const { data: { publicUrl } } = supabaseClient.storage
             .from('images')
             .getPublicUrl(filePath);
+
+        console.log('🔗 URL pública gerada:', publicUrl);
 
         profileImageUrlInput.value = publicUrl;
         updateProfileImagePreview(publicUrl);
@@ -1383,8 +1419,8 @@ async function handleProfileImageUpload(file) {
         showSuccess('Imagem do perfil enviada com sucesso!');
 
     } catch (error) {
-        console.error('Error uploading profile image:', error);
-        showError('Erro ao enviar imagem do perfil');
+        console.error('❌ Erro no upload da imagem do perfil:', error);
+        showError(`Erro ao enviar imagem: ${error.message}`);
     } finally {
         hideLoading();
     }
@@ -1577,6 +1613,54 @@ function collectCertificationData() {
         });
     });
     return certifications.filter(cert => cert.name && cert.issuer);
+}
+
+// Dynamic Gallery Management
+function addGalleryItem() {
+    const galleryItem = document.createElement('div');
+    galleryItem.className = 'gallery-item';
+    galleryItem.innerHTML = `
+        <button type="button" class="item-remove-btn" onclick="this.parentElement.remove()">×</button>
+        <h4>Nova Imagem da Galeria</h4>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Título da Imagem:</label>
+                <input type="text" class="gallery-title" placeholder="Ex: Projeto Web Moderno">
+            </div>
+            <div class="form-group">
+                <label>URL da Imagem:</label>
+                <input type="url" class="gallery-image" placeholder="https://exemplo.com/imagem.jpg">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Descrição:</label>
+            <textarea class="gallery-description" rows="3" placeholder="Descrição da imagem..."></textarea>
+        </div>
+    `;
+    galleryContainer.appendChild(galleryItem);
+}
+
+function populateGallery(gallery) {
+    galleryContainer.innerHTML = '';
+    gallery.forEach(item => {
+        addGalleryItem();
+        const galleryItem = galleryContainer.lastElementChild;
+        galleryItem.querySelector('.gallery-title').value = item.title || '';
+        galleryItem.querySelector('.gallery-image').value = item.image || '';
+        galleryItem.querySelector('.gallery-description').value = item.description || '';
+    });
+}
+
+function collectGalleryData() {
+    const gallery = [];
+    galleryContainer.querySelectorAll('.gallery-item').forEach(item => {
+        gallery.push({
+            title: item.querySelector('.gallery-title').value.trim(),
+            image: item.querySelector('.gallery-image').value.trim(),
+            description: item.querySelector('.gallery-description').value.trim()
+        });
+    });
+    return gallery.filter(item => item.title && item.image);
 }
 
 // Formatar data para exibição
