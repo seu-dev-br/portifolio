@@ -303,7 +303,8 @@ const data = aboutData || defaultData;
 											<img
 												src={cert.image}
 												alt={`Certificado ${cert.name || cert.title}`}
-												class="w-full h-32 object-cover rounded-lg border border-gray-600/50"
+												class="w-full h-48 object-contain rounded-lg border border-gray-600/50 bg-gray-800/30 p-2"
+												loading="lazy"
 											/>
 										</div>
 									)}

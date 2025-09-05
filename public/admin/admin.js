@@ -1596,7 +1596,9 @@ function addCertificationItem() {
         </div>
         <div class="form-group">
             <label>Imagem da Certificação:</label>
-            <input type="url" class="cert-image" placeholder="URL da imagem da certificação">
+            <input type="file" class="cert-image-input" accept="image/*">
+            <input type="url" class="cert-image" placeholder="URL da imagem da certificação" style="margin-top: 10px;">
+            <div class="cert-image-preview" style="margin-top: 10px;"></div>
         </div>
     `;
     certificationsContainer.appendChild(certificationItem);
@@ -1617,13 +1619,30 @@ function populateCertifications(certifications) {
 
 function collectCertificationData() {
     const certifications = [];
-    certificationsContainer.querySelectorAll('.certification-item').forEach(item => {
+    certificationsContainer.querySelectorAll('.certification-item').forEach(async (item) => {
+        const imageInput = item.querySelector('.cert-image-input');
+        let imageUrl = item.querySelector('.cert-image').value.trim();
+        
+        // Se há um arquivo selecionado, fazer upload
+        if (imageInput && imageInput.files && imageInput.files[0]) {
+            try {
+                const file = imageInput.files[0];
+                const uploadedUrl = await uploadImage(file, 'certifications');
+                if (uploadedUrl) {
+                    imageUrl = uploadedUrl;
+                }
+            } catch (error) {
+                console.error('Erro ao fazer upload da imagem da certificação:', error);
+                showError('Erro ao fazer upload da imagem da certificação');
+            }
+        }
+        
         certifications.push({
             name: item.querySelector('.cert-name').value.trim(),
             issuer: item.querySelector('.cert-issuer').value.trim(),
             date: item.querySelector('.cert-date').value.trim(),
             credentialUrl: item.querySelector('.cert-url').value.trim(),
-            image: item.querySelector('.cert-image').value.trim()
+            image: imageUrl
         });
     });
     return certifications.filter(cert => cert.name && cert.issuer);
