@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getAllPublishedProjects, getProjectById } from '../../lib/supabase.js';
+import { getAllPublishedProjects, getProjectById } from '../../lib/supabase';
+import OptimizedImage from '../../components/OptimizedImage.astro';
 
 export async function getStaticPaths() {
     const projects = await getAllPublishedProjects();
@@ -19,7 +20,7 @@ const { project } = Astro.props;
         <article class="project-detail">
             {project.image && (
                 <div class="project-hero">
-                    <img src={project.image} alt={project.title} />
+                    <OptimizedImage src={project.image} alt={project.title} width={1200} height={600} />
                 </div>
             )}
 
@@ -29,7 +30,7 @@ const { project } = Astro.props;
 
                 {project.technologies && project.technologies.length > 0 && (
                     <div class="technologies">
-                        {project.technologies.map((tech) => (
+                        {project.technologies.map((tech: string) => (
                             <span class="tech-tag">{tech}</span>
                         ))}
                     </div>
@@ -37,7 +38,7 @@ const { project } = Astro.props;
             </header>
 
             <div class="project-content">
-                {project.content && (
+                {'content' in project && project.content && (
                     <div class="project-text" set:html={project.content}></div>
                 )}
             </div>

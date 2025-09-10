@@ -1,0 +1,354 @@
+---
+// ux-demo.astro - Página de demonstração das melhorias de UX/UI
+import Layout from '../layouts/Layout.astro';
+import LoadingState from '../components/LoadingState.astro';
+import EmptyState from '../components/EmptyState.astro';
+import ProgressiveEnhancement from '../components/ProgressiveEnhancement.astro';
+---
+
+<Layout title="Demonstração UX/UI">
+  <div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary-900/20 to-accent-blue/20"></div>
+      <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <div class="animate-fade-in-up">
+          <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary-400 via-accent-cyan to-accent-blue bg-clip-text text-transparent">
+            UX/UI Aprimorada
+          </h1>
+          <p class="text-xl md:text-2xl text-gray-300 mb-8">
+            Sistema completo de experiência do usuário com tema dinâmico, loading states e progressive enhancement
+          </p>
+          <div class="animate-fade-in-up animate-stagger-2">
+            <button class="bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-gray-900">
+              Explorar Recursos
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Theme Toggle Demo -->
+    <section class="py-20 bg-gray-950 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Dark/Light Mode Toggle
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Alterne entre os temas usando o botão no canto superior direito
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Theme Features -->
+          <div class="bg-gray-800/50 rounded-xl p-8">
+            <h3 class="text-2xl font-semibold mb-6">Recursos do Sistema de Tema</h3>
+            <div class="space-y-4">
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                <span class="text-gray-300">Persistência automática no localStorage</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span class="text-gray-300">Detecção automática de preferência do sistema</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span class="text-gray-300">Transições suaves entre temas</span>
+              </div>
+              <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-orange-400 rounded-full"></div>
+                <span class="text-gray-300">Ícones dinâmicos (Sol/Lua)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Theme Preview -->
+          <div class="bg-gray-800/50 rounded-xl p-8">
+            <h3 class="text-2xl font-semibold mb-6">Preview dos Temas</h3>
+            <div class="space-y-6">
+              <div class="p-4 bg-gray-900 rounded-lg border border-gray-700">
+                <p class="text-sm text-gray-400 mb-2">Tema Dark</p>
+                <div class="bg-gray-800 p-3 rounded text-white text-sm">
+                  Este é o tema dark padrão
+                </div>
+              </div>
+              <div class="p-4 bg-white rounded-lg border border-gray-300">
+                <p class="text-sm text-gray-600 mb-2">Tema Light</p>
+                <div class="bg-gray-100 p-3 rounded text-gray-900 text-sm">
+                  Este é o tema light alternativo
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading States Demo -->
+    <section class="py-20 bg-gray-900/50 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Loading States
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Estados de carregamento elegantes para melhor feedback visual
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- Spinner -->
+          <div class="bg-gray-800/50 rounded-xl p-6 text-center">
+            <h3 class="text-xl font-semibold mb-4">Spinner</h3>
+            <div class="flex justify-center mb-4">
+              <LoadingState variant="spinner" size="lg" />
+            </div>
+            <p class="text-gray-400 text-sm">Ideal para carregamentos rápidos</p>
+          </div>
+
+          <!-- Pulse -->
+          <div class="bg-gray-800/50 rounded-xl p-6 text-center">
+            <h3 class="text-xl font-semibold mb-4">Pulse</h3>
+            <div class="flex justify-center mb-4">
+              <LoadingState variant="pulse" size="lg" />
+            </div>
+            <p class="text-gray-400 text-sm">Efeito pulsante suave</p>
+          </div>
+
+          <!-- Dots -->
+          <div class="bg-gray-800/50 rounded-xl p-6 text-center">
+            <h3 class="text-xl font-semibold mb-4">Dots</h3>
+            <div class="flex justify-center mb-4">
+              <LoadingState variant="dots" />
+            </div>
+            <p class="text-gray-400 text-sm">Animação de pontos</p>
+          </div>
+
+          <!-- Skeleton -->
+          <div class="bg-gray-800/50 rounded-xl p-6 text-center">
+            <h3 class="text-xl font-semibold mb-4">Skeleton</h3>
+            <div class="flex justify-center mb-4">
+              <LoadingState variant="skeleton" />
+            </div>
+            <p class="text-gray-400 text-sm">Placeholder estrutural</p>
+          </div>
+        </div>
+
+        <!-- Loading with Text -->
+        <div class="mt-12 text-center">
+          <div class="inline-flex items-center space-x-4 bg-gray-800/50 rounded-xl p-6">
+            <LoadingState variant="spinner" size="md" text="Carregando dados..." />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Empty States Demo -->
+    <section class="py-20 bg-gray-950 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Empty States Atraentes
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Estados vazios que engajam o usuário com ações claras
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <!-- No Projects -->
+          <div class="bg-gray-800/30 rounded-xl border border-gray-700/50">
+            <EmptyState
+              icon="🚀"
+              title="Nenhum projeto encontrado"
+              description="Você ainda não criou nenhum projeto. Comece criando seu primeiro projeto incrível!"
+              actionText="Criar Primeiro Projeto"
+              actionHref="/admin"
+              variant="card"
+            />
+          </div>
+
+          <!-- No Blog Posts -->
+          <div class="bg-gray-800/30 rounded-xl border border-gray-700/50">
+            <EmptyState
+              icon="📝"
+              title="Nenhum post encontrado"
+              description="Seu blog está vazio. Compartilhe seu conhecimento escrevendo seu primeiro post!"
+              actionText="Escrever Primeiro Post"
+              actionHref="/admin"
+              variant="card"
+            />
+          </div>
+
+          <!-- No Messages -->
+          <div class="bg-gray-800/30 rounded-xl border border-gray-700/50">
+            <EmptyState
+              icon="💬"
+              title="Caixa de entrada vazia"
+              description="Você ainda não recebeu nenhuma mensagem. Seus visitantes entrarão em contato em breve!"
+              variant="card"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Progressive Enhancement Demo -->
+    <section class="py-20 bg-gray-900/50 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Progressive Enhancement
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Funcionalidades que se adaptam às capacidades do navegador
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <!-- Feature Detection -->
+          <div class="bg-gray-800/50 rounded-xl p-8">
+            <h3 class="text-2xl font-semibold mb-6">Detecção de Recursos</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300">Intersection Observer</span>
+                <span id="io-status" class="text-sm px-2 py-1 rounded bg-gray-700">Verificando...</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300">WebGL</span>
+                <span id="webgl-status" class="text-sm px-2 py-1 rounded bg-gray-700">Verificando...</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300">Service Worker</span>
+                <span id="sw-status" class="text-sm px-2 py-1 rounded bg-gray-700">Verificando...</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-gray-300">Web Animations API</span>
+                <span id="wa-status" class="text-sm px-2 py-1 rounded bg-gray-700">Verificando...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Enhancement Demo -->
+          <div class="bg-gray-800/50 rounded-xl p-8">
+            <h3 class="text-2xl font-semibold mb-6">Demonstração</h3>
+            <ProgressiveEnhancement feature="intersection-observer" enhanced="enhanced-animations" fallback="basic-animations">
+              <div class="p-6 bg-gradient-to-r from-primary-500/20 to-accent-cyan/20 rounded-lg">
+                <p class="text-white mb-4">Esta seção usa progressive enhancement!</p>
+                <div class="enhanced-animations">
+                  <p class="text-green-400">✅ Intersection Observer detectado - Animações avançadas ativadas</p>
+                </div>
+                <div class="basic-animations hidden">
+                  <p class="text-yellow-400">⚠️ Intersection Observer não suportado - Animações básicas ativadas</p>
+                </div>
+              </div>
+            </ProgressiveEnhancement>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Implementation Guide -->
+    <section class="py-20 bg-gray-950 reveal">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-4xl font-bold mb-8 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+          Como Usar os Componentes
+        </h2>
+
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <!-- Theme Toggle -->
+            <div>
+              <h3 class="text-xl font-semibold mb-4 text-primary-400">Theme Toggle</h3>
+              <pre class="bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto"><code>&lt;ThemeToggle client:load /&gt;</code></pre>
+              <p class="text-gray-400 text-sm mt-2">Adicione na navbar para alternar temas</p>
+            </div>
+
+            <!-- Loading State -->
+            <div>
+              <h3 class="text-xl font-semibold mb-4 text-primary-400">Loading State</h3>
+              <pre class="bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto"><code>&lt;LoadingState
+  variant="spinner"
+  size="lg"
+  text="Carregando..."
+  client:load /&gt;</code></pre>
+              <p class="text-gray-400 text-sm mt-2">Use durante operações assíncronas</p>
+            </div>
+
+            <!-- Empty State -->
+            <div>
+              <h3 class="text-xl font-semibold mb-4 text-primary-400">Empty State</h3>
+              <pre class="bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto"><code>&lt;EmptyState
+  icon="📭"
+  title="Nada encontrado"
+  actionText="Criar primeiro"
+  actionHref="/create"
+  client:load /&gt;</code></pre>
+              <p class="text-gray-400 text-sm mt-2">Para estados vazios engajadores</p>
+            </div>
+
+            <!-- Progressive Enhancement -->
+            <div>
+              <h3 class="text-xl font-semibold mb-4 text-primary-400">Progressive Enhancement</h3>
+              <pre class="bg-gray-900 p-4 rounded-lg text-sm overflow-x-auto"><code>&lt;ProgressiveEnhancement
+  feature="intersection-observer"
+  enhanced="advanced-class"
+  client:load&gt;
+  &lt;div&gt;Conteúdo&lt;/div&gt;
+&lt;/ProgressiveEnhancement&gt;</code></pre>
+              <p class="text-gray-400 text-sm mt-2">Para funcionalidades adaptativas</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  // Feature detection status updates
+  document.addEventListener('DOMContentLoaded', () => {
+    // Intersection Observer
+    const ioStatus = document.getElementById('io-status');
+    if (ioStatus) {
+      ioStatus.textContent = 'IntersectionObserver' in window ? '✅ Suportado' : '❌ Não suportado';
+      ioStatus.className = 'text-sm px-2 py-1 rounded ' +
+        ('IntersectionObserver' in window ? 'bg-green-700 text-green-300' : 'bg-red-700 text-red-300');
+    }
+
+    // WebGL
+    const webglStatus = document.getElementById('webgl-status');
+    if (webglStatus) {
+      try {
+        const canvas = document.createElement('canvas');
+        const supported = !!(window.WebGLRenderingContext && canvas.getContext('webgl'));
+        webglStatus.textContent = supported ? '✅ Suportado' : '❌ Não suportado';
+        webglStatus.className = 'text-sm px-2 py-1 rounded ' +
+          (supported ? 'bg-green-700 text-green-300' : 'bg-red-700 text-red-300');
+      } catch (e) {
+        webglStatus.textContent = '❌ Não suportado';
+        webglStatus.className = 'text-sm px-2 py-1 rounded bg-red-700 text-red-300';
+      }
+    }
+
+    // Service Worker
+    const swStatus = document.getElementById('sw-status');
+    if (swStatus) {
+      const supported = 'serviceWorker' in navigator;
+      swStatus.textContent = supported ? '✅ Suportado' : '❌ Não suportado';
+      swStatus.className = 'text-sm px-2 py-1 rounded ' +
+        (supported ? 'bg-green-700 text-green-300' : 'bg-red-700 text-red-300');
+    }
+
+    // Web Animations API
+    const waStatus = document.getElementById('wa-status');
+    if (waStatus) {
+      const supported = 'animate' in document.createElement('div');
+      waStatus.textContent = supported ? '✅ Suportado' : '❌ Não suportado';
+      waStatus.className = 'text-sm px-2 py-1 rounded ' +
+        (supported ? 'bg-green-700 text-green-300' : 'bg-red-700 text-red-300');
+    }
+  });
+</script>

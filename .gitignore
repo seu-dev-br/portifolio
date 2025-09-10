@@ -64,6 +64,7 @@ admin-backup/
 *.tmp
 *.bak
 *.backup
+*.fixed
 
 # Arquivos de teste temporários
 test_*.js

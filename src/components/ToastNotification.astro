@@ -1,0 +1,116 @@
+---
+// ToastNotification.astro - Sistema de notificações melhorado
+export interface Props {
+	type?: 'success' | 'error' | 'warning' | 'info';
+	message: string;
+	duration?: number;
+	position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left' | 'top-center';
+}
+
+const {
+	type = 'info',
+	message,
+	duration = 5000,
+	position = 'top-right'
+} = Astro.props;
+
+const typeClasses = {
+	success: 'bg-green-900/90 border-green-500/30 text-green-300',
+	error: 'bg-red-900/90 border-red-500/30 text-red-300',
+	warning: 'bg-yellow-900/90 border-yellow-500/30 text-yellow-300',
+	info: 'bg-blue-900/90 border-blue-500/30 text-blue-300'
+};
+
+const positionClasses = {
+	'top-right': 'top-4 right-4',
+	'top-left': 'top-4 left-4',
+	'bottom-right': 'bottom-4 right-4',
+	'bottom-left': 'bottom-4 left-4',
+	'top-center': 'top-4 left-1/2 transform -translate-x-1/2'
+};
+
+const icons = {
+	success: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+	</svg>`,
+	error: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+	</svg>`,
+	warning: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+	</svg>`,
+	info: `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+	</svg>`
+};
+---
+
+<div
+	id="toast-notification"
+	class={`fixed z-50 flex items-center gap-3 p-4 rounded-lg border backdrop-blur-sm shadow-xl transform transition-all duration-300 ease-out ${positionClasses[position]} ${typeClasses[type]} max-w-sm`}
+	role="alert"
+	aria-live="assertive"
+>
+	<div class="flex-shrink-0">
+		<div class="w-8 h-8 rounded-full bg-current/20 flex items-center justify-center">
+			<div class="text-current" set:html={icons[type]}></div>
+		</div>
+	</div>
+
+	<div class="flex-1">
+		<p class="text-sm font-medium">{message}</p>
+	</div>
+
+	<button
+		id="toast-close"
+		class="flex-shrink-0 w-5 h-5 rounded-full hover:bg-current/20 transition-colors duration-200 flex items-center justify-center group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+		aria-label="Fechar notificação"
+		tabindex="0"
+		role="button"
+	>
+		<svg class="w-3 h-3 text-current/70 group-hover:text-current transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+		</svg>
+	</button>
+</div>
+
+<script define:vars={{ duration }}>
+	document.addEventListener('DOMContentLoaded', function() {
+		const toast = document.getElementById('toast-notification');
+		const closeBtn = document.getElementById('toast-close');
+
+		if (toast && closeBtn) {
+			// Auto-hide after duration
+			const hideTimeout = setTimeout(() => {
+				hideToast();
+			}, duration);
+
+			// Close button functionality
+			closeBtn.addEventListener('click', () => {
+				clearTimeout(hideTimeout);
+				hideToast();
+			});
+
+			function hideToast() {
+				toast.style.opacity = '0';
+				toast.style.transform = 'translateX(100%)';
+				setTimeout(() => {
+					toast.remove();
+				}, 300);
+			}
+
+			// Show animation
+			setTimeout(() => {
+				toast.style.transform = 'translateX(0)';
+				toast.style.opacity = '1';
+			}, 10);
+		}
+	});
+</script>
+
+<style>
+	#toast-notification {
+		opacity: 0;
+		transform: translateX(100%);
+	}
+</style>

@@ -1,7 +1,12 @@
 ---
-import Analytics from '@vercel/analytics/astro';
-import SpeedInsights from '@vercel/speed-insights/astro';
-import { getAboutData } from '../lib/supabase.js';
+// import Analytics from '@vercel/analytics/astro';
+// import SpeedInsights from '@vercel/speed-insights/astro';
+import { getAboutData } from '../lib/supabase';
+import ThemeToggle from '../components/ThemeToggle.astro';
+
+// Import CSS files
+import '../styles/animations.css';
+import '../styles/theme.css';
 
 export interface Props {
 	title: string;
@@ -51,17 +56,33 @@ const contactPhone = aboutData?.socialLinks?.phone || defaultPhone;
 		<meta property="twitter:description" content={description} />
 		<meta property="twitter:image" content={new URL(image, Astro.url)} />
 
-		<title>{title}</title>
+		<!-- PWA Meta Tags -->
+		<meta name="theme-color" content="#0ea5e9" />
+		<meta name="msapplication-TileColor" content="#0f172a" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Ítalo Dev" />
+		<meta name="application-name" content="Ítalo Dev" />
 
-		<!-- Vercel Analytics -->
-		<Analytics />
+		<!-- PWA Manifest -->
+		<link rel="manifest" href="/manifest.json" />
 
-		<!-- Vercel Speed Insights -->
-		<SpeedInsights />
+		<!-- Apple Touch Icons -->
+		<link rel="apple-touch-icon" href="/favicon.svg" />
+
+		<!-- Favicon -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="alternate icon" href="/favicon.svg" />
+
+		<!-- Vercel Analytics (removido temporariamente) -->
+		<!-- <Analytics /> -->
+
+		<!-- Vercel Speed Insights (removido temporariamente) -->
+		<!-- <SpeedInsights /> -->
 	</head>
-	<body class="bg-gray-950 text-gray-100 font-sans antialiased">
+	<body class="font-sans antialiased" style="background-color: var(--bg-primary); color: var(--text-primary);">
 		<!-- Navbar -->
-		<header class="fixed top-0 w-full z-50 bg-gray-950/80 backdrop-blur-xs border-b border-gray-800/50">
+		<header class="fixed top-0 w-full z-50 backdrop-blur-xs border-b" style="background-color: var(--bg-secondary); border-color: var(--border-primary);">
 			<nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex justify-between items-center h-16">
 					<!-- Logo -->
@@ -71,18 +92,22 @@ const contactPhone = aboutData?.socialLinks?.phone || defaultPhone;
 
 					<!-- Desktop Navigation -->
 					<div class="hidden md:flex items-center space-x-8">
-						<a href="/" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Início</a>
-						<a href="/projetos" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Projetos</a>
-						<a href="/blog" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Blog</a>
-						<a href="/sobre" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Sobre</a>
+						<a href="/" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Início</a>
+						<a href="/projetos" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Projetos</a>
+						<a href="/blog" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Blog</a>
+						<a href="/sobre" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Sobre</a>
 						<a href="/contato" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-medium">
 							Contato
 						</a>
+						<!-- Theme Toggle -->
+						<div class="ml-4">
+							<ThemeToggle />
+						</div>
 					</div>
 
 					<!-- Mobile menu button -->
 					<div class="md:hidden">
-						<button id="mobile-menu-button" class="text-gray-300 hover:text-white focus:outline-none focus:text-white">
+						<button id="mobile-menu-button" style="color: var(--text-secondary);" class="hover:text-white focus:outline-none focus:text-white">
 							<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
 							</svg>
@@ -93,13 +118,17 @@ const contactPhone = aboutData?.socialLinks?.phone || defaultPhone;
 				<!-- Mobile Navigation -->
 				<div id="mobile-menu" class="hidden md:hidden pb-4">
 					<div class="flex flex-col space-y-4">
-						<a href="/" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Início</a>
-						<a href="/projetos" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Projetos</a>
-						<a href="/blog" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Blog</a>
-						<a href="/sobre" class="text-gray-300 hover:text-primary-400 transition-colors duration-200 font-medium">Sobre</a>
+						<a href="/" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Início</a>
+						<a href="/projetos" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Projetos</a>
+						<a href="/blog" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Blog</a>
+						<a href="/sobre" style="color: var(--text-secondary);" class="hover:text-primary-400 transition-colors duration-200 font-medium">Sobre</a>
 						<a href="/contato" class="bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg transition-colors duration-200 font-medium text-center">
 							Contato
 						</a>
+						<!-- Mobile Theme Toggle -->
+						<div class="flex justify-center pt-2">
+							<ThemeToggle />
+						</div>
 					</div>
 				</div>
 			</nav>
@@ -111,7 +140,7 @@ const contactPhone = aboutData?.socialLinks?.phone || defaultPhone;
 		</main>
 
 		<!-- Footer -->
-		<footer class="bg-gray-900 border-t border-gray-800/50">
+		<footer class="border-t" style="background-color: var(--bg-secondary); border-color: var(--border-primary);">
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 				<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 					<!-- Brand -->
@@ -203,5 +232,11 @@ const contactPhone = aboutData?.socialLinks?.phone || defaultPhone;
 				background: #64748b;
 			}
 		</style>
+
+		<!-- Animation Scripts (temporariamente desabilitado) -->
+		<!-- <script src="/src/lib/animations.js"></script> -->
+
+		<!-- Service Worker (temporariamente desabilitado) -->
+		<!-- <script src="/src/lib/service-worker.js" type="module"></script> -->
 	</body>
 </html>

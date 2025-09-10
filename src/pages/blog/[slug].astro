@@ -2,6 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { getAllPostSlugs, getPostBySlug, formatDate, getReadingTime } from '../../lib/supabase.js';
 import { marked } from 'marked';
+import OptimizedImage from '../../components/OptimizedImage.astro';
 
 export async function getStaticPaths() {
     const slugs = await getAllPostSlugs();
@@ -26,7 +27,7 @@ if (!post) {
 }
 
 // Convert markdown to HTML
-const htmlContent = marked(post.contentMarkdown || '');
+const htmlContent = marked(post!.contentMarkdown || '');
 
 // Configure marked options for better rendering
 marked.setOptions({
@@ -36,9 +37,9 @@ marked.setOptions({
 ---
 
 <Layout 
-    title={`${post.title} - Ítalo Antonio`}
-    description={post.excerpt}
-    image={post.coverImage}
+    title={`${post!.title} - Ítalo Antonio`}
+    description={post!.excerpt}
+    image={post!.coverImage}
 >
     <div class="container">
         <article class="blog-post">
@@ -49,27 +50,27 @@ marked.setOptions({
                     <span>/</span>
                     <a href="/blog">Blog</a>
                     <span>/</span>
-                    <span>{post.title}</span>
+                    <span>{post!.title}</span>
                 </nav>
                 
-                <h1>{post.title}</h1>
+                <h1>{post!.title}</h1>
                 
                 <div class="post-meta">
                     <div class="meta-item">
-                        <time datetime={post.publishedAt}>
-                            Publicado em {formatDate(post.publishedAt)}
+                        <time datetime={post!.publishedAt}>
+                            Publicado em {formatDate(post!.publishedAt)}
                         </time>
                     </div>
                     <div class="meta-item">
                         <span class="reading-time">
-                            {getReadingTime(post.contentMarkdown)} de leitura
+                            {getReadingTime(post!.contentMarkdown)} de leitura
                         </span>
                     </div>
                 </div>
 
-                {post.tags && post.tags.length > 0 && (
+                {post!.tags && post!.tags.length > 0 && (
                     <div class="post-tags">
-                        {post.tags.map((tag) => (
+                        {post!.tags.map((tag: string) => (
                             <span class="tag">{tag}</span>
                         ))}
                     </div>
@@ -77,9 +78,9 @@ marked.setOptions({
             </header>
 
             <!-- Cover Image -->
-            {post.coverImage && (
+            {post!.coverImage && (
                 <div class="cover-image">
-                    <img src={post.coverImage} alt={post.title} loading="lazy" />
+                    <OptimizedImage src={post!.coverImage} alt={post!.title} width={800} height={400} />
                 </div>
             )}
 
@@ -105,7 +106,7 @@ marked.setOptions({
                     <h3>Compartilhe este post</h3>
                     <div class="share-buttons">
                         <a 
-                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(Astro.url)}`}
+                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post!.title)}&url=${encodeURIComponent(Astro.url.toString())}`}
                             target="_blank" 
                             rel="noopener"
                             class="share-btn twitter"
@@ -113,7 +114,7 @@ marked.setOptions({
                             Twitter
                         </a>
                         <a 
-                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url)}`}
+                            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.toString())}`}
                             target="_blank" 
                             rel="noopener"
                             class="share-btn linkedin"
@@ -121,7 +122,7 @@ marked.setOptions({
                             LinkedIn
                         </a>
                         <a 
-                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url)}`}
+                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.toString())}`}
                             target="_blank" 
                             rel="noopener"
                             class="share-btn facebook"
@@ -584,9 +585,9 @@ marked.setOptions({
         const tocLinks = document.querySelectorAll('.table-of-contents a');
         
         tocLinks.forEach(link => {
-            link.addEventListener('click', function(e) {
+            link.addEventListener('click', function(this: HTMLElement, e: Event) {
                 e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
+                const targetId = this.getAttribute('href')?.substring(1) || '';
                 const targetElement = document.getElementById(targetId);
                 
                 if (targetElement) {
@@ -608,7 +609,7 @@ marked.setOptions({
             let current = '';
             
             headings.forEach(heading => {
-                const sectionTop = heading.offsetTop - 100;
+                const sectionTop = (heading as HTMLElement).offsetTop - 100;
                 if (window.pageYOffset >= sectionTop) {
                     current = heading.id;
                 }
@@ -616,7 +617,8 @@ marked.setOptions({
             
             tocLinks.forEach(link => {
                 link.classList.remove('active');
-                if (link.getAttribute('href').substring(1) === current) {
+                const href = link.getAttribute('href');
+                if (href && href.substring(1) === current) {
                     link.classList.add('active');
                 }
             });

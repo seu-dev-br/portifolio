@@ -1,0 +1,310 @@
+---
+// feedback-demo.astro - Página de demonstração dos componentes de feedback visual
+import ToastNotification from '../components/ToastNotification.astro';
+import FormField from '../components/FormField.astro';
+import EnhancedButton from '../components/EnhancedButton.astro';
+import InteractiveCard from '../components/InteractiveCard.astro';
+import ProgressBar from '../components/ProgressBar.astro';
+---
+
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feedback Visual - Demonstração</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+    <!-- Header -->
+    <div class="container mx-auto px-6 py-12">
+      <div class="text-center mb-12">
+        <h1 class="text-4xl md:text-6xl font-bold bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent mb-4">
+          Feedback Visual
+        </h1>
+        <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+          Componentes interativos com feedback visual aprimorado para uma melhor experiência do usuário
+        </p>
+      </div>
+
+      <!-- Toast Notifications -->
+      <section class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Notificações Toast</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <ToastNotification type="success" message="Operação realizada com sucesso!" />
+          <ToastNotification type="error" message="Erro ao processar a solicitação" />
+          <ToastNotification type="warning" message="Atenção: Verifique os dados" />
+          <ToastNotification type="info" message="Informação importante" />
+        </div>
+        <div class="text-center">
+          <button
+            id="show-toast-demo"
+            class="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold transition-colors duration-300"
+          >
+            Demonstrar Toast
+          </button>
+        </div>
+      </section>
+
+      <!-- Enhanced Buttons -->
+      <section class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Botões Aprimorados</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
+          <!-- Primary Variants -->
+          <div class="space-y-4">
+            <h3 class="text-xl font-semibold text-center">Variantes</h3>
+            <EnhancedButton text="Primário" variant="primary" />
+            <EnhancedButton text="Secundário" variant="secondary" />
+            <EnhancedButton text="Outline" variant="outline" />
+            <EnhancedButton text="Ghost" variant="ghost" />
+            <EnhancedButton text="Sucesso" variant="success" />
+            <EnhancedButton text="Perigo" variant="danger" />
+          </div>
+
+          <!-- Sizes -->
+          <div class="space-y-4">
+            <h3 class="text-xl font-semibold text-center">Tamanhos</h3>
+            <EnhancedButton text="Pequeno" size="sm" />
+            <EnhancedButton text="Médio" size="md" />
+            <EnhancedButton text="Grande" size="lg" />
+          </div>
+
+          <!-- States -->
+          <div class="space-y-4">
+            <h3 class="text-xl font-semibold text-center">Estados</h3>
+            <EnhancedButton text="Desabilitado" disabled={true} />
+            <EnhancedButton text="Carregando" loading={true} />
+            <EnhancedButton
+              text="Com Ícone"
+              icon='<svg fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Form Fields -->
+      <section class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Campos de Formulário</h2>
+        <div class="max-w-md mx-auto space-y-6">
+          <FormField
+            label="Nome Completo"
+            name="nome"
+            type="text"
+            placeholder="Digite seu nome"
+            required={true}
+          />
+
+          <FormField
+            label="Email"
+            name="email"
+            type="email"
+            placeholder="seu@email.com"
+            required={true}
+            error="Email inválido"
+          />
+
+          <FormField
+            label="Mensagem"
+            name="mensagem"
+            type="textarea"
+            placeholder="Digite sua mensagem"
+            rows={4}
+          />
+        </div>
+      </section>
+
+      <!-- Interactive Cards -->
+      <section class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Cartões Interativos</h2>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <InteractiveCard
+            title="Projeto 1"
+            description="Descrição do primeiro projeto com tecnologias modernas"
+          />
+
+          <InteractiveCard
+            title="Projeto 2"
+            description="Aplicação web responsiva com design system"
+          />
+
+          <InteractiveCard
+            title="Projeto 3"
+            description="API RESTful com documentação completa"
+          />
+        </div>
+      </section>
+
+      <!-- Progress Bars -->
+      <section class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Barras de Progresso</h2>
+        <div class="max-w-md mx-auto space-y-8">
+          <div>
+            <label class="block text-sm font-medium mb-2">Carregamento (75%)</label>
+            <ProgressBar progress={75} variant="default" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Upload (45%)</label>
+            <ProgressBar progress={45} variant="gradient" showPercentage={true} />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Processamento (90%)</label>
+            <ProgressBar progress={90} variant="striped" animated={true} />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium mb-2">Erro (30%)</label>
+            <ProgressBar progress={30} variant="default" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive Demo -->
+      <section class="mb-16">
+        <h2 class="text-3xl font-bold mb-8 text-center">Demonstração Interativa</h2>
+        <div class="max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700">
+          <div class="space-y-6">
+            <div class="flex gap-4">
+              <EnhancedButton
+                text="Mostrar Sucesso"
+                variant="success"
+                id="demo-success"
+                class="flex-1"
+              />
+              <EnhancedButton
+                text="Mostrar Erro"
+                variant="danger"
+                id="demo-error"
+                class="flex-1"
+              />
+            </div>
+
+            <div class="flex gap-4">
+              <EnhancedButton
+                text="Iniciar Progresso"
+                variant="primary"
+                id="demo-progress"
+                class="flex-1"
+              />
+              <EnhancedButton
+                text="Simular Loading"
+                variant="secondary"
+                id="demo-loading"
+                class="flex-1"
+              />
+            </div>
+
+            <div id="progress-demo" class="hidden">
+              <label class="block text-sm font-medium mb-2">Progresso da Demonstração</label>
+              <ProgressBar progress={0} variant="default" showPercentage={true} />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Demo functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const showToastBtn = document.getElementById('show-toast-demo');
+    const demoSuccessBtn = document.getElementById('demo-success');
+    const demoErrorBtn = document.getElementById('demo-error');
+    const demoProgressBtn = document.getElementById('demo-progress');
+    const demoLoadingBtn = document.getElementById('demo-loading');
+    const progressDemo = document.getElementById('progress-demo');
+
+    // Toast demo
+    showToastBtn?.addEventListener('click', () => {
+      alert('Toast: Demonstração de notificação!');
+    });
+
+    // Success demo
+    demoSuccessBtn?.addEventListener('click', () => {
+      alert('✅ Operação realizada com sucesso!');
+    });
+
+    // Error demo
+    demoErrorBtn?.addEventListener('click', () => {
+      alert('❌ Erro na operação!');
+    });
+
+    // Progress demo
+    demoProgressBtn?.addEventListener('click', () => {
+      if (progressDemo) {
+        progressDemo.classList.remove('hidden');
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 10;
+          // Update progress visually
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              alert('🎉 Progresso concluído!');
+            }, 500);
+          }
+        }, 300);
+      }
+    });
+
+    // Loading demo
+    demoLoadingBtn?.addEventListener('click', () => {
+      if (demoLoadingBtn) {
+        demoLoadingBtn.textContent = 'Carregando...';
+        demoLoadingBtn.classList.add('loading');
+
+        setTimeout(() => {
+          demoLoadingBtn.textContent = 'Simular Loading';
+          demoLoadingBtn.classList.remove('loading');
+          alert('🔄 Loading simulado concluído!');
+        }, 3000);
+      }
+    });
+  });
+</script>
+
+<style>
+  /* Custom styles for demo */
+  .progress-percentage {
+    @apply text-sm font-medium;
+  }
+
+  /* Enhanced button loading state for demo */
+  .enhanced-button.loading {
+    pointer-events: none;
+    position: relative;
+  }
+
+  .enhanced-button.loading::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .enhanced-button.loading::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+</body>
+</html>

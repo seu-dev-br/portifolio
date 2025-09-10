@@ -1,0 +1,171 @@
+---
+// Skeleton Showcase - Demonstração dos skeletons criados
+import Layout from '../layouts/Layout.astro';
+import LoadingSkeleton from '../components/LoadingSkeleton.astro';
+import ProjectCardSkeleton from '../components/ProjectCardSkeleton.astro';
+import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
+import AboutSkeleton from '../components/AboutSkeleton.astro';
+import HomeSkeleton from '../components/HomeSkeleton.astro';
+import ContactFormSkeleton from '../components/ContactFormSkeleton.astro';
+import SkeletonCard from '../components/SkeletonCard.astro';
+import SkeletonGrid from '../components/SkeletonGrid.astro';
+import TableSkeleton from '../components/TableSkeleton.astro';
+import SidebarSkeleton from '../components/SidebarSkeleton.astro';
+---
+
+<Layout title="Skeleton Loaders - Demonstração">
+	<div class="min-h-screen bg-gray-950 text-white">
+		<!-- Header -->
+		<section class="pt-32 pb-20 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+				<h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+					Skeleton Loaders
+				</h1>
+				<p class="text-xl text-gray-400 max-w-3xl mx-auto">
+					Demonstração completa dos componentes de skeleton loading criados para melhorar a experiência do usuário.
+				</p>
+			</div>
+		</section>
+
+		<!-- Showcase Sections -->
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-20">
+
+			<!-- Basic Skeletons -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Skeletons Básicos</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					<div class="bg-gray-800/50 rounded-xl p-6">
+						<h3 class="text-xl font-semibold mb-4">LoadingSkeleton</h3>
+						<LoadingSkeleton lines={3} widths={['100%', '80%', '60%']} />
+					</div>
+					<div class="bg-gray-800/50 rounded-xl p-6">
+						<h3 class="text-xl font-semibold mb-4">Texto Simples</h3>
+						<LoadingSkeleton lines={2} />
+					</div>
+					<div class="bg-gray-800/50 rounded-xl p-6">
+						<h3 class="text-xl font-semibold mb-4">Parágrafo Longo</h3>
+						<LoadingSkeleton lines={4} widths={['100%', '95%', '85%', '70%']} />
+					</div>
+				</div>
+			</section>
+
+			<!-- Card Skeletons -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Skeletons de Cards</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Project Card</h3>
+						<ProjectCardSkeleton />
+					</div>
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Blog Post</h3>
+						<BlogPostSkeleton />
+					</div>
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Contact Form</h3>
+						<ContactFormSkeleton />
+					</div>
+				</div>
+			</section>
+
+			<!-- SkeletonCard Component -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">SkeletonCard Configurável</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+					<div>
+						<h3 class="text-lg font-semibold mb-4">Projeto</h3>
+						<SkeletonCard type="project" />
+					</div>
+					<div>
+						<h3 class="text-lg font-semibold mb-4">Blog</h3>
+						<SkeletonCard type="blog" />
+					</div>
+					<div>
+						<h3 class="text-lg font-semibold mb-4">Testimonial</h3>
+						<SkeletonCard type="testimonial" />
+					</div>
+					<div>
+						<h3 class="text-lg font-semibold mb-4">Serviço</h3>
+						<SkeletonCard type="service" />
+					</div>
+				</div>
+			</section>
+
+			<!-- SkeletonGrid Component -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">SkeletonGrid - Múltiplos Cards</h2>
+				<div class="space-y-8">
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Grid de Projetos (6 items)</h3>
+						<SkeletonGrid type="project" count={6} />
+					</div>
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Grid de Posts (3 items)</h3>
+						<SkeletonGrid type="blog" count={3} />
+					</div>
+				</div>
+			</section>
+
+			<!-- Table and Sidebar Skeletons -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Skeletons Avançados</h2>
+				<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+					<div class="bg-gray-800/50 rounded-xl p-6">
+						<h3 class="text-xl font-semibold mb-4">Tabela</h3>
+						<TableSkeleton rows={4} columns={4} />
+					</div>
+					<div class="bg-gray-800/50 rounded-xl p-6">
+						<h3 class="text-xl font-semibold mb-4">Sidebar</h3>
+						<div class="h-96">
+							<SidebarSkeleton items={6} showAvatar={true} showSearch={true} />
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Page Skeletons -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Skeletons de Página Completa</h2>
+				<div class="space-y-12">
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Página Sobre (preview)</h3>
+						<div class="max-h-96 overflow-hidden rounded-xl">
+							<AboutSkeleton />
+						</div>
+					</div>
+					<div>
+						<h3 class="text-xl font-semibold mb-4">Página Inicial (preview)</h3>
+						<div class="max-h-96 overflow-hidden rounded-xl">
+							<HomeSkeleton />
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Usage Examples -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Como Usar</h2>
+				<div class="bg-gray-800/50 rounded-xl p-8">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<div>
+							<h3 class="text-xl font-semibold mb-4">Sintaxe Básica</h3>
+							<pre class="bg-gray-900 rounded-lg p-4 text-sm overflow-x-auto"><code>&lt;LoadingSkeleton lines={3} /&gt;
+&lt;SkeletonCard type="project" /&gt;
+&lt;SkeletonGrid type="blog" count={6} /&gt;</code></pre>
+						</div>
+						<div>
+							<h3 class="text-xl font-semibold mb-4">Props Disponíveis</h3>
+							<ul class="space-y-2 text-gray-300">
+								<li><strong>lines:</strong> Número de linhas (padrão: 2)</li>
+								<li><strong>type:</strong> Tipo de skeleton (project, blog, etc.)</li>
+								<li><strong>count:</strong> Número de items no grid</li>
+								<li><strong>class:</strong> Classes CSS adicionais</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</section>
+
+		</div>
+	</div>
+</Layout>

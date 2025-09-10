@@ -1,0 +1,72 @@
+---
+// ButtonLoading.astro - Componente de loading para botões
+export interface Props {
+	text?: string;
+	loadingText?: string;
+	size?: 'sm' | 'md' | 'lg';
+	variant?: 'primary' | 'secondary' | 'outline';
+	disabled?: boolean;
+	type?: 'button' | 'submit' | 'reset';
+}
+
+const {
+	text = 'Carregar',
+	loadingText = 'Carregando...',
+	size = 'md',
+	variant = 'primary',
+	disabled = false,
+	type = 'button'
+} = Astro.props;
+
+const sizeClasses = {
+	sm: 'px-4 py-2 text-sm',
+	md: 'px-6 py-3 text-base',
+	lg: 'px-8 py-4 text-lg'
+};
+
+const variantClasses = {
+	primary: 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white',
+	secondary: 'bg-gray-600 hover:bg-gray-500 text-white',
+	outline: 'border-2 border-primary-500 hover:border-primary-400 text-primary-400 hover:text-primary-300'
+};
+---
+
+<button
+	type={type}
+	disabled={disabled}
+	class={`inline-flex items-center justify-center gap-2 font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${sizeClasses[size]} ${variantClasses[variant]}`}
+>
+	<span id="button-text">{text}</span>
+	<span id="button-loading" class="hidden">
+		<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+		</svg>
+		{loadingText}
+	</span>
+</button>
+
+<script>
+	// Extensão da interface Window para TypeScript
+	declare global {
+		interface Window {
+			setButtonLoading: (buttonElement: HTMLElement, loading: boolean) => void;
+		}
+	}
+
+	// Função global para controlar estado de loading dos botões
+	window.setButtonLoading = function(buttonElement: HTMLElement, loading: boolean) {
+		const textSpan = buttonElement.querySelector('#button-text') as HTMLElement;
+		const loadingSpan = buttonElement.querySelector('#button-loading') as HTMLElement;
+		const button = buttonElement as HTMLButtonElement;
+
+		if (loading) {
+			textSpan.classList.add('hidden');
+			loadingSpan.classList.remove('hidden');
+			button.disabled = true;
+		} else {
+			textSpan.classList.remove('hidden');
+			loadingSpan.classList.add('hidden');
+			button.disabled = false;
+		}
+	};
+</script>

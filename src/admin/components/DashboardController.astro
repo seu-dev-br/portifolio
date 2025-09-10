@@ -1,0 +1,515 @@
+---
+// src/admin/components/DashboardController.astro
+import { AuthService } from '../services/auth.service';
+import { LoadingService } from '../services/loading.service';
+import { NotificationService } from '../services/notification.service';
+import { StateService } from '../services/state.service';
+
+export interface Props {
+  initialState: any;
+}
+
+const { initialState } = Astro.props;
+
+// Serviços serão inicializados no cliente
+---
+
+<script>
+    import { AuthService } from '../services/auth.service';
+    import { LoadingService } from '../services/loading.service';
+    import { NotificationService } from '../services/notification.service';
+    import { StateService } from '../services/state.service';
+    import { apiService } from '../services/api.service';
+
+    // Estado global
+    let authService: AuthService;
+    let loadingService: LoadingService;
+    let notificationService: NotificationService;
+    let stateService: StateService;
+
+    // Estado da aplicação
+    let currentView = 'overview';
+    let isLoading = false;
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log('🚀 Inicializando Dashboard Controller...');
+
+        try {
+            // Inicializar serviços
+            authService = new AuthService();
+            loadingService = new LoadingService();
+            notificationService = new NotificationService();
+            stateService = new StateService();
+
+            // Configurar event listeners
+            setupEventListeners();
+
+            // Verificar autenticação
+            await checkAuthentication();
+
+            // Carregar dados iniciais
+            await loadInitialData();
+
+            console.log('✅ Dashboard Controller inicializado');
+        } catch (error) {
+            console.error('❌ Erro na inicialização:', error);
+            notificationService?.error('Erro na inicialização do dashboard');
+        }
+    });
+
+    // Configurar event listeners
+    function setupEventListeners() {
+        // Navegação por abas
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', async function(this: HTMLElement) {
+                const view = this.getAttribute('data-view');
+                if (view) {
+                    await switchView(view);
+                }
+            });
+        });
+
+        // Botões de ação
+        setupActionButtons();
+    }
+
+    // Configurar botões de ação
+    function setupActionButtons() {
+        // Logout
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', handleLogout);
+        }
+
+        // Adicionar projeto
+        const addProjectBtn = document.getElementById('add-project-btn');
+        if (addProjectBtn) {
+            addProjectBtn.addEventListener('click', () => showProjectModal());
+        }
+
+        // Adicionar post
+        const addPostBtn = document.getElementById('add-post-btn');
+        if (addPostBtn) {
+            addPostBtn.addEventListener('click', () => showPostModal());
+        }
+
+        // Refresh mensagens
+        const refreshMessagesBtn = document.getElementById('refresh-messages-btn');
+        if (refreshMessagesBtn) {
+            refreshMessagesBtn.addEventListener('click', () => loadMessages());
+        }
+    }
+
+    // Verificar autenticação
+    async function checkAuthentication() {
+        try {
+            loadingService.show();
+
+            const session = await authService.getCurrentSession();
+            if (!session || !session.user) {
+                // Redirecionar para login se não autenticado
+                window.location.href = '/admin';
+                return;
+            }
+
+            // Atualizar estado
+            stateService.login(session.user, session);
+            notificationService.success('Bem-vindo de volta!');
+
+        } catch (error: any) {
+            console.error('Erro na autenticação:', error);
+            notificationService.error('Erro na autenticação');
+            window.location.href = '/admin';
+        } finally {
+            loadingService.hide();
+        }
+    }
+
+    // Carregar dados iniciais
+    async function loadInitialData() {
+        try {
+            await Promise.all([
+                loadDashboardStats(),
+                loadProjects(),
+                loadPosts(),
+                loadMessages()
+            ]);
+        } catch (error) {
+            console.error('Erro ao carregar dados iniciais:', error);
+        }
+    }
+
+    // Alternar entre views
+    async function switchView(viewName: string) {
+        try {
+            // Atualizar navegação visual
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            const selectedItem = document.querySelector(`[data-view="${viewName}"]`);
+            if (selectedItem) {
+                selectedItem.classList.add('active');
+            }
+
+            // Esconder todas as views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+
+            // Mostrar view selecionada
+            const selectedView = document.getElementById(`${viewName}-view`);
+            if (selectedView) {
+                selectedView.classList.add('active');
+            }
+
+            // Carregar dados específicos da view
+            currentView = viewName;
+            await loadViewData(viewName);
+
+        } catch (error) {
+            console.error('Erro ao alternar view:', error);
+            notificationService.error('Erro ao carregar seção');
+        }
+    }
+
+    // Carregar dados da view específica
+    async function loadViewData(viewName: string) {
+        switch (viewName) {
+            case 'overview':
+                await loadDashboardStats();
+                break;
+            case 'projects':
+                await loadProjects();
+                break;
+            case 'blog':
+                await loadPosts();
+                break;
+            case 'messages':
+                await loadMessages();
+                break;
+        }
+    }
+
+    // Carregar estatísticas do dashboard
+    async function loadDashboardStats() {
+        try {
+            const response = await apiService.getStats();
+
+            if (response.success && response.data) {
+                updateStatsDisplay(response.data);
+            } else {
+                console.error('Erro ao carregar estatísticas:', response.error);
+            }
+        } catch (error) {
+            console.error('Erro ao carregar estatísticas:', error);
+        }
+    }
+
+    // Atualizar display das estatísticas
+    function updateStatsDisplay(stats: any) {
+        const projectsCount = document.getElementById('projects-count');
+        const postsCount = document.getElementById('posts-count');
+        const messagesCount = document.getElementById('messages-count');
+        const visitsCount = document.getElementById('visits-count');
+
+        if (projectsCount) projectsCount.textContent = stats.projects || '0';
+        if (postsCount) postsCount.textContent = stats.posts || '0';
+        if (messagesCount) messagesCount.textContent = stats.messages || '0';
+        if (visitsCount) visitsCount.textContent = stats.visits || '0';
+    }
+
+    // Carregar projetos
+    async function loadProjects() {
+        try {
+            loadingService.show();
+
+            const response = await apiService.getProjects();
+
+            if (response.success && response.data) {
+                renderProjects(response.data);
+            } else {
+                console.error('Erro ao carregar projetos:', response.error);
+                notificationService.error('Erro ao carregar projetos');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar projetos:', error);
+            notificationService.error('Erro ao carregar projetos');
+        } finally {
+            loadingService.hide();
+        }
+    }
+
+    // Renderizar projetos
+    function renderProjects(projects: any[]) {
+        const container = document.getElementById('projects-list');
+        if (!container) return;
+
+        if (projects.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-project-diagram"></i>
+                    <h3>Nenhum projeto encontrado</h3>
+                    <p>Comece criando seu primeiro projeto!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = projects.map(project => `
+            <div class="project-card">
+                <div class="project-header">
+                    <h4>${project.title}</h4>
+                    <div class="project-actions">
+                        <button class="btn btn-secondary" onclick="editProject(${project.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteProject(${project.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="project-description">${project.description}</p>
+                <div class="project-meta">
+                    <span class="project-tech">${project.technologies || 'Tecnologias não especificadas'}</span>
+                    <span class="project-status status-${project.status || 'completed'}">${project.status || 'Concluído'}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Carregar posts
+    async function loadPosts() {
+        try {
+            loadingService.show();
+
+            const response = await apiService.getPosts();
+
+            if (response.success && response.data) {
+                renderPosts(response.data);
+            } else {
+                console.error('Erro ao carregar posts:', response.error);
+                notificationService.error('Erro ao carregar posts');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar posts:', error);
+            notificationService.error('Erro ao carregar posts');
+        } finally {
+            loadingService.hide();
+        }
+    }
+
+    // Renderizar posts
+    function renderPosts(posts: any[]) {
+        const container = document.getElementById('posts-list');
+        if (!container) return;
+
+        if (posts.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-blog"></i>
+                    <h3>Nenhum post encontrado</h3>
+                    <p>Comece escrevendo seu primeiro post!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = posts.map(post => `
+            <div class="post-card">
+                <div class="post-header">
+                    <h4>${post.title}</h4>
+                    <div class="post-actions">
+                        <button class="btn btn-secondary" onclick="editPost(${post.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="deletePost(${post.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="post-excerpt">${post.excerpt || post.content?.substring(0, 150) + '...'}</p>
+                <div class="post-meta">
+                    <span class="post-date">${new Date(post.created_at).toLocaleDateString()}</span>
+                    <span class="post-status status-${post.status || 'draft'}">${post.status === 'published' ? 'Publicado' : 'Rascunho'}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Carregar mensagens
+    async function loadMessages() {
+        try {
+            loadingService.show();
+
+            const response = await apiService.getMessages();
+
+            if (response.success && response.data) {
+                renderMessages(response.data);
+            } else {
+                console.error('Erro ao carregar mensagens:', response.error);
+                notificationService.error('Erro ao carregar mensagens');
+            }
+        } catch (error) {
+            console.error('Erro ao carregar mensagens:', error);
+            notificationService.error('Erro ao carregar mensagens');
+        } finally {
+            loadingService.hide();
+        }
+    }
+
+    // Renderizar mensagens
+    function renderMessages(messages: any[]) {
+        const container = document.getElementById('messages-list');
+        if (!container) return;
+
+        if (messages.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Nenhuma mensagem encontrada</h3>
+                    <p>As mensagens de contato aparecerão aqui.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = messages.map(message => `
+            <div class="message-card ${message.read ? 'read' : 'unread'}">
+                <div class="message-header">
+                    <div class="message-info">
+                        <h4>${message.name}</h4>
+                        <span class="message-email">${message.email}</span>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-date">${new Date(message.created_at).toLocaleDateString()}</span>
+                        ${!message.read ? '<span class="unread-indicator"></span>' : ''}
+                    </div>
+                </div>
+                <p class="message-content">${message.message}</p>
+                <div class="message-actions">
+                    <button class="btn btn-secondary" onclick="markAsRead(${message.id})">
+                        <i class="fas fa-check"></i> Marcar como lida
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteMessage(${message.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Logout
+    async function handleLogout() {
+        try {
+            loadingService.show();
+
+            const result = await authService.logout();
+            if (result.success) {
+                stateService.logout();
+                notificationService.success('Logout realizado com sucesso!');
+                window.location.href = '/admin';
+            } else {
+                notificationService.error(result.error || 'Erro no logout');
+            }
+        } catch (error: any) {
+            notificationService.error('Erro no logout: ' + error.message);
+        } finally {
+            loadingService.hide();
+        }
+    }
+
+    // Modais (placeholders para implementação futura)
+    function showProjectModal() {
+        notificationService.info('Modal de novo projeto - Em implementação');
+    }
+
+    function showPostModal() {
+        notificationService.info('Modal de novo post - Em implementação');
+    }
+
+    // Funções globais para uso nos botões
+    (window as any).editProject = async function(id: number) {
+        notificationService.info(`Editar projeto ${id} - Em implementação`);
+    };
+
+    (window as any).deleteProject = async function(id: number) {
+        if (confirm('Tem certeza que deseja excluir este projeto?')) {
+            try {
+                const response = await fetch(`/api/admin/projects/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    notificationService.success('Projeto excluído com sucesso!');
+                    await loadProjects();
+                } else {
+                    notificationService.error('Erro ao excluir projeto');
+                }
+            } catch (error) {
+                notificationService.error('Erro ao excluir projeto');
+            }
+        }
+    };
+
+    (window as any).editPost = async function(id: number) {
+        notificationService.info(`Editar post ${id} - Em implementação`);
+    };
+
+    (window as any).deletePost = async function(id: number) {
+        if (confirm('Tem certeza que deseja excluir este post?')) {
+            try {
+                const response = await fetch(`/api/admin/posts/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    notificationService.success('Post excluído com sucesso!');
+                    await loadPosts();
+                } else {
+                    notificationService.error('Erro ao excluir post');
+                }
+            } catch (error) {
+                notificationService.error('Erro ao excluir post');
+            }
+        }
+    };
+
+    (window as any).markAsRead = async function(id: number) {
+        try {
+            const response = await fetch(`/api/admin/messages/${id}/read`, {
+                method: 'PUT'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                await loadMessages();
+            }
+        } catch (error) {
+            console.error('Erro ao marcar mensagem como lida:', error);
+        }
+    };
+
+    (window as any).deleteMessage = async function(id: number) {
+        if (confirm('Tem certeza que deseja excluir esta mensagem?')) {
+            try {
+                const response = await fetch(`/api/admin/messages/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    notificationService.success('Mensagem excluída com sucesso!');
+                    await loadMessages();
+                } else {
+                    notificationService.error('Erro ao excluir mensagem');
+                }
+            } catch (error) {
+                notificationService.error('Erro ao excluir mensagem');
+            }
+        }
+    };
+</script>

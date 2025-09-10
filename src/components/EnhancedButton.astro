@@ -1,0 +1,129 @@
+---
+// EnhancedButton.astro - Botão com feedback visual aprimorado
+export interface Props {
+  text: string;
+  loadingText?: string;
+  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "success" | "danger";
+  disabled?: boolean;
+  loading?: boolean;
+  type?: "button" | "submit" | "reset";
+  icon?: string;
+  iconPosition?: "left" | "right";
+  href?: string;
+  target?: "_blank" | "_self";
+  ripple?: boolean;
+  id?: string;
+  class?: string;
+}
+
+const {
+  text,
+  loadingText = "Carregando...",
+  size = "md",
+  variant = "primary",
+  disabled = false,
+  loading = false,
+  type = "button",
+  icon,
+  iconPosition = "left",
+  href,
+  target = "_self",
+  ripple = true,
+  id,
+  class: className
+} = Astro.props;
+
+const sizeClasses = {
+  sm: "px-4 py-2 text-sm",
+  md: "px-6 py-3 text-base",
+  lg: "px-8 py-4 text-lg"
+};
+
+const variantClasses = {
+  primary: "bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white shadow-lg shadow-primary-500/25",
+  secondary: "bg-gray-700 hover:bg-gray-600 text-white shadow-lg shadow-gray-700/25",
+  outline: "border-2 border-primary-500 hover:border-primary-400 text-primary-400 hover:text-primary-300 hover:bg-primary-500/10",
+  ghost: "text-gray-300 hover:text-white hover:bg-gray-700/50",
+  success: "bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white shadow-lg shadow-green-500/25",
+  danger: "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white shadow-lg shadow-red-500/25"
+};
+
+const Component = href ? "a" : "button";
+const componentProps = href ? { href, target, rel: target === "_blank" ? "noopener noreferrer" : undefined } : { type };
+---
+
+<Component
+  {...componentProps}
+  {id}
+  disabled={disabled || loading}
+  class={`enhanced-button btn-hover-lift inline-flex items-center justify-center gap-3 font-semibold rounded-xl relative overflow-hidden group ${sizeClasses[size]} ${variantClasses[variant]} ${href ? "cursor-pointer" : ""} ${className || ""}`}
+>
+  <!-- Ripple effect -->
+  {ripple && !disabled && !loading && (
+    <span class="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+  )}
+
+  <!-- Loading state -->
+  {loading && (
+    <span class="absolute inset-0 bg-current/10 rounded-xl flex items-center justify-center">
+      <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+      </svg>
+      <span class="ml-2">{loadingText}</span>
+    </span>
+  )}
+
+  <!-- Content -->
+  <span class={`relative z-10 flex items-center gap-2 ${loading ? "opacity-0" : "opacity-100"} transition-opacity duration-200`}>
+    {icon && iconPosition === "left" && (
+      <span class="w-5 h-5 flex-shrink-0" set:html={icon}></span>
+    )}
+
+    <span>{text}</span>
+
+    {icon && iconPosition === "right" && (
+      <span class="w-5 h-5 flex-shrink-0" set:html={icon}></span>
+    )}
+  </span>
+</Component>
+
+<style>
+  .enhanced-button {
+    position: relative;
+  }
+
+  .enhanced-button::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background-size: 200% 200%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .enhanced-button:hover::before {
+    opacity: 1;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Focus ring enhancement */
+  .enhanced-button:focus-visible {
+    outline: 2px solid rgb(59, 130, 246);
+    outline-offset: 2px;
+  }
+
+  /* Active state enhancement */
+  .enhanced-button:active {
+    transform: scale(0.98);
+    transition-duration: 0.1s;
+  }
+</style>

@@ -1,0 +1,162 @@
+---
+// ProgressiveEnhancement.astro - Componente para progressive enhancement
+export interface Props {
+  feature: 'intersection-observer' | 'webgl' | 'service-worker' | 'web-animations' | 'css-grid' | 'flexbox';
+  fallback?: string;
+  enhanced?: string;
+  children?: any;
+}
+
+const { feature, fallback, enhanced, children } = Astro.props;
+---
+
+<div
+  class="progressive-enhancement"
+  data-feature={feature}
+  data-fallback={fallback}
+  data-enhanced={enhanced}
+>
+  {children}
+</div>
+
+<script>
+  // Progressive Enhancement Manager
+  class ProgressiveEnhancement {
+    private features: { [key: string]: boolean } = {};
+
+    constructor() {
+      this.detectFeatures();
+      this.applyEnhancements();
+    }
+
+    private detectFeatures(): void {
+      // Intersection Observer
+      this.features['intersection-observer'] = 'IntersectionObserver' in window;
+
+      // WebGL
+      this.features['webgl'] = (() => {
+        try {
+          const canvas = document.createElement('canvas');
+          return !!(window.WebGLRenderingContext &&
+            canvas.getContext('webgl'));
+        } catch (e) {
+          return false;
+        }
+      })();
+
+      // Service Worker
+      this.features['service-worker'] = 'serviceWorker' in navigator;
+
+      // Web Animations API
+      this.features['web-animations'] = 'animate' in document.createElement('div');
+
+      // CSS Grid
+      this.features['css-grid'] = CSS.supports('display', 'grid');
+
+      // Flexbox
+      this.features['flexbox'] = CSS.supports('display', 'flex');
+    }
+
+    private applyEnhancements(): void {
+      const elements = document.querySelectorAll('.progressive-enhancement');
+
+      elements.forEach((element) => {
+        const feature = element.getAttribute('data-feature');
+        const fallback = element.getAttribute('data-fallback');
+        const enhanced = element.getAttribute('data-enhanced');
+
+        if (feature && this.features[feature]) {
+          // Feature is supported - apply enhanced version
+          if (enhanced) {
+            element.classList.add(enhanced);
+          }
+          element.classList.add('enhanced');
+        } else {
+          // Feature not supported - apply fallback
+          if (fallback) {
+            element.classList.add(fallback);
+          }
+          element.classList.add('fallback');
+        }
+      });
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => new ProgressiveEnhancement());
+  } else {
+    new ProgressiveEnhancement();
+  }
+</script>
+
+<style>
+  /* Progressive enhancement styles */
+  .progressive-enhancement {
+    /* Base styles that work everywhere */
+  }
+
+  /* Enhanced styles for supported features */
+  .progressive-enhancement.enhanced {
+    /* Styles that require the feature */
+  }
+
+  /* Fallback styles for unsupported features */
+  .progressive-enhancement.fallback {
+    /* Simplified styles for older browsers */
+  }
+
+  /* Specific feature enhancements */
+
+  /* Intersection Observer enhancements */
+  .progressive-enhancement[data-feature="intersection-observer"].enhanced {
+    /* Can use lazy loading, scroll animations, etc. */
+  }
+
+  .progressive-enhancement[data-feature="intersection-observer"].fallback {
+    /* Fallback without lazy loading */
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* WebGL enhancements */
+  .progressive-enhancement[data-feature="webgl"].enhanced {
+    /* Can use WebGL-based effects */
+  }
+
+  .progressive-enhancement[data-feature="webgl"].fallback {
+    /* Fallback to CSS-based effects */
+  }
+
+  /* Service Worker enhancements */
+  .progressive-enhancement[data-feature="service-worker"].enhanced {
+    /* Can show offline indicators, etc. */
+  }
+
+  /* Web Animations enhancements */
+  .progressive-enhancement[data-feature="web-animations"].enhanced {
+    /* Can use WAAPI animations */
+  }
+
+  .progressive-enhancement[data-feature="web-animations"].fallback {
+    /* Fallback to CSS animations */
+  }
+
+  /* CSS Grid enhancements */
+  .progressive-enhancement[data-feature="css-grid"].enhanced {
+    /* Can use CSS Grid layouts */
+  }
+
+  .progressive-enhancement[data-feature="css-grid"].fallback {
+    /* Fallback to flexbox or floats */
+  }
+
+  /* Flexbox enhancements */
+  .progressive-enhancement[data-feature="flexbox"].enhanced {
+    /* Can use flexbox layouts */
+  }
+
+  .progressive-enhancement[data-feature="flexbox"].fallback {
+    /* Fallback to inline-block or floats */
+  }
+</style>

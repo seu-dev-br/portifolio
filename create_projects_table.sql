@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS projects (
     github_link TEXT,
     download_link TEXT,
     image TEXT,
-    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published', 'coming_soon')),
     published_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -26,10 +26,10 @@ CREATE INDEX IF NOT EXISTS idx_projects_created_at ON projects(created_at);
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
 -- Políticas RLS para projetos
--- Política para SELECT (todos podem ver projetos publicados)
+-- Política para SELECT (todos podem ver projetos publicados e coming soon)
 DROP POLICY IF EXISTS "projects_select_policy" ON projects;
 CREATE POLICY "projects_select_policy" ON projects
-    FOR SELECT USING (status = 'published' OR auth.uid() IS NOT NULL);
+    FOR SELECT USING (status IN ('published', 'coming_soon') OR auth.uid() IS NOT NULL);
 
 -- Política para INSERT (apenas usuários autenticados podem criar)
 DROP POLICY IF EXISTS "projects_insert_policy" ON projects;

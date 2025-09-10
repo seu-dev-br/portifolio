@@ -1,336 +1,2752 @@
 ---
 // src/pages/admin.astro
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabase-client-config.js';
+
+// Type declarations
+declare global {
+  interface Window {
+    adminPanel: any;
+  }
+}
+
+interface Project {
+  id: string;
+  title: string;
+  description: string;
+  image_url?: string;
+  project_url?: string;
+  technologies?: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  image_url?: string;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+interface Message {
+  id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+}
+
+interface Stats {
+  projects: number;
+  posts: number;
+  messages: number;
+}
 ---
 
-<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Ítalo Antonio</title>
-    <link rel="stylesheet" href="/admin/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <title>Painel Administrativo - Portfólio</title>
+
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Admin Styles -->
+    <link rel="stylesheet" href="/admin.css">
 </head>
 <body>
-    <!-- Tela de Login -->
-    <div id="login-container" class="container">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Carregando...</p>
+        </div>
+    </div>
+
+    <!-- Login Container -->
+    <div id="login-container" class="login-container" style="display: none;">
         <div class="login-card">
-            <h1>Painel Administrativo - Ítalo Antonio</h1>
-            <form id="login-form">
+            <div class="login-header">
+                <i class="fas fa-shield-alt"></i>
+                <h1>Painel Administrativo</h1>
+                <p>Gerencie seu portfólio profissional</p>
+            </div>
+
+            <form id="login-form" class="login-form">
                 <div class="form-group">
-                    <label for="email">Email:</label>
-                    <input type="email" id="email" required>
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        E-mail
+                    </label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        placeholder="Digite seu e-mail"
+                        required
+                        autocomplete="email"
+                    >
                 </div>
+
                 <div class="form-group">
-                    <label for="password">Senha:</label>
-                    <input type="password" id="password" required>
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Senha
+                    </label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Digite sua senha"
+                        required
+                        autocomplete="current-password"
+                    >
                 </div>
-                <button type="submit" class="btn btn-primary">Entrar</button>
+
+                <button type="submit" class="btn btn-primary" id="login-btn">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Entrar</span>
+                </button>
             </form>
+
             <div id="login-error" class="error-message" style="display: none;"></div>
         </div>
     </div>
 
-    <!-- Dashboard de Gerenciamento -->
-    <div id="dashboard-container" class="container" style="display: none;">
+    <!-- Dashboard Container -->
+    <div id="dashboard-container" class="dashboard" style="display: none;">
         <header class="dashboard-header">
-            <h1>Dashboard - Ítalo Antonio</h1>
-            <button id="logout-btn" class="btn btn-secondary">Sair</button>
+            <div class="header-left">
+                <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+                <p>Bem-vindo ao painel administrativo</p>
+            </div>
+            <div class="header-right">
+                <button id="logout-btn" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Sair
+                </button>
+            </div>
         </header>
-
-        <!-- Navegação -->
+        <!-- Navigation -->
         <nav class="dashboard-nav">
-            <button id="list-posts-btn" class="nav-btn active">Listar Posts</button>
-            <button id="new-post-btn" class="nav-btn">Novo Post</button>
-            <button id="list-projects-btn" class="nav-btn">Listar Projetos</button>
-            <button id="new-project-btn" class="nav-btn">Novo Projeto</button>
-            <button id="about-manager-btn" class="nav-btn">Gerenciar Sobre</button>
+            <ul class="nav-list">
+                <li class="nav-item active" data-view="overview">
+                    <i class="fas fa-home"></i>
+                    <span>Visão Geral</span>
+                </li>
+                <li class="nav-item" data-view="projects">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>Projetos</span>
+                </li>
+                <li class="nav-item" data-view="blog">
+                    <i class="fas fa-blog"></i>
+                    <span>Blog</span>
+                </li>
+                <li class="nav-item" data-view="messages">
+                    <i class="fas fa-envelope"></i>
+                    <span>Mensagens</span>
+                </li>
+                <li class="nav-item" data-view="home">
+                    <i class="fas fa-edit"></i>
+                    <span>Página Inicial</span>
+                </li>
+                <li class="nav-item" data-view="about">
+                    <i class="fas fa-user"></i>
+                    <span>Página Sobre</span>
+                </li>
+                <li class="nav-item" data-view="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Configurações</span>
+                </li>
+            </ul>
         </nav>
 
-        <!-- Seções do dashboard -->
-        <section id="posts-list-section" class="dashboard-section">
-            <h2>Posts Existentes</h2>
-            <div id="posts-container" class="posts-grid"></div>
-        </section>
-
-        <!-- Seção de Criação/Edição de Posts -->
-        <section id="post-editor-section" class="dashboard-section" style="display: none;">
-            <h2 id="editor-title">Criar Novo Post</h2>
-            <form id="post-form">
-                <input type="hidden" id="post-id" value="">
-                
-                <div class="form-group">
-                    <label for="post-title">Título:</label>
-                    <input type="text" id="post-title" required>
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <!-- Overview Tab -->
+            <div id="overview-tab" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="projects-count">0</h3>
+                            <p>Projetos</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-blog"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="posts-count">0</h3>
+                            <p>Posts</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="messages-count">0</h3>
+                            <p>Mensagens</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="visits-count">0</h3>
+                            <p>Visitas</p>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="post-excerpt">Resumo:</label>
-                    <textarea id="post-excerpt" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="post-tags">Tags (separadas por vírgula):</label>
-                    <input type="text" id="post-tags" placeholder="tech, desenvolvimento, tutorial">
-                </div>
-
-                <div class="form-group">
-                    <label for="post-status">Status:</label>
-                    <select id="post-status">
-                        <option value="draft">Rascunho</option>
-                        <option value="published">Publicado</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="cover-image">Imagem de Capa:</label>
-                    <input type="file" id="cover-image-input" accept="image/*">
-                    <input type="text" id="cover-image-url" placeholder="URL da imagem de capa">
-                    <div id="cover-image-preview" class="image-preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="post-content">Conteúdo (Markdown):</label>
-                    <textarea id="post-content"></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Post</button>
-                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Seção de Listagem de Projetos -->
-        <section id="projects-list-section" class="dashboard-section" style="display: none;">
-            <h2>Projetos Existentes</h2>
-            <div id="projects-container" class="posts-grid">
-                <!-- Projetos serão carregados dinamicamente -->
             </div>
-        </section>
 
-        <!-- Seção de Criação/Edição de Projetos -->
-        <section id="project-editor-section" class="dashboard-section" style="display: none;">
-            <h2 id="project-editor-title">Criar Novo Projeto</h2>
-            <form id="project-form">
-                <input type="hidden" id="project-id" value="">
-                
-                <div class="form-group">
-                    <label for="project-title">Título do Projeto:</label>
-                    <input type="text" id="project-title" required>
+            <!-- Projects Tab -->
+            <div id="projects-tab" class="tab-content">
+                <div class="content-header">
+                    <h2>Gerenciar Projetos</h2>
+                    <button id="add-project-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Novo Projeto
+                    </button>
+                </div>
+                <div id="projects-list" class="data-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Carregando projetos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Blog Tab -->
+            <div id="blog-tab" class="tab-content">
+                <div class="content-header">
+                    <h2>Gerenciar Posts</h2>
+                    <button id="add-post-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Novo Post
+                    </button>
+                </div>
+                <div id="posts-list" class="data-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Carregando posts...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Messages Tab -->
+            <div id="messages-tab" class="tab-content">
+                <div class="content-header">
+                    <h2>Mensagens de Contato</h2>
+                    <button id="refresh-messages-btn" class="btn btn-secondary">
+                        <i class="fas fa-sync"></i>
+                        Atualizar
+                    </button>
+                </div>
+                <div id="messages-list" class="data-list">
+                    <div class="loading-state">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Carregando mensagens...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Page Tab -->
+            <div id="home-tab" class="tab-content">
+                <div class="content-header">
+                    <h2>Gerenciar Página Inicial</h2>
+                    <button id="save-home-btn" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label for="project-description">Descrição:</label>
-                    <textarea id="project-description" rows="4" placeholder="Descreva o projeto..."></textarea>
+                <div class="settings-section">
+                    <h3>Seção Hero</h3>
+                    <div class="form-group">
+                        <label for="hero-title">Título Principal:</label>
+                        <input type="text" id="hero-title" placeholder="Olá, eu sou Ítalo Antonio">
+                    </div>
+                    <div class="form-group">
+                        <label for="hero-subtitle">Subtítulo:</label>
+                        <input type="text" id="hero-subtitle" placeholder="Desenvolvedor Full Stack">
+                    </div>
+                    <div class="form-group">
+                        <label for="hero-description">Descrição:</label>
+                        <textarea id="hero-description" rows="4" placeholder="Criando experiências digitais excepcionais..."></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hero-cta-primary">CTA Primário:</label>
+                            <input type="text" id="hero-cta-primary" placeholder="Ver Projetos">
+                        </div>
+                        <div class="form-group">
+                            <label for="hero-cta-secondary">CTA Secundário:</label>
+                            <input type="text" id="hero-cta-secondary" placeholder="Sobre Mim">
+                        </div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="project-technologies">Tecnologias (separadas por vírgula):</label>
-                    <input type="text" id="project-technologies" placeholder="React, Node.js, MongoDB">
+                <div class="settings-section">
+                    <h3>Seção de Habilidades</h3>
+                    <div class="form-group">
+                        <label for="skills-frontend">Frontend (separadas por vírgula):</label>
+                        <input type="text" id="skills-frontend" placeholder="HTML5, CSS3, JavaScript, React, TypeScript">
+                    </div>
+                    <div class="form-group">
+                        <label for="skills-backend">Backend (separadas por vírgula):</label>
+                        <input type="text" id="skills-backend" placeholder="Node.js, Python, PHP, PostgreSQL">
+                    </div>
+                    <div class="form-group">
+                        <label for="skills-database">Banco de Dados (separadas por vírgula):</label>
+                        <input type="text" id="skills-database" placeholder="MySQL, PostgreSQL, MongoDB">
+                    </div>
+                    <div class="form-group">
+                        <label for="skills-tools">Ferramentas (separadas por vírgula):</label>
+                        <input type="text" id="skills-tools" placeholder="Git, Docker, AWS, Figma">
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="project-demo-link">Link da Demo:</label>
-                    <input type="url" id="project-demo-link" placeholder="https://exemplo.com">
+                <div class="settings-section">
+                    <h3>Slider de Projetos</h3>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="slider-enabled"> Habilitar Slider
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="slider-autoplay"> Autoplay
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="slider-delay">Delay (ms):</label>
+                            <input type="number" id="slider-delay" value="5000" min="1000" max="20000" step="1000">
+                        </div>
+                    </div>
+                    <div id="slider-items-container">
+                        <!-- Slider items will be added here -->
+                    </div>
+                    <button class="btn btn-outline" id="add-slide-btn">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Slide
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label for="project-github-link">Link do GitHub:</label>
-                    <input type="url" id="project-github-link" placeholder="https://github.com/usuario/repositorio">
+                <div class="settings-section">
+                    <h3>Seções da Página</h3>
+                    <div class="form-group">
+                        <label for="featured-title">Título da Seção de Destaques:</label>
+                        <input type="text" id="featured-title" placeholder="Projetos em Destaque">
+                    </div>
+                    <div class="form-group">
+                        <label for="featured-description">Descrição da Seção de Destaques:</label>
+                        <textarea id="featured-description" rows="2" placeholder="Alguns dos meus trabalhos mais recentes..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="featured-count">Número de Projetos em Destaque:</label>
+                        <input type="number" id="featured-count" value="3" min="1" max="10">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="posts-title">Título da Seção de Posts:</label>
+                        <input type="text" id="posts-title" placeholder="Últimas Publicações">
+                    </div>
+                    <div class="form-group">
+                        <label for="posts-description">Descrição da Seção de Posts:</label>
+                        <textarea id="posts-description" rows="2" placeholder="Confira minhas últimas publicações..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="posts-count">Número de Posts a Exibir:</label>
+                        <input type="number" id="posts-count" value="3" min="1" max="10">
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Page Tab -->
+            <div id="about-tab" class="tab-content">
+                <div class="content-header">
+                    <h2>Gerenciar Página Sobre</h2>
+                    <button id="save-about-btn" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        Salvar Alterações
+                    </button>
                 </div>
 
-                <div class="form-group">
-                    <label for="project-download-link">Link de Download (opcional):</label>
-                    <input type="url" id="project-download-link" placeholder="https://exemplo.com/download">
+                <div class="settings-section">
+                    <h3>Biografia</h3>
+                    <div class="form-group">
+                        <label for="about-bio">Texto da Biografia:</label>
+                        <textarea id="about-bio" rows="6" placeholder="Conte sua história profissional..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="about-profile-image">Foto do Perfil:</label>
+                        <input type="file" id="about-profile-image" accept="image/*">
+                        <small class="form-hint">Selecione uma imagem do seu computador para a foto de perfil</small>
+                        <div id="about-profile-preview" class="image-preview"></div>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="project-status">Status:</label>
-                    <select id="project-status">
-                        <option value="draft">Rascunho</option>
-                        <option value="published">Publicado</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="project-image">Imagem do Projeto:</label>
-                    <input type="file" id="project-image-input" accept="image/*">
-                    <input type="text" id="project-image-url" placeholder="URL da imagem do projeto">
-                    <div id="project-image-preview" class="image-preview"></div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Projeto</button>
-                    <button type="button" id="cancel-project-edit-btn" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Seção de Gerenciamento da Página Sobre -->
-        <section id="about-manager-section" class="dashboard-section" style="display: none;">
-            <h2>Gerenciar Página Sobre</h2>
-            <form id="about-form" class="post-form">
-                
-                <!-- Bio -->
-                <div class="form-group">
-                    <label for="about-bio">Biografia:</label>
-                    <textarea id="about-bio" rows="6" placeholder="Conte sua história profissional..."></textarea>
-                </div>
-
-                <!-- Foto do Perfil -->
-                <div class="form-group">
-                    <label for="profile-image">Foto do Perfil:</label>
-                    <input type="file" id="profile-image-input" accept="image/*">
-                    <input type="text" id="profile-image-url" placeholder="URL da imagem do perfil" style="margin-top: 10px;">
-                    <div id="profile-image-preview" class="image-preview"></div>
-                </div>
-
-                <!-- Skills -->
-                <div class="form-section">
+                <div class="settings-section">
                     <h3>Habilidades</h3>
-                    
                     <div class="form-group">
-                        <label for="skills-frontend">Frontend:</label>
-                        <input type="text" id="skills-frontend" placeholder="HTML5, CSS3, JavaScript, React...">
-                        <small>Separe as habilidades por vírgula</small>
+                        <label for="about-skills-frontend">Frontend (separadas por vírgula):</label>
+                        <input type="text" id="about-skills-frontend" placeholder="HTML5, CSS3, JavaScript, React, TypeScript, Astro">
                     </div>
-
                     <div class="form-group">
-                        <label for="skills-backend">Backend:</label>
-                        <input type="text" id="skills-backend" placeholder="Node.js, Python, PHP...">
+                        <label for="about-skills-backend">Backend (separadas por vírgula):</label>
+                        <input type="text" id="about-skills-backend" placeholder="Node.js, Python, PHP, Express.js, FastAPI">
                     </div>
-
                     <div class="form-group">
-                        <label for="skills-database">Database:</label>
-                        <input type="text" id="skills-database" placeholder="MySQL, MongoDB, PostgreSQL...">
+                        <label for="about-skills-database">Banco de Dados (separadas por vírgula):</label>
+                        <input type="text" id="about-skills-database" placeholder="MySQL, PostgreSQL, MongoDB, Firebase">
                     </div>
-
                     <div class="form-group">
-                        <label for="skills-tools">Ferramentas:</label>
-                        <input type="text" id="skills-tools" placeholder="Git, Docker, AWS...">
+                        <label for="about-skills-tools">Ferramentas (separadas por vírgula):</label>
+                        <input type="text" id="about-skills-tools" placeholder="Git, Docker, AWS, Vercel, Figma, VS Code">
                     </div>
                 </div>
 
-                <!-- Experiência Profissional -->
-                <div class="form-section">
-                    <h3>Experiência Profissional</h3>
+                <div class="settings-section">
+                    <h3>Experiências Profissionais</h3>
                     <div id="experience-container">
-                        <!-- Experiências serão adicionadas dinamicamente -->
+                        <!-- Experiências serão adicionadas aqui dinamicamente -->
                     </div>
-                    <button type="button" id="add-experience-btn" class="btn btn-outline">+ Adicionar Experiência</button>
+                    <button class="btn btn-outline" id="add-experience-btn">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Experiência
+                    </button>
                 </div>
 
-                <!-- Formação -->
-                <div class="form-section">
-                    <h3>Formação</h3>
+                <div class="settings-section">
+                    <h3>Formações Acadêmicas</h3>
                     <div id="education-container">
-                        <!-- Formações serão adicionadas dinamicamente -->
+                        <!-- Formações serão adicionadas aqui dinamicamente -->
                     </div>
-                    <button type="button" id="add-education-btn" class="btn btn-outline">+ Adicionar Formação</button>
+                    <button class="btn btn-outline" id="add-education-btn">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Formação
+                    </button>
                 </div>
 
-                <!-- Certificações -->
-                <div class="form-section">
+                <div class="settings-section">
                     <h3>Certificações</h3>
                     <div id="certifications-container">
-                        <!-- Certificações serão adicionadas dinamicamente -->
+                        <!-- Certificações serão adicionadas aqui dinamicamente -->
                     </div>
-                    <button type="button" id="add-certification-btn" class="btn btn-outline">+ Adicionar Certificação</button>
+                    <button class="btn btn-outline" id="add-certification-btn">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Certificação
+                    </button>
                 </div>
 
-                <!-- Galeria -->
-                <div class="form-section">
-                    <h3>Galeria</h3>
-                    <div id="gallery-container">
-                        <!-- Imagens da galeria serão adicionadas dinamicamente -->
-                    </div>
-                    <button type="button" id="add-gallery-btn" class="btn btn-outline">+ Adicionar Imagem à Galeria</button>
-                </div>
-
-                <!-- Links Sociais -->
-                <div class="form-section">
+                <div class="settings-section">
                     <h3>Links Sociais</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="social-github">GitHub:</label>
+                            <input type="url" id="social-github" placeholder="https://github.com/seu-usuario">
+                        </div>
+                        <div class="form-group">
+                            <label for="social-linkedin">LinkedIn:</label>
+                            <input type="url" id="social-linkedin" placeholder="https://linkedin.com/in/seu-perfil">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="social-twitter">Twitter:</label>
+                            <input type="url" id="social-twitter" placeholder="https://twitter.com/seu-usuario">
+                        </div>
+                        <div class="form-group">
+                            <label for="social-instagram">Instagram:</label>
+                            <input type="url" id="social-instagram" placeholder="https://instagram.com/seu-usuario">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content">
+                <div class="content-header">
+                    <h2>Configurações</h2>
+                </div>
+                <div class="settings-content">
+                    <p>Configurações em desenvolvimento...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Post Modal -->
+    <div id="post-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="adminPanel.closePostModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="post-modal-title">Novo Post</h3>
+                <button class="modal-close" onclick="adminPanel.closePostModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="post-form">
+                    <div class="form-group">
+                        <label for="post-title">Título do Post:</label>
+                        <input type="text" id="post-title" placeholder="Digite o título do post" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-slug">Slug (URL):</label>
+                        <input type="text" id="post-slug" placeholder="url-do-post" required>
+                        <small class="form-hint">Será usado na URL: /blog/url-do-post</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-excerpt">Resumo (Excerpt):</label>
+                        <textarea id="post-excerpt" rows="3" placeholder="Breve descrição do post..." required></textarea>
+                        <small class="form-hint">Será exibido nas listagens e compartilhamentos</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-content">Conteúdo (Markdown):</label>
+                        <textarea id="post-content" rows="15" placeholder="# Título do Post
+
+Escreva seu conteúdo aqui usando Markdown...
+
+## Seção 1
+Conteúdo da seção...
+
+## Seção 2
+Mais conteúdo..." required></textarea>
+                        <small class="form-hint">Use Markdown para formatar o texto</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-cover-image">Imagem de Capa:</label>
+                        <input type="file" id="post-cover-image" accept="image/*">
+                        <small class="form-hint">Selecione uma imagem do seu computador para ser exibida como capa do post</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-tags">Tags (separadas por vírgula):</label>
+                        <input type="text" id="post-tags" placeholder="javascript, react, tutorial">
+                        <small class="form-hint">Tags ajudam na organização e busca dos posts</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="post-status">Status:</label>
+                        <select id="post-status" required>
+                            <option value="draft">Rascunho</option>
+                            <option value="published">Publicado</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="adminPanel.closePostModal()">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="adminPanel.savePost()">
+                    <i class="fas fa-save"></i>
+                    Salvar Post
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div id="project-modal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="if(window.adminPanel && window.adminPanel.closeProjectModal) { window.adminPanel.closeProjectModal(); } else { console.error('AdminPanel or closeProjectModal method not available'); }"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="project-modal-title">Novo Projeto</h3>
+                <button class="modal-close" onclick="if(window.adminPanel && window.adminPanel.closeProjectModal) { window.adminPanel.closeProjectModal(); } else { console.error('AdminPanel or closeProjectModal method not available'); }">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="project-form">
+                    <input type="hidden" id="project-id">
+                    <div class="form-group">
+                        <label for="project-title">Título do Projeto:</label>
+                        <input type="text" id="project-title" placeholder="Digite o título do projeto" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-description">Descrição:</label>
+                        <textarea id="project-description" rows="4" placeholder="Descreva o projeto..." required></textarea>
+                        <small class="form-hint">Descrição detalhada do que o projeto faz</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-technologies">Tecnologias (separadas por vírgula):</label>
+                        <input type="text" id="project-technologies" placeholder="React, Node.js, PostgreSQL" required>
+                        <small class="form-hint">Tecnologias e ferramentas utilizadas no projeto</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-demo-link">Link da Demo (opcional):</label>
+                        <input type="url" id="project-demo-link" placeholder="https://demo-projeto.vercel.app">
+                        <small class="form-hint">URL onde o projeto pode ser visualizado/executado</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-github-link">Link do GitHub (opcional):</label>
+                        <input type="url" id="project-github-link" placeholder="https://github.com/usuario/projeto">
+                        <small class="form-hint">URL do repositório no GitHub</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-download-link">Link de Download (opcional):</label>
+                        <input type="url" id="project-download-link" placeholder="https://github.com/usuario/projeto/releases">
+                        <small class="form-hint">URL para download do projeto ou executável</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-image">Imagem do Projeto:</label>
+                        <input type="file" id="project-image" accept="image/*">
+                        <small class="form-hint">Selecione uma imagem do seu computador para representar o projeto</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="project-status">Status:</label>
+                        <select id="project-status" required>
+                            <option value="draft">Rascunho</option>
+                            <option value="published">Publicado</option>
+                            <option value="coming_soon">Em Breve</option>
+                        </select>
+                        <small class="form-hint">Status de visibilidade do projeto</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="if(window.adminPanel && window.adminPanel.closeProjectModal) { window.adminPanel.closeProjectModal(); } else { console.error('AdminPanel or closeProjectModal method not available'); }">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="if(window.adminPanel && window.adminPanel.saveProject) { console.log('AdminPanel:', window.adminPanel); console.log('saveProject method:', window.adminPanel.saveProject); window.adminPanel.saveProject(); } else { console.error('AdminPanel or saveProject method not available'); }">
+                    <i class="fas fa-save"></i>
+                    Salvar Projeto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Admin Panel Client-Side JavaScript
+        // Simplified version without complex service dependencies
+
+        class AdminPanelClass {
+            currentView: string;
+            isLoggedIn: boolean;
+            supabase: any;
+            projectsData: any[];
+            postsData: any[];
+            messagesData: any[];
+
+            constructor() {
+                this.currentView = 'overview';
+                this.isLoggedIn = false;
+                this.supabase = null;
+                this.projectsData = [];
+                this.postsData = [];
+                this.messagesData = [];
+
+                // Bind methods to preserve 'this' context
+                this.showProjectModal = this.showProjectModal.bind(this);
+                this.closeProjectModal = this.closeProjectModal.bind(this);
+                this.saveProject = this.saveProject.bind(this);
+                this.editProject = this.editProject.bind(this);
+                this.deleteProject = this.deleteProject.bind(this);
+                this.loadProjects = this.loadProjects.bind(this);
+
+                console.log('✅ AdminPanel methods bound:', {
+                    showProjectModal: typeof this.showProjectModal,
+                    closeProjectModal: typeof this.closeProjectModal,
+                    saveProject: typeof this.saveProject,
+                    editProject: typeof this.editProject,
+                    deleteProject: typeof this.deleteProject,
+                    loadProjects: typeof this.loadProjects
+                });
+
+                this.init();
+            }
+
+            async init() {
+                console.log('🚀 Initializing admin panel...');
+                try {
+                    await this.initSupabase();
+                    this.setupEventListeners();
+                    await this.checkAuthentication();
+                } catch (error) {
+                    console.error('❌ Initialization failed:', error);
+                    this.showLoginError('Failed to initialize the admin panel');
+                    this.showLogin();
+                }
+            }
+
+            async initSupabase() {
+                try {
+                    // Wait for both DOM and Supabase to be ready
+                    console.log('🔄 Waiting for Supabase and DOM to be ready...');
+
+                    // Wait for Supabase to be available
+                    await new Promise<void>((resolve, reject) => {
+                        const checkSupabase = () => {
+                            if (typeof (window as any).supabase !== 'undefined' && (window as any).supabase.createClient) {
+                                console.log('✅ Supabase library loaded');
+                                resolve();
+                            } else {
+                                console.log('⏳ Waiting for Supabase...');
+                                setTimeout(checkSupabase, 100);
+                            }
+                        };
+
+                        // Timeout after 10 seconds
+                        setTimeout(() => {
+                            reject(new Error('Supabase library failed to load within 10 seconds'));
+                        }, 10000);
+
+                        checkSupabase();
+                    });
+
+                    // Create Supabase client
+                    const { createClient } = (window as any).supabase;
+                    this.supabase = createClient(
+                        import.meta.env.PUBLIC_SUPABASE_URL || 'https://nattvkjaecceirxthizc.supabase.co',
+                        import.meta.env.PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ'
+                    );
+                    console.log('✅ Supabase client initialized successfully');
+                } catch (error) {
+                    console.error('❌ Failed to initialize Supabase:', error);
+                    this.showLoginError('Failed to initialize authentication system');
+                }
+            }
+
+            setupEventListeners() {
+                // Login form
+                const loginForm = document.getElementById('login-form');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+                }
+
+                // Logout button
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => this.handleLogout());
+                }
+
+                // Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        const target = e.currentTarget as HTMLElement;
+                        if (target) {
+                            const view = target.getAttribute('data-view');
+                            if (view) {
+                                this.switchView(view);
+                            }
+                        }
+                    });
+                });
+
+                // Action buttons
+                this.setupActionButtons();
+            }
+
+            setupActionButtons() {
+                const addProjectBtn = document.getElementById('add-project-btn');
+                if (addProjectBtn) {
+                    addProjectBtn.addEventListener('click', () => {
+                        if (window.adminPanel && window.adminPanel.showProjectModal) {
+                            window.adminPanel.showProjectModal();
+                        } else {
+                            console.error('AdminPanel or showProjectModal method not available');
+                        }
+                    });
+                }
+
+                const addPostBtn = document.getElementById('add-post-btn');
+                if (addPostBtn) {
+                    addPostBtn.addEventListener('click', () => this.showPostModal());
+                }
+
+                const refreshMessagesBtn = document.getElementById('refresh-messages-btn');
+                if (refreshMessagesBtn) {
+                    refreshMessagesBtn.addEventListener('click', () => this.loadMessages());
+                }
+
+                const saveHomeBtn = document.getElementById('save-home-btn');
+                if (saveHomeBtn) {
+                    saveHomeBtn.addEventListener('click', () => this.saveHomeSettings());
+                }
+
+                const saveAboutBtn = document.getElementById('save-about-btn');
+                if (saveAboutBtn) {
+                    saveAboutBtn.addEventListener('click', () => this.saveAboutSettings());
+                }
+
+                const addSlideBtn = document.getElementById('add-slide-btn');
+                if (addSlideBtn) {
+                    addSlideBtn.addEventListener('click', () => this.addSlide());
+                }
+
+                const addExperienceBtn = document.getElementById('add-experience-btn');
+                if (addExperienceBtn) {
+                    addExperienceBtn.addEventListener('click', () => this.addExperience());
+                }
+
+                const addEducationBtn = document.getElementById('add-education-btn');
+                if (addEducationBtn) {
+                    addEducationBtn.addEventListener('click', () => this.addEducation());
+                }
+
+                const addCertificationBtn = document.getElementById('add-certification-btn');
+                if (addCertificationBtn) {
+                    addCertificationBtn.addEventListener('click', () => this.addCertification());
+                }
+
+                // Profile image preview
+                const profileImageInput = document.getElementById('about-profile-image');
+                if (profileImageInput) {
+                    profileImageInput.addEventListener('change', (e) => {
+                        const file = (e.target as HTMLInputElement).files?.[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const previewDiv = document.getElementById('about-profile-preview');
+                                if (previewDiv && e.target?.result) {
+                                    previewDiv.innerHTML = `<img src="${e.target.result}" alt="Pré-visualização" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 10px; border: 2px solid #007bff;">`;
+                                }
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            }
+
+            async checkAuthentication() {
+                try {
+                    console.log('🔍 Checking authentication...');
+                    this.showLoading();
+
+                    if (!this.supabase) {
+                        console.error('❌ Supabase client not available');
+                        this.showLoginError('Authentication system not ready');
+                        this.showLogin();
+                        return;
+                    }
+
+                    console.log('✅ Supabase client available, checking session...');
+
+                    // Check if user is logged in with Supabase
+                    const { data: { session }, error } = await this.supabase.auth.getSession();
+
+                    if (error) {
+                        console.error('❌ Session check error:', error);
+                        this.showLoginError('Failed to check authentication status');
+                        this.showLogin();
+                        return;
+                    }
+
+                    if (session && session.user) {
+                        console.log('✅ User authenticated:', session.user.email);
+                        this.showDashboard();
+                        await this.loadDashboardData();
+                        await this.loadSettings();
+                    } else {
+                        console.log('❌ No active session found');
+                        this.showLogin();
+                    }
+                } catch (error) {
+                    console.error('❌ Authentication check failed:', error);
+                    this.showLoginError('Authentication check failed');
+                    this.showLogin();
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            async handleLogin(event: Event) {
+                event.preventDefault();
+
+                const emailElement = document.getElementById('email') as HTMLInputElement;
+                const passwordElement = document.getElementById('password') as HTMLInputElement;
+
+                if (!emailElement || !passwordElement) {
+                    this.showLoginError('Form elements not found');
+                    return;
+                }
+
+                const email = emailElement.value.trim();
+                const password = passwordElement.value;
+
+                if (!email || !password) {
+                    this.showLoginError('Please fill in all fields');
+                    return;
+                }
+
+                try {
+                    console.log('🔐 Attempting login for:', email);
+                    this.showLoading();
+
+                    if (!this.supabase) {
+                        console.error('❌ Supabase not initialized during login');
+                        this.showLoginError('Authentication system not ready. Please refresh the page.');
+                        return;
+                    }
+
+                    console.log('✅ Supabase available, attempting authentication...');
+
+                    // Real Supabase authentication
+                    const { data, error } = await this.supabase.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) {
+                        console.error('❌ Login error:', error);
+                        this.showLoginError(error.message || 'Login failed');
+                        return;
+                    }
+
+                    if (data.user && data.session) {
+                        console.log('✅ Login successful for:', data.user.email);
+                        this.showDashboard();
+                        await this.loadDashboardData();
+                    } else {
+                        console.error('❌ Login succeeded but no user/session data');
+                        this.showLoginError('Login failed - no session created');
+                    }
+                } catch (error) {
+                    console.error('❌ Login exception:', error);
+                    this.showLoginError('An unexpected error occurred during login');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            handleLogout() {
+                localStorage.removeItem('admin_logged_in');
+                this.showLogin();
+                console.log('✅ Logged out');
+            }
+
+            showLogin() {
+                const loadingScreen = document.getElementById('loading-screen');
+                const loginContainer = document.getElementById('login-container');
+                const dashboardContainer = document.getElementById('dashboard-container');
+
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                if (loginContainer) loginContainer.style.display = 'flex';
+                if (dashboardContainer) dashboardContainer.style.display = 'none';
+            }
+
+            showDashboard() {
+                const loadingScreen = document.getElementById('loading-screen');
+                const loginContainer = document.getElementById('login-container');
+                const dashboardContainer = document.getElementById('dashboard-container');
+
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                if (loginContainer) loginContainer.style.display = 'none';
+                if (dashboardContainer) dashboardContainer.style.display = 'flex';
+            }
+
+            showLoading() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'flex';
+                }
+            }
+
+            hideLoading() {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.display = 'none';
+                }
+            }
+
+            showLoginError(message: string) {
+                const errorDiv = document.getElementById('login-error');
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                }
+            }
+
+            switchView(viewName: string) {
+                // Update navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                const activeNav = document.querySelector('[data-view="' + viewName + '"]');
+                if (activeNav) {
+                    activeNav.classList.add('active');
+                }
+
+                // Update content
+                document.querySelectorAll('.tab-content').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                const activeTab = document.getElementById(viewName + '-tab');
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                }
+
+                this.currentView = viewName;
+            }
+
+            async loadDashboardData() {
+                try {
+                    // Load real data from Supabase
+                    this.updateStatsDisplay({
+                        projects: 0,
+                        posts: 0,
+                        messages: 0,
+                        visits: 0
+                    });
+
+                    await Promise.all([
+                        this.loadProjects(),
+                        this.loadPosts(),
+                        this.loadMessages(),
+                        this.loadStats()
+                    ]);
+                } catch (error) {
+                    console.error('Failed to load dashboard data:', error);
+                }
+            }
+
+            async loadStats() {
+                try {
+                    if (!this.supabase) return;
+
+                    // Get real stats from Supabase
+                    const [projectsResult, postsResult, messagesResult] = await Promise.all([
+                        this.supabase.from('projects').select('id', { count: 'exact', head: true }),
+                        this.supabase.from('posts').select('id', { count: 'exact', head: true }),
+                        this.supabase.from('contact_messages').select('id', { count: 'exact', head: true })
+                    ]);
+
+                    const stats = {
+                        projects: projectsResult.count || 0,
+                        posts: postsResult.count || 0,
+                        messages: messagesResult.count || 0,
+                        visits: 1250 // This would come from analytics
+                    };
+
+                    this.updateStatsDisplay(stats);
+                } catch (error) {
+                    console.error('Failed to load stats:', error);
+                }
+            }
+
+            updateStatsDisplay(stats: any) {
+                const elements = {
+                    'projects-count': stats.projects,
+                    'posts-count': stats.posts,
+                    'messages-count': stats.messages,
+                    'visits-count': stats.visits
+                };
+
+                Object.entries(elements).forEach(([id, value]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = String(value || 0);
+                    }
+                });
+            }
+
+            async loadProjects() {
+                try {
+                    if (!this.supabase) {
+                        console.log('Supabase not initialized, using mock data');
+                        this.renderProjects([]);
+                        return;
+                    }
+
+                    const { data: projects, error } = await this.supabase
+                        .from('projects')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        console.error('Error loading projects:', error);
+                        this.renderProjects([]);
+                        return;
+                    }
+
+                    this.renderProjects(projects || []);
+                } catch (error) {
+                    console.error('Failed to load projects:', error);
+                    this.renderProjects([]);
+                }
+            }
+
+            renderProjects(projects: any[]) {
+                const container = document.getElementById('projects-list');
+                if (!container) return;
+
+                if (projects.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-project-diagram"></i><h3>No projects found</h3><p>Start by creating your first project!</p></div>';
+                    return;
+                }
+
+                let html = '';
+                projects.forEach(project => {
+                    html += '<div class="project-card">' +
+                        '<div class="project-header">' +
+                            '<h4>' + project.title + '</h4>' +
+                            '<div class="project-actions">' +
+                                '<button class="btn btn-secondary" onclick="if(window.adminPanel && window.adminPanel.editProject) { window.adminPanel.editProject(\'' + project.id + '\'); } else { console.error(\'AdminPanel or editProject method not available\'); }">' +
+                                    '<i class="fas fa-edit"></i>' +
+                                '</button>' +
+                                '<button class="btn btn-danger" onclick="if(window.adminPanel && window.adminPanel.deleteProject) { window.adminPanel.deleteProject(\'' + project.id + '\'); } else { console.error(\'AdminPanel or deleteProject method not available\'); }">' +
+                                    '<i class="fas fa-trash"></i>' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<p class="project-description">' + project.description + '</p>' +
+                        '<div class="project-meta">' +
+                            '<span class="project-tech">' + project.technologies + '</span>' +
+                            '<span class="project-status status-' + project.status + '">' + project.status + '</span>' +
+                        '</div>' +
+                    '</div>';
+                });
+
+                container.innerHTML = html;
+            }
+
+            async loadPosts() {
+                try {
+                    if (!this.supabase) {
+                        console.log('Supabase not initialized, using mock data');
+                        this.renderPosts([]);
+                        return;
+                    }
+
+                    const { data: posts, error } = await this.supabase
+                        .from('posts')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        console.error('Error loading posts:', error);
+                        this.renderPosts([]);
+                        return;
+                    }
+
+                    this.renderPosts(posts || []);
+                } catch (error) {
+                    console.error('Failed to load posts:', error);
+                    this.renderPosts([]);
+                }
+            }
+
+            renderPosts(posts: any[]) {
+                const container = document.getElementById('posts-list');
+                if (!container) return;
+
+                if (posts.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-blog"></i><h3>No posts found</h3><p>Start by creating your first post!</p></div>';
+                    return;
+                }
+
+                let html = '';
+                posts.forEach(post => {
+                    html += '<div class="post-card">' +
+                        '<div class="post-header">' +
+                            '<h4>' + post.title + '</h4>' +
+                            '<div class="post-actions">' +
+                                '<button class="btn btn-secondary" onclick="adminPanel.editPost(' + post.id + ')">' +
+                                    '<i class="fas fa-edit"></i>' +
+                                '</button>' +
+                                '<button class="btn btn-danger" onclick="adminPanel.deletePost(' + post.id + ')">' +
+                                    '<i class="fas fa-trash"></i>' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<p class="post-excerpt">' + post.excerpt + '</p>' +
+                        '<div class="post-meta">' +
+                            '<span class="post-status status-' + post.status + '">' + post.status + '</span>' +
+                            '<span class="post-date">' + new Date(post.created_at).toLocaleDateString('pt-BR') + '</span>' +
+                        '</div>' +
+                    '</div>';
+                });
+
+                container.innerHTML = html;
+            }
+
+            async loadMessages() {
+                try {
+                    if (!this.supabase) {
+                        console.log('Supabase not initialized, using mock data');
+                        this.renderMessages([]);
+                        return;
+                    }
+
+                    const { data: messages, error } = await this.supabase
+                        .from('contact_messages')
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (error) {
+                        console.error('Error loading messages:', error);
+                        this.renderMessages([]);
+                        return;
+                    }
+
+                    this.renderMessages(messages || []);
+                } catch (error) {
+                    console.error('Failed to load messages:', error);
+                    this.renderMessages([]);
+                }
+            }
+
+            renderMessages(messages: any[]) {
+                const container = document.getElementById('messages-list');
+                if (!container) return;
+
+                if (messages.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-envelope"></i><h3>No messages found</h3><p>Messages will appear here when they arrive!</p></div>';
+                    return;
+                }
+
+                let html = '';
+                messages.forEach(message => {
+                    const statusClass = message.status === 'unread' ? 'unread' : '';
+                    const statusText = message.status === 'unread' ? 'Unread' : 'Read';
+                    const dateText = new Date(message.created_at).toLocaleDateString('pt-BR');
+
+                    html += '<div class="message-card ' + statusClass + '">' +
+                        '<div class="message-header">' +
+                            '<div class="message-info">' +
+                                '<h4>' + message.name + '</h4>' +
+                                '<span class="message-email">' + message.email + '</span>' +
+                            '</div>' +
+                            '<div class="message-actions">' +
+                                '<button class="btn btn-secondary" onclick="adminPanel.markAsRead(' + message.id + ')">' +
+                                    '<i class="fas fa-check"></i>' +
+                                '</button>' +
+                                '<button class="btn btn-danger" onclick="adminPanel.deleteMessage(' + message.id + ')">' +
+                                    '<i class="fas fa-trash"></i>' +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<p class="message-subject"><strong>' + message.subject + '</strong></p>' +
+                        '<p class="message-content">' + message.message + '</p>' +
+                        '<div class="message-meta">' +
+                            '<span class="message-date">' + dateText + '</span>' +
+                            '<span class="message-status status-' + message.status + '">' + statusText + '</span>' +
+                        '</div>' +
+                    '</div>';
+                });
+
+                container.innerHTML = html;
+            }
+
+            // Action methods
+            editProject(id: string) {
+                console.log('✏️ Editando projeto:', id);
+                
+                if (!this.supabase) {
+                    alert('Supabase não disponível');
+                    return;
+                }
+
+                // Fetch project data
+                this.supabase
+                    .from('projects')
+                    .select('*')
+                    .eq('id', id)
+                    .single()
+                    .then(({ data, error }: { data: any; error: any }) => {
+                        if (error) {
+                            console.error('❌ Erro ao buscar projeto:', error);
+                            alert('Erro ao carregar projeto: ' + error.message);
+                            return;
+                        }
+
+                        if (!data) {
+                            alert('Projeto não encontrado');
+                            return;
+                        }
+
+                        console.log('📥 Dados do projeto carregados:', data);
+
+                        // Show modal first (without resetting the form)
+                        const modal = document.getElementById('project-modal');
+                        if (modal) {
+                            modal.style.display = 'flex';
+                            document.body.style.overflow = 'hidden';
+                        }
+
+                        // Populate form
+                        const titleField = document.getElementById('project-title') as HTMLInputElement;
+                        const descriptionField = document.getElementById('project-description') as HTMLTextAreaElement;
+                        const technologiesField = document.getElementById('project-technologies') as HTMLInputElement;
+                        const demoLinkField = document.getElementById('project-demo-link') as HTMLInputElement;
+                        const githubLinkField = document.getElementById('project-github-link') as HTMLInputElement;
+                        const downloadLinkField = document.getElementById('project-download-link') as HTMLInputElement;
+                        const imageField = document.getElementById('project-image') as HTMLInputElement;
+                        const statusField = document.getElementById('project-status') as HTMLSelectElement;
+                        const idField = document.getElementById('project-id') as HTMLInputElement;
+                        const modalTitle = document.getElementById('project-modal-title') as HTMLHeadingElement;
+
+                        if (titleField) titleField.value = data.title || '';
+                        if (descriptionField) descriptionField.value = data.description || '';
+                        if (technologiesField) technologiesField.value = Array.isArray(data.technologies) ? data.technologies.join(', ') : '';
+                        if (demoLinkField) demoLinkField.value = data.demo_link || '';
+                        if (githubLinkField) githubLinkField.value = data.github_link || '';
+                        if (downloadLinkField) downloadLinkField.value = data.download_link || '';
+                        if (imageField) imageField.value = data.image || '';
+                        if (statusField) statusField.value = data.status || 'draft';
+                        if (idField) idField.value = data.id;
+                        if (modalTitle) modalTitle.textContent = 'Editar Projeto';
+
+                        console.log('✅ Modal de edição aberto');
+                    })
+                    .catch((error: any) => {
+                        console.error('❌ Erro ao buscar projeto:', error);
+                        alert('Erro ao carregar projeto');
+                    });
+            }
+
+            deleteProject(id: string) {
+                if (confirm('Tem certeza que deseja excluir este projeto?')) {
+                    console.log('🗑️ Excluindo projeto:', id);
                     
-                    <div class="form-group">
-                        <label for="social-github">GitHub:</label>
-                        <input type="url" id="social-github" placeholder="https://github.com/seu-usuario">
+                    if (!this.supabase) {
+                        alert('Supabase não disponível');
+                        return;
+                    }
+
+                    this.supabase
+                        .from('projects')
+                        .delete()
+                        .eq('id', id)
+                        .then(({ error }: { error: any }) => {
+                            if (error) {
+                                console.error('❌ Erro ao excluir projeto:', error);
+                                alert('Erro ao excluir projeto: ' + error.message);
+                                return;
+                            }
+
+                            console.log('✅ Projeto excluído com sucesso');
+                            alert('Projeto excluído com sucesso!');
+                            this.loadProjects(); // Refresh the list
+                        })
+                        .catch((error: any) => {
+                            console.error('❌ Erro ao excluir projeto:', error);
+                            alert('Erro ao excluir projeto');
+                        });
+                }
+            }
+
+            editPost(id: string) {
+                console.log('Edit post:', id);
+                alert('Edit post functionality coming soon!');
+            }
+
+            deletePost(id: string) {
+                if (confirm('Are you sure you want to delete this post?')) {
+                    console.log('Delete post:', id);
+                    // TODO: Implement delete functionality
+                }
+            }
+
+            markAsRead(id: string) {
+                console.log('Mark:', id);
+                // TODO: Implement mark
+            }
+
+            deleteMessage(id: string) {
+                if (confirm('Are you sure you want to delete this message?')) {
+                    console.log('Delete message:', id);
+                    // TODO: Implement delete functionality
+                }
+            }
+
+            showProjectModal() {
+                console.log('🆕 Abrindo modal de novo projeto...');
+
+                // Reset form
+                const form = document.getElementById('project-form') as HTMLFormElement;
+                if (form) {
+                    form.reset();
+                    console.log('✅ Formulário de projeto resetado');
+                }
+
+                // Reset modal title
+                const modalTitle = document.getElementById('project-modal-title') as HTMLHeadingElement;
+                if (modalTitle) {
+                    modalTitle.textContent = 'Novo Projeto';
+                }
+
+                // Clear project ID
+                const idField = document.getElementById('project-id') as HTMLInputElement;
+                if (idField) {
+                    idField.value = '';
+                }
+
+                // Set default values
+                const statusSelect = document.getElementById('project-status') as HTMLSelectElement;
+                if (statusSelect) {
+                    statusSelect.value = 'draft';
+                    console.log('✅ Status padrão definido');
+                }
+
+                // Show modal
+                const modal = document.getElementById('project-modal') as HTMLDivElement;
+                if (modal) {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    console.log('✅ Modal de projeto exibido');
+                }
+
+                console.log('✅ Modal de novo projeto aberto');
+            }
+
+            showPostModal() {
+                console.log('🆕 Abrindo modal de novo post...');
+
+                // Reset form
+                const form = document.getElementById('post-form') as HTMLFormElement;
+                if (form) form.reset();
+
+                // Set default values
+                const slugInput = document.getElementById('post-slug') as HTMLInputElement;
+                const statusSelect = document.getElementById('post-status') as HTMLSelectElement;
+                const titleInput = document.getElementById('post-title') as HTMLInputElement;
+
+                if (statusSelect) statusSelect.value = 'draft';
+
+                // Auto-generate slug from title
+                if (titleInput) {
+                    titleInput.addEventListener('input', (e) => {
+                        const title = (e.target as HTMLInputElement).value;
+                        if (slugInput && !slugInput.value) {
+                            slugInput.value = this.generateSlug(title);
+                        }
+                    });
+                }
+
+                // Show modal
+                const modal = document.getElementById('post-modal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                }
+
+                console.log('✅ Modal de novo post aberto');
+            }
+
+            closePostModal() {
+                console.log('❌ Fechando modal de post...');
+
+                const modal = document.getElementById('post-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+
+                // Reset form
+                const form = document.getElementById('post-form') as HTMLFormElement;
+                if (form) form.reset();
+
+                console.log('✅ Modal de post fechado');
+            }
+
+            closeProjectModal() {
+                console.log('❌ Fechando modal de projeto...');
+
+                const modal = document.getElementById('project-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+
+                // Reset form
+                const form = document.getElementById('project-form') as HTMLFormElement;
+                if (form) form.reset();
+
+                console.log('✅ Modal de projeto fechado');
+            }
+
+            generateSlug(text: string) {
+                return text
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .trim()
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+            }
+
+            async savePost() {
+                try {
+                    console.log('💾 Salvando post...');
+
+                    // Get form values
+                    const title = (document.getElementById('post-title') as HTMLInputElement)?.value?.trim();
+                    const slug = (document.getElementById('post-slug') as HTMLInputElement)?.value?.trim();
+                    const excerpt = (document.getElementById('post-excerpt') as HTMLTextAreaElement)?.value?.trim();
+                    const content = (document.getElementById('post-content') as HTMLTextAreaElement)?.value?.trim();
+                    const coverImageInput = document.getElementById('post-cover-image') as HTMLInputElement;
+                    const tagsInput = (document.getElementById('post-tags') as HTMLInputElement)?.value?.trim();
+                    const status = (document.getElementById('post-status') as HTMLSelectElement)?.value;
+
+                    // Upload da imagem se houver arquivo
+                    let coverImageUrl = '';
+                    if (coverImageInput && coverImageInput.files && coverImageInput.files[0]) {
+                        const file = coverImageInput.files[0];
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `post-${slug}-${Date.now()}.${fileExt}`;
+                        const { data, error } = await this.supabase.storage.from('images').upload(fileName, file);
+                        if (error) {
+                            alert('Erro ao fazer upload da imagem: ' + error.message);
+                            return;
+                        }
+                        coverImageUrl = this.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+                    }
+
+                    // Validation
+                    if (!title || !slug || !excerpt || !content) {
+                        alert('Por favor, preencha todos os campos obrigatórios.');
+                        return;
+                    }
+
+                    // Check if slug already exists
+                    if (this.supabase) {
+                        const { data: existingPost } = await this.supabase
+                            .from('posts')
+                            .select('id')
+                            .eq('slug', slug)
+                            .single();
+
+                        if (existingPost) {
+                            alert('Este slug já está em uso. Por favor, escolha outro.');
+                            return;
+                        }
+                    }
+
+                    // Prepare post data
+                    const postData = {
+                        title,
+                        slug,
+                        excerpt,
+                        content_markdown: content,
+                        cover_image: coverImageUrl || null,
+                        tags: tagsInput ? tagsInput.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [],
+                        status: status || 'draft',
+                        published_at: status === 'published' ? new Date().toISOString() : null
+                    };
+
+                    console.log('📝 Dados do post:', postData);
+
+                    // Save to Supabase
+                    if (this.supabase) {
+                        const { data, error } = await this.supabase
+                            .from('posts')
+                            .insert([postData])
+                            .select()
+                            .single();
+
+                        if (error) {
+                            console.error('❌ Erro ao salvar post:', error);
+                            alert('Erro ao salvar post: ' + error.message);
+                            return;
+                        }
+
+                        console.log('✅ Post salvo com sucesso:', data);
+                    } else {
+                        console.warn('⚠️ Supabase não disponível, salvamento local apenas');
+                    }
+
+                    // Close modal and refresh posts
+                    this.closePostModal();
+                    await this.loadPosts();
+
+                    alert(`Post "${title}" salvo com sucesso!`);
+
+                } catch (error) {
+                    console.error('❌ Erro ao salvar post:', error);
+                    alert('Erro ao salvar post. Tente novamente.');
+                }
+            }
+
+
+            async saveProject() {
+                console.log('💾 Salvando projeto...');
+
+                // Get form values
+                const id = (document.getElementById('project-id') as HTMLInputElement)?.value?.trim();
+                const title = (document.getElementById('project-title') as HTMLInputElement)?.value?.trim();
+                const description = (document.getElementById('project-description') as HTMLTextAreaElement)?.value?.trim();
+                const technologiesInput = (document.getElementById('project-technologies') as HTMLInputElement)?.value?.trim();
+                const demoLink = (document.getElementById('project-demo-link') as HTMLInputElement)?.value?.trim();
+                const githubLink = (document.getElementById('project-github-link') as HTMLInputElement)?.value?.trim();
+                const downloadLink = (document.getElementById('project-download-link') as HTMLInputElement)?.value?.trim();
+                const imageInput = document.getElementById('project-image') as HTMLInputElement;
+                const status = (document.getElementById('project-status') as HTMLSelectElement)?.value;
+
+                // Upload da imagem se houver arquivo
+                let imageUrl = '';
+                if (imageInput && imageInput.files && imageInput.files[0]) {
+                    const file = imageInput.files[0];
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `project-${title?.replace(/\s+/g, '-')}-${Date.now()}.${fileExt}`;
+                    const { data, error } = await this.supabase.storage.from('images').upload(fileName, file);
+                    if (error) {
+                        alert('Erro ao fazer upload da imagem: ' + error.message);
+                        return;
+                    }
+                    imageUrl = this.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+                }
+
+                console.log('📝 Valores do formulário:', {
+                    id,
+                    title,
+                    description,
+                    technologiesInput,
+                    demoLink,
+                    githubLink,
+                    downloadLink,
+                    imageUrl,
+                    status
+                });
+
+                // Validation
+                if (!title || !description || !technologiesInput) {
+                    alert('Por favor, preencha todos os campos obrigatórios.');
+                    return;
+                }
+
+                // Prepare project data
+                const projectData = {
+                    title,
+                    description,
+                    technologies: technologiesInput ? technologiesInput.split(',').map((tech: string) => tech.trim()).filter((tech: string) => tech) : [],
+                    demo_link: demoLink || null,
+                    github_link: githubLink || null,
+                    download_link: downloadLink || null,
+                    image: imageUrl || null,
+                    status: status || 'draft',
+                    published_at: status === 'published' ? new Date().toISOString() : null,
+                    updated_at: new Date().toISOString()
+                };
+
+                console.log('📝 Dados do projeto preparados:', projectData);
+
+                // Save to Supabase
+                if (this.supabase) {
+                    let result;
+                    if (id) {
+                        // Update existing project
+                        result = await this.supabase
+                            .from('projects')
+                            .update(projectData)
+                            .eq('id', id)
+                            .select()
+                            .single();
+                    } else {
+                        // Insert new project
+                        result = await this.supabase
+                            .from('projects')
+                            .insert([projectData])
+                            .select()
+                            .single();
+                    }
+
+                    const { data, error } = result;
+
+                    if (error) {
+                        console.error('❌ Erro ao salvar projeto:', error);
+                        alert('Erro ao salvar projeto: ' + error.message);
+                        return;
+                    }
+
+                    console.log('✅ Projeto salvo com sucesso:', data);
+                } else {
+                    console.warn('⚠️ Supabase não disponível, salvamento local apenas');
+                }
+
+                // Close modal and refresh projects
+                this.closeProjectModal();
+                await this.loadProjects();
+
+                alert(`Projeto "${title}" ${id ? 'atualizado' : 'salvo'} com sucesso!`);
+
+            }
+
+            async saveHomeSettings() {
+                try {
+                    // Get form values
+                    const heroTitle = (document.getElementById('hero-title') as HTMLInputElement)?.value || '';
+                    const heroSubtitle = (document.getElementById('hero-subtitle') as HTMLInputElement)?.value || '';
+                    const heroDescription = (document.getElementById('hero-description') as HTMLTextAreaElement)?.value || '';
+                    const heroCtaPrimary = (document.getElementById('hero-cta-primary') as HTMLInputElement)?.value || '';
+                    const heroCtaSecondary = (document.getElementById('hero-cta-secondary') as HTMLInputElement)?.value || '';
+
+                    const skillsFrontend = (document.getElementById('skills-frontend') as HTMLInputElement)?.value || '';
+                    const skillsBackend = (document.getElementById('skills-backend') as HTMLInputElement)?.value || '';
+                    const skillsDatabase = (document.getElementById('skills-database') as HTMLInputElement)?.value || '';
+                    const skillsTools = (document.getElementById('skills-tools') as HTMLInputElement)?.value || '';
+
+                    // Slider settings
+                    const sliderEnabled = (document.getElementById('slider-enabled') as HTMLInputElement)?.checked || false;
+                    const sliderAutoplay = (document.getElementById('slider-autoplay') as HTMLInputElement)?.checked || false;
+                    const sliderDelay = parseInt((document.getElementById('slider-delay') as HTMLInputElement)?.value || '5000');
+
+                    // Get slides data
+                    const slidesData = this.getSlidesData();
+
+                    // Upload das imagens do slider se houver arquivos
+                    const processedSlidesData = [];
+                    for (const slide of slidesData) {
+                        let imageUrl = '';
+                        if (slide.imageFile) {
+                            const file = slide.imageFile;
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `slider-${slide.title?.replace(/\s+/g, '-') || 'slide'}-${Date.now()}.${fileExt}`;
+                            const { data, error } = await this.supabase.storage.from('images').upload(fileName, file);
+                            if (error) {
+                                alert('Erro ao fazer upload da imagem do slide: ' + error.message);
+                                return;
+                            }
+                            imageUrl = this.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+                        }
+                        processedSlidesData.push({
+                            title: slide.title,
+                            description: slide.description,
+                            image: imageUrl,
+                            link: slide.link
+                        });
+                    }
+
+                    // Featured section settings
+                    const featuredTitle = (document.getElementById('featured-title') as HTMLInputElement)?.value || '';
+                    const featuredDescription = (document.getElementById('featured-description') as HTMLTextAreaElement)?.value || '';
+                    const featuredCount = parseInt((document.getElementById('featured-count') as HTMLInputElement)?.value || '3');
+
+                    // Posts section settings
+                    const postsTitle = (document.getElementById('posts-title') as HTMLInputElement)?.value || '';
+                    const postsDescription = (document.getElementById('posts-description') as HTMLTextAreaElement)?.value || '';
+                    const postsCount = parseInt((document.getElementById('posts-count') as HTMLInputElement)?.value || '3');
+
+                    const homeData = {
+                        hero: {
+                            title: heroTitle,
+                            subtitle: heroSubtitle,
+                            description: heroDescription,
+                            ctaPrimary: heroCtaPrimary,
+                            ctaSecondary: heroCtaSecondary
+                        },
+                        skills: {
+                            frontend: skillsFrontend,
+                            backend: skillsBackend,
+                            database: skillsDatabase,
+                            tools: skillsTools
+                        },
+                        slider: {
+                            enabled: sliderEnabled,
+                            autoplay: sliderAutoplay,
+                            delay: sliderDelay,
+                            items: processedSlidesData
+                        },
+                        featured: {
+                            title: featuredTitle,
+                            description: featuredDescription,
+                            count: featuredCount
+                        },
+                        posts: {
+                            title: postsTitle,
+                            description: postsDescription,
+                            count: postsCount
+                        }
+                    };
+
+                    console.log('💾 Saving home settings:', homeData);
+
+                    // Save to Supabase
+                    if (this.supabase) {
+                        const { data, error } = await this.supabase
+                            .from('settings')
+                            .upsert({
+                                key: 'home',
+                                value: homeData,
+                                updated_at: new Date().toISOString()
+                            }, {
+                                onConflict: 'key'
+                            });
+
+                        if (error) {
+                            console.error('❌ Supabase error:', error);
+                            alert('Erro ao salvar no banco de dados: ' + error.message);
+                            return;
+                        }
+
+                        console.log('✅ Home settings saved to Supabase:', data);
+                    } else {
+                        console.warn('⚠️ Supabase not available, saving locally only');
+                    }
+
+                    alert('Configurações da página inicial salvas com sucesso!');
+                } catch (error) {
+                    console.error('❌ Error saving home settings:', error);
+                    alert('Erro ao salvar configurações da página inicial');
+                }
+            }
+
+            async saveAboutSettings() {
+                try {
+                    console.log('💾 Salvando configurações da página About...');
+
+                    // Get basic form values
+                    const aboutBio = (document.getElementById('about-bio') as HTMLTextAreaElement)?.value || '';
+                    const aboutProfileImageInput = document.getElementById('about-profile-image') as HTMLInputElement;
+                    const aboutSkillsFrontend = (document.getElementById('about-skills-frontend') as HTMLInputElement)?.value || '';
+                    const aboutSkillsBackend = (document.getElementById('about-skills-backend') as HTMLInputElement)?.value || '';
+                    const aboutSkillsDatabase = (document.getElementById('about-skills-database') as HTMLInputElement)?.value || '';
+                    const aboutSkillsTools = (document.getElementById('about-skills-tools') as HTMLInputElement)?.value || '';
+                    const socialGithub = (document.getElementById('social-github') as HTMLInputElement)?.value || '';
+                    const socialLinkedin = (document.getElementById('social-linkedin') as HTMLInputElement)?.value || '';
+                    const socialTwitter = (document.getElementById('social-twitter') as HTMLInputElement)?.value || '';
+                    const socialInstagram = (document.getElementById('social-instagram') as HTMLInputElement)?.value || '';
+
+                    // Handle profile image upload
+                    let profileImageUrl = '';
+                    if (aboutProfileImageInput && aboutProfileImageInput.files && aboutProfileImageInput.files[0]) {
+                        try {
+                            const file = aboutProfileImageInput.files[0];
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `profile-${Date.now()}.${fileExt}`;
+                            const { data, error } = await this.supabase.storage.from('images').upload(fileName, file);
+                            if (error) {
+                                console.error('❌ Error uploading profile image:', error);
+                                alert('Erro ao fazer upload da imagem de perfil: ' + error.message);
+                                return;
+                            }
+                            profileImageUrl = this.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+                            console.log('✅ Profile image uploaded successfully:', profileImageUrl);
+                        } catch (uploadError) {
+                            console.error('❌ Profile image upload failed:', uploadError);
+                            alert('Erro ao fazer upload da imagem de perfil');
+                            return;
+                        }
+                    }
+
+                    // Get dynamic data
+                    const experienceData = this.getExperienceData();
+                    const educationData = this.getEducationData();
+                    const certificationsData = this.getCertificationData();
+
+                    // Handle image uploads for experiences
+                    for (let i = 0; i < experienceData.length; i++) {
+                        const exp = experienceData[i];
+                        if (exp.imageFile) {
+                            try {
+                                const fileExt = exp.imageFile.name.split('.').pop();
+                                const fileName = `experience-${Date.now()}-${i}.${fileExt}`;
+                                const { data, error } = await this.supabase.storage.from('images').upload(fileName, exp.imageFile);
+                                if (error) {
+                                    console.error('❌ Error uploading experience image:', error);
+                                    alert('Erro ao fazer upload da imagem da experiência: ' + error.message);
+                                    return;
+                                }
+                                exp.image = this.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+                                delete exp.imageFile; // Remove file object from data
+                            } catch (uploadError) {
+                                console.error('❌ Experience image upload failed:', uploadError);
+                                alert('Erro ao fazer upload da imagem da experiência');
+                                return;
+                            }
+                        }
+                    }
+
+                    // Handle image uploads for certifications
+                    for (let i = 0; i < certificationsData.length; i++) {
+                        const cert = certificationsData[i];
+                        if (cert.imageFile) {
+                            try {
+                                const fileExt = cert.imageFile.name.split('.').pop();
+                                const fileName = `certification-${Date.now()}-${i}.${fileExt}`;
+                                const { data, error } = await this.supabase.storage.from('images').upload(fileName, cert.imageFile);
+                                if (error) {
+                                    console.error('❌ Error uploading certification image:', error);
+                                    alert('Erro ao fazer upload da imagem da certificação: ' + error.message);
+                                    return;
+                                }
+                                cert.image = this.supabase.storage.from('images').getPublicUrl(fileName).data.publicUrl;
+                                delete cert.imageFile; // Remove file object from data
+                            } catch (uploadError) {
+                                console.error('❌ Certification image upload failed:', uploadError);
+                                alert('Erro ao fazer upload da imagem da certificação');
+                                return;
+                            }
+                        }
+                    }
+
+                    const aboutData = {
+                        bio: aboutBio,
+                        profileImage: profileImageUrl,
+                        skills: {
+                            frontend: aboutSkillsFrontend,
+                            backend: aboutSkillsBackend,
+                            database: aboutSkillsDatabase,
+                            tools: aboutSkillsTools
+                        },
+                        experience: experienceData,
+                        education: educationData,
+                        certifications: certificationsData,
+                        social: {
+                            github: socialGithub,
+                            linkedin: socialLinkedin,
+                            twitter: socialTwitter,
+                            instagram: socialInstagram
+                        }
+                    };
+
+                    console.log('💾 Saving about settings:', aboutData);
+
+                    // Save to Supabase
+                    if (this.supabase) {
+                        const { data, error } = await this.supabase
+                            .from('settings')
+                            .upsert({
+                                key: 'about',
+                                value: aboutData,
+                                updated_at: new Date().toISOString()
+                            }, {
+                                onConflict: 'key'
+                            });
+
+                        if (error) {
+                            console.error('❌ Supabase error:', error);
+                            alert('Erro ao salvar no banco de dados: ' + error.message);
+                            return;
+                        }
+
+                        console.log('✅ About settings saved to Supabase:', data);
+                    } else {
+                        console.warn('⚠️ Supabase not available, saving locally only');
+                    }
+
+                    alert('Configurações da página sobre salvas com sucesso!');
+                } catch (error) {
+                    console.error('❌ Error saving about settings:', error);
+                    alert('Erro ao salvar configurações da página sobre');
+                }
+            }
+
+            async loadSettings() {
+                try {
+                    console.log('📥 Loading settings from Supabase...');
+
+                    if (!this.supabase) {
+                        console.warn('⚠️ Supabase not available, cannot load settings');
+                        return;
+                    }
+
+                    // Load home settings
+                    const { data: homeData, error: homeError } = await this.supabase
+                        .from('settings')
+                        .select('value')
+                        .eq('key', 'home')
+                        .single();
+
+                    if (homeError && homeError.code !== 'PGRST116') { // PGRST116 = no rows returned
+                        console.error('❌ Error loading home settings:', homeError);
+                    } else if (homeData) {
+                        console.log('✅ Home settings loaded:', homeData.value);
+                        this.populateHomeForm(homeData.value);
+                    }
+
+                    // Load about settings
+                    const { data: aboutData, error: aboutError } = await this.supabase
+                        .from('settings')
+                        .select('value')
+                        .eq('key', 'about')
+                        .single();
+
+                    if (aboutError && aboutError.code !== 'PGRST116') {
+                        console.error('❌ Error loading about settings:', aboutError);
+                    } else if (aboutData) {
+                        console.log('✅ About settings loaded:', aboutData.value);
+                        this.populateAboutForm(aboutData.value);
+                    }
+
+                } catch (error) {
+                    console.error('❌ Error loading settings:', error);
+                }
+            }
+
+            populateHomeForm(data: any) {
+                try {
+                    // Hero section
+                    if (data.hero) {
+                        const heroTitle = document.getElementById('hero-title') as HTMLInputElement;
+                        const heroSubtitle = document.getElementById('hero-subtitle') as HTMLInputElement;
+                        const heroDescription = document.getElementById('hero-description') as HTMLTextAreaElement;
+
+                        if (heroTitle) heroTitle.value = data.hero.title || '';
+                        if (heroSubtitle) heroSubtitle.value = data.hero.subtitle || '';
+                        if (heroDescription) heroDescription.value = data.hero.description || '';
+                    }
+
+                    // Slider section
+                    if (data.slider) {
+                        const sliderEnabled = document.getElementById('slider-enabled') as HTMLInputElement;
+                        const sliderAutoplay = document.getElementById('slider-autoplay') as HTMLInputElement;
+                        const sliderDelay = document.getElementById('slider-delay') as HTMLInputElement;
+
+                        if (sliderEnabled) sliderEnabled.checked = data.slider.enabled || false;
+                        if (sliderAutoplay) sliderAutoplay.checked = data.slider.autoplay || false;
+                        if (sliderDelay) sliderDelay.value = data.slider.delay || '3000';
+
+                        // Populate slides
+                        if (data.slider.items && Array.isArray(data.slider.items)) {
+                            this.populateSlides(data.slider.items);
+                        }
+                    }
+
+                    // Featured section
+                    if (data.featured) {
+                        const featuredTitle = document.getElementById('featured-title') as HTMLInputElement;
+                        const featuredDescription = document.getElementById('featured-description') as HTMLTextAreaElement;
+                        const featuredCount = document.getElementById('featured-count') as HTMLInputElement;
+
+                        if (featuredTitle) featuredTitle.value = data.featured.title || '';
+                        if (featuredDescription) featuredDescription.value = data.featured.description || '';
+                        if (featuredCount) featuredCount.value = data.featured.count || '6';
+                    }
+
+                    // Posts section
+                    if (data.posts) {
+                        const postsTitle = document.getElementById('posts-title') as HTMLInputElement;
+                        const postsDescription = document.getElementById('posts-description') as HTMLTextAreaElement;
+                        const postsCount = document.getElementById('posts-count') as HTMLInputElement;
+
+                        if (postsTitle) postsTitle.value = data.posts.title || '';
+                        if (postsDescription) postsDescription.value = data.posts.description || '';
+                        if (postsCount) postsCount.value = data.posts.count || '3';
+                    }
+
+                    console.log('✅ Home form populated with saved data');
+                } catch (error) {
+                    console.error('❌ Error populating home form:', error);
+                }
+            }
+
+            populateAboutForm(data: any) {
+                try {
+                    // Bio section
+                    const aboutBio = document.getElementById('about-bio') as HTMLTextAreaElement;
+                    const aboutProfileImage = document.getElementById('about-profile-image') as HTMLInputElement;
+
+                    if (aboutBio) aboutBio.value = data.bio || '';
+                    if (aboutProfileImage && data.profileImage) {
+                        // Show preview of existing profile image
+                        const previewDiv = document.getElementById('about-profile-preview');
+                        if (previewDiv) {
+                            previewDiv.innerHTML = `<img src="${data.profileImage}" alt="Foto de perfil atual" style="max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 10px; border: 2px solid #ddd;">`;
+                        }
+                    }
+
+                    // Skills section
+                    if (data.skills) {
+                        const frontend = document.getElementById('about-skills-frontend') as HTMLInputElement;
+                        const backend = document.getElementById('about-skills-backend') as HTMLInputElement;
+                        const database = document.getElementById('about-skills-database') as HTMLInputElement;
+                        const tools = document.getElementById('about-skills-tools') as HTMLInputElement;
+
+                        if (frontend) frontend.value = data.skills.frontend || '';
+                        if (backend) backend.value = data.skills.backend || '';
+                        if (database) database.value = data.skills.database || '';
+                        if (tools) tools.value = data.skills.tools || '';
+                    }
+
+                    // Experience section
+                    if (data.experience && Array.isArray(data.experience)) {
+                        this.populateExperience(data.experience);
+                    }
+
+                    // Education section
+                    if (data.education && Array.isArray(data.education)) {
+                        this.populateEducation(data.education);
+                    }
+
+                    // Certifications section
+                    if (data.certifications && Array.isArray(data.certifications)) {
+                        this.populateCertifications(data.certifications);
+                    }
+
+                    // Social section
+                    if (data.social) {
+                        const github = document.getElementById('social-github') as HTMLInputElement;
+                        const linkedin = document.getElementById('social-linkedin') as HTMLInputElement;
+                        const twitter = document.getElementById('social-twitter') as HTMLInputElement;
+                        const instagram = document.getElementById('social-instagram') as HTMLInputElement;
+
+                        if (github) github.value = data.social.github || '';
+                        if (linkedin) linkedin.value = data.social.linkedin || '';
+                        if (twitter) twitter.value = data.social.twitter || '';
+                        if (instagram) instagram.value = data.social.instagram || '';
+                    }
+
+                    console.log('✅ About form populated with saved data');
+                } catch (error) {
+                    console.error('❌ Error populating about form:', error);
+                }
+            }
+
+            // Slider management functions
+            addSlide() {
+                console.log('➕ Adding new slide...');
+                const container = document.getElementById('slider-items-container');
+                if (!container) return;
+
+                const slideIndex = container.children.length;
+                const slideHtml = `
+                    <div class="slide-item" data-index="${slideIndex}">
+                        <div class="slide-header">
+                            <h4>Slide ${slideIndex + 1}</h4>
+                            <button type="button" class="btn btn-danger btn-sm remove-slide-btn" onclick="adminPanel.removeSlide(${slideIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label>Título:</label>
+                            <input type="text" class="slide-title" placeholder="Título do slide">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição:</label>
+                            <textarea class="slide-description" rows="2" placeholder="Descrição do slide"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Imagem:</label>
+                            <input type="file" class="slide-image" accept="image/*">
+                            <small class="form-hint">Selecione uma imagem do seu computador para o slide</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Link do Projeto:</label>
+                            <input type="text" class="slide-link" placeholder="Link para o projeto">
+                        </div>
                     </div>
+                `;
 
-                    <div class="form-group">
-                        <label for="social-linkedin">LinkedIn:</label>
-                        <input type="url" id="social-linkedin" placeholder="https://linkedin.com/in/seu-perfil">
+                container.insertAdjacentHTML('beforeend', slideHtml);
+                console.log('✅ Slide added successfully');
+            }
+
+            removeSlide(index: number) {
+                console.log('🗑️ Removing slide:', index);
+                const container = document.getElementById('slider-items-container');
+                if (!container) return;
+
+                const slideItem = container.querySelector(`[data-index="${index}"]`);
+                if (slideItem) {
+                    slideItem.remove();
+                    this.updateSlideIndices();
+                    console.log('✅ Slide removed successfully');
+                }
+            }
+
+            updateSlideIndices() {
+                const container = document.getElementById('slider-items-container');
+                if (!container) return;
+
+                const slides = container.querySelectorAll('.slide-item');
+                slides.forEach((slide: Element, index: number) => {
+                    slide.setAttribute('data-index', index.toString());
+                    const header = slide.querySelector('h4');
+                    if (header) header.textContent = `Slide ${index + 1}`;
+
+                    const removeBtn = slide.querySelector('.remove-slide-btn');
+                    if (removeBtn) {
+                        removeBtn.setAttribute('onclick', `adminPanel.removeSlide(${index})`);
+                    }
+                });
+            }
+
+            // Experience management functions
+            addExperience() {
+                console.log('➕ Adding new experience...');
+                const container = document.getElementById('experience-container');
+                if (!container) return;
+
+                const expIndex = container.children.length;
+                const expHtml = `
+                    <div class="experience-item" data-index="${expIndex}">
+                        <div class="item-header">
+                            <h5>Experiência ${expIndex + 1}</h5>
+                            <button type="button" class="btn btn-danger btn-sm remove-experience-btn" onclick="adminPanel.removeExperience(${expIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ano:</label>
+                                <input type="text" class="experience-year" placeholder="2024">
+                            </div>
+                            <div class="form-group">
+                                <label>Cargo:</label>
+                                <input type="text" class="experience-position" placeholder="Desenvolvedor Full Stack">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Empresa:</label>
+                            <input type="text" class="experience-company" placeholder="Nome da Empresa">
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição:</label>
+                            <textarea class="experience-description" rows="3" placeholder="Descreva suas responsabilidades e conquistas..."></textarea>
+                        </div>
                     </div>
+                `;
 
-                    <div class="form-group">
-                        <label for="social-twitter">Twitter:</label>
-                        <input type="url" id="social-twitter" placeholder="https://twitter.com/seu-usuario">
+                container.insertAdjacentHTML('beforeend', expHtml);
+                console.log('✅ Experience added successfully');
+            }
+
+            removeExperience(index: number) {
+                console.log('🗑️ Removing experience:', index);
+                const container = document.getElementById('experience-container');
+                if (!container) return;
+
+                const expItem = container.querySelector(`[data-index="${index}"]`);
+                if (expItem) {
+                    expItem.remove();
+                    this.updateExperienceIndices();
+                    console.log('✅ Experience removed successfully');
+                }
+            }
+
+            updateExperienceIndices() {
+                const container = document.getElementById('experience-container');
+                if (!container) return;
+
+                const experiences = container.querySelectorAll('.experience-item');
+                experiences.forEach((exp: Element, index: number) => {
+                    exp.setAttribute('data-index', index.toString());
+                    const header = exp.querySelector('h5');
+                    if (header) header.textContent = `Experiência ${index + 1}`;
+
+                    const removeBtn = exp.querySelector('.remove-experience-btn');
+                    if (removeBtn) {
+                        removeBtn.setAttribute('onclick', `adminPanel.removeExperience(${index})`);
+                    }
+                });
+            }
+
+            getExperienceData(): any[] {
+                const container = document.getElementById('experience-container');
+                if (!container) return [];
+
+                const experiences = container.querySelectorAll('.experience-item');
+                const expData: any[] = [];
+
+                experiences.forEach((exp: Element) => {
+                    const year = (exp.querySelector('.experience-year') as HTMLInputElement)?.value || '';
+                    const position = (exp.querySelector('.experience-position') as HTMLInputElement)?.value || '';
+                    const company = (exp.querySelector('.experience-company') as HTMLInputElement)?.value || '';
+                    const description = (exp.querySelector('.experience-description') as HTMLTextAreaElement)?.value || '';
+
+                    if (year || position || company || description) {
+                        expData.push({
+                            year,
+                            position,
+                            company,
+                            description
+                        });
+                    }
+                });
+
+                return expData;
+            }
+
+            populateExperience(data: any[]) {
+                const container = document.getElementById('experience-container');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                data.forEach((exp: any, index: number) => {
+                    const expHtml = `
+                        <div class="experience-item" data-index="${index}">
+                            <div class="item-header">
+                                <h5>Experiência ${index + 1}</h5>
+                                <button type="button" class="btn btn-danger btn-sm remove-experience-btn" onclick="adminPanel.removeExperience(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Ano:</label>
+                                    <input type="text" class="experience-year" value="${exp.year || ''}" placeholder="2024">
+                                </div>
+                                <div class="form-group">
+                                    <label>Cargo:</label>
+                                    <input type="text" class="experience-position" value="${exp.position || ''}" placeholder="Desenvolvedor Full Stack">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Empresa:</label>
+                                <input type="text" class="experience-company" value="${exp.company || ''}" placeholder="Nome da Empresa">
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição:</label>
+                                <textarea class="experience-description" rows="3" placeholder="Descreva suas responsabilidades e conquistas...">${exp.description || ''}</textarea>
+                            </div>
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', expHtml);
+                });
+
+                console.log('✅ Experience populated with saved data');
+            }
+
+            // Education management functions
+            addEducation() {
+                console.log('➕ Adding new education...');
+                const container = document.getElementById('education-container');
+                if (!container) return;
+
+                const eduIndex = container.children.length;
+                const eduHtml = `
+                    <div class="education-item" data-index="${eduIndex}">
+                        <div class="item-header">
+                            <h5>Formação ${eduIndex + 1}</h5>
+                            <button type="button" class="btn btn-danger btn-sm remove-education-btn" onclick="adminPanel.removeEducation(${eduIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="form-group">
+                            <label>Instituição:</label>
+                            <input type="text" class="education-institution" placeholder="Nome da Instituição">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Curso:</label>
+                                <input type="text" class="education-course" placeholder="Nome do Curso">
+                            </div>
+                            <div class="form-group">
+                                <label>Período:</label>
+                                <input type="text" class="education-period" placeholder="2020 - 2024">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição (opcional):</label>
+                            <textarea class="education-description" rows="2" placeholder="Informações adicionais sobre a formação..."></textarea>
+                        </div>
                     </div>
+                `;
 
-                    <div class="form-group">
-                        <label for="social-email">E-mail:</label>
-                        <input type="email" id="social-email" placeholder="seu.email@exemplo.com">
+                container.insertAdjacentHTML('beforeend', eduHtml);
+                console.log('✅ Education added successfully');
+            }
+
+            removeEducation(index: number) {
+                console.log('🗑️ Removing education:', index);
+                const container = document.getElementById('education-container');
+                if (!container) return;
+
+                const eduItem = container.querySelector(`[data-index="${index}"]`);
+                if (eduItem) {
+                    eduItem.remove();
+                    this.updateEducationIndices();
+                    console.log('✅ Education removed successfully');
+                }
+            }
+
+            updateEducationIndices() {
+                const container = document.getElementById('education-container');
+                if (!container) return;
+
+                const educations = container.querySelectorAll('.education-item');
+                educations.forEach((edu: Element, index: number) => {
+                    edu.setAttribute('data-index', index.toString());
+                    const header = edu.querySelector('h5');
+                    if (header) header.textContent = `Formação ${index + 1}`;
+
+                    const removeBtn = edu.querySelector('.remove-education-btn');
+                    if (removeBtn) {
+                        removeBtn.setAttribute('onclick', `adminPanel.removeEducation(${index})`);
+                    }
+                });
+            }
+
+            getEducationData(): any[] {
+                const container = document.getElementById('education-container');
+                if (!container) return [];
+
+                const educations = container.querySelectorAll('.education-item');
+                const eduData: any[] = [];
+
+                educations.forEach((edu: Element) => {
+                    const institution = (edu.querySelector('.education-institution') as HTMLInputElement)?.value || '';
+                    const course = (edu.querySelector('.education-course') as HTMLInputElement)?.value || '';
+                    const period = (edu.querySelector('.education-period') as HTMLInputElement)?.value || '';
+                    const description = (edu.querySelector('.education-description') as HTMLTextAreaElement)?.value || '';
+
+                    if (institution || course || period) {
+                        eduData.push({
+                            institution,
+                            course,
+                            period,
+                            description
+                        });
+                    }
+                });
+
+                return eduData;
+            }
+
+            populateEducation(data: any[]) {
+                const container = document.getElementById('education-container');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                data.forEach((edu: any, index: number) => {
+                    const eduHtml = `
+                        <div class="education-item" data-index="${index}">
+                            <div class="item-header">
+                                <h5>Formação ${index + 1}</h5>
+                                <button type="button" class="btn btn-danger btn-sm remove-education-btn" onclick="adminPanel.removeEducation(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label>Instituição:</label>
+                                <input type="text" class="education-institution" value="${edu.institution || ''}" placeholder="Nome da Instituição">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Curso:</label>
+                                    <input type="text" class="education-course" value="${edu.course || ''}" placeholder="Nome do Curso">
+                                </div>
+                                <div class="form-group">
+                                    <label>Período:</label>
+                                    <input type="text" class="education-period" value="${edu.period || ''}" placeholder="2020 - 2024">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição (opcional):</label>
+                                <textarea class="education-description" rows="2" placeholder="Informações adicionais sobre a formação...">${edu.description || ''}</textarea>
+                            </div>
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', eduHtml);
+                });
+
+                console.log('✅ Education populated with saved data');
+            }
+
+            // Certification management functions
+            addCertification() {
+                console.log('➕ Adding new certification...');
+                const container = document.getElementById('certifications-container');
+                if (!container) return;
+
+                const certIndex = container.children.length;
+                const certHtml = `
+                    <div class="certification-item" data-index="${certIndex}">
+                        <div class="item-header">
+                            <h5>Certificação ${certIndex + 1}</h5>
+                            <button type="button" class="btn btn-danger btn-sm remove-certification-btn" onclick="adminPanel.removeCertification(${certIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nome da Certificação:</label>
+                                <input type="text" class="certification-name" placeholder="AWS Certified Developer">
+                            </div>
+                            <div class="form-group">
+                                <label>Emissor:</label>
+                                <input type="text" class="certification-issuer" placeholder="Amazon Web Services">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Data:</label>
+                                <input type="text" class="certification-date" placeholder="2024">
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem do Certificado:</label>
+                                <input type="file" class="certification-image" accept="image/*">
+                                <small class="form-hint">Selecione a imagem do certificado (opcional)</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descrição:</label>
+                            <textarea class="certification-description" rows="2" placeholder="Descreva o que você aprendeu nesta certificação..."></textarea>
+                        </div>
                     </div>
+                `;
 
-                    <div class="form-group">
-                        <label for="social-city">Cidade:</label>
-                        <input type="text" id="social-city" placeholder="São Paulo, SP">
-                    </div>
+                container.insertAdjacentHTML('beforeend', certHtml);
+                console.log('✅ Certification added successfully');
+            }
 
-                    <div class="form-group">
-                        <label for="social-phone">Telefone:</label>
-                        <input type="tel" id="social-phone" placeholder="+55 (11) 99999-9999">
-                    </div>
-                </div>
+            removeCertification(index: number) {
+                console.log('🗑️ Removing certification:', index);
+                const container = document.getElementById('certifications-container');
+                if (!container) return;
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Informações</button>
-                    <button type="button" id="cancel-about-btn" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </section>
-    </div>
+                const certItem = container.querySelector(`[data-index="${index}"]`);
+                if (certItem) {
+                    certItem.remove();
+                    this.updateCertificationIndices();
+                    console.log('✅ Certification removed successfully');
+                }
+            }
 
-    <!-- Loading Spinner -->
-    <div id="loading-spinner" class="spinner" style="display: none;">
-        <div class="spinner-circle"></div>
-    </div>
+            updateCertificationIndices() {
+                const container = document.getElementById('certifications-container');
+                if (!container) return;
 
-    <!-- Supabase Client -->
-    <script define:vars={{ SUPABASE_URL, SUPABASE_ANON_KEY }} type="module">
-        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+                const certifications = container.querySelectorAll('.certification-item');
+                certifications.forEach((cert: Element, index: number) => {
+                    cert.setAttribute('data-index', index.toString());
+                    const header = cert.querySelector('h5');
+                    if (header) header.textContent = `Certificação ${index + 1}`;
 
-        // Configurações do Supabase 
-        const supabaseUrl = SUPABASE_URL;
-        const supabaseAnonKey = SUPABASE_ANON_KEY;
+                    const removeBtn = cert.querySelector('.remove-certification-btn');
+                    if (removeBtn) {
+                        removeBtn.setAttribute('onclick', `adminPanel.removeCertification(${index})`);
+                    }
+                });
+            }
 
-        // Inicializar Supabase
-        const supabase = createClient(supabaseUrl, supabaseAnonKey);
+            getCertificationData(): any[] {
+                const container = document.getElementById('certifications-container');
+                if (!container) return [];
 
-        // Disponibilizar globalmente
-        window.supabase = supabase;
-        window.supabaseInitialized = true;
+                const certifications = container.querySelectorAll('.certification-item');
+                const certData: any[] = [];
 
-        console.log('✅ Supabase inicializado com sucesso');
-        
-        // Disparar evento para notificar que o Supabase está pronto
-        window.dispatchEvent(new Event('supabaseReady'));
+                certifications.forEach((cert: Element) => {
+                    const name = (cert.querySelector('.certification-name') as HTMLInputElement)?.value || '';
+                    const issuer = (cert.querySelector('.certification-issuer') as HTMLInputElement)?.value || '';
+                    const date = (cert.querySelector('.certification-date') as HTMLInputElement)?.value || '';
+                    const imageInput = cert.querySelector('.certification-image') as HTMLInputElement;
+                    const description = (cert.querySelector('.certification-description') as HTMLTextAreaElement)?.value || '';
+
+                    if (name || issuer || date || description) {
+                        certData.push({
+                            name,
+                            issuer,
+                            date,
+                            imageFile: imageInput?.files?.[0] || null,
+                            image: '', // será preenchido após upload
+                            description
+                        });
+                    }
+                });
+
+                return certData;
+            }
+
+            populateCertifications(data: any[]) {
+                const container = document.getElementById('certifications-container');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                data.forEach((cert: any, index: number) => {
+                    const certHtml = `
+                        <div class="certification-item" data-index="${index}">
+                            <div class="item-header">
+                                <h5>Certificação ${index + 1}</h5>
+                                <button type="button" class="btn btn-danger btn-sm remove-certification-btn" onclick="adminPanel.removeCertification(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Nome da Certificação:</label>
+                                    <input type="text" class="certification-name" value="${cert.name || ''}" placeholder="AWS Certified Developer">
+                                </div>
+                                <div class="form-group">
+                                    <label>Emissor:</label>
+                                    <input type="text" class="certification-issuer" value="${cert.issuer || ''}" placeholder="Amazon Web Services">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Data:</label>
+                                    <input type="text" class="certification-date" value="${cert.date || ''}" placeholder="2024">
+                                </div>
+                                <div class="form-group">
+                                    <label>Imagem do Certificado:</label>
+                                    <input type="file" class="certification-image" accept="image/*">
+                                    <small class="form-hint">Selecione a imagem do certificado (opcional)</small>
+                                    ${cert.image ? `<div class="image-preview"><img src="${cert.image}" alt="Preview" style="max-width: 200px; max-height: 150px; margin-top: 10px; border-radius: 4px;"></div>` : ''}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição:</label>
+                                <textarea class="certification-description" rows="2" placeholder="Descreva o que você aprendeu nesta certificação...">${cert.description || ''}</textarea>
+                            </div>
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', certHtml);
+                });
+
+                console.log('✅ Certifications populated with saved data');
+            }
+
+            getSlidesData(): any[] {
+                const container = document.getElementById('slider-items-container');
+                if (!container) return [];
+
+                const slides = container.querySelectorAll('.slide-item');
+                const slidesData: any[] = [];
+
+                slides.forEach((slide: Element) => {
+                    const title = (slide.querySelector('.slide-title') as HTMLInputElement)?.value || '';
+                    const description = (slide.querySelector('.slide-description') as HTMLTextAreaElement)?.value || '';
+                    const imageInput = slide.querySelector('.slide-image') as HTMLInputElement;
+                    const link = (slide.querySelector('.slide-link') as HTMLInputElement)?.value || '';
+
+                    if (title || description || (imageInput && imageInput.files && imageInput.files[0]) || link) {
+                        slidesData.push({
+                            title,
+                            description,
+                            imageFile: imageInput?.files?.[0] || null,
+                            imageUrl: '', // será preenchido após upload
+                            link
+                        });
+                    }
+                });
+
+                return slidesData;
+            }
+
+            populateSlides(data: any[]) {
+                const container = document.getElementById('slider-items-container');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                data.forEach((slide: any, index: number) => {
+                    const slideHtml = `
+                        <div class="slide-item" data-index="${index}">
+                            <div class="slide-header">
+                                <h4>Slide ${index + 1}</h4>
+                                <button type="button" class="btn btn-danger btn-sm remove-slide-btn" onclick="adminPanel.removeSlide(${index})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <label>Título:</label>
+                                <input type="text" class="slide-title" value="${slide.title || ''}" placeholder="Título do slide">
+                            </div>
+                            <div class="form-group">
+                                <label>Descrição:</label>
+                                <textarea class="slide-description" rows="2" placeholder="Descrição do slide">${slide.description || ''}</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Imagem:</label>
+                                <input type="file" class="slide-image" accept="image/*">
+                                <small class="form-hint">Selecione uma imagem do seu computador para o slide</small>
+                                ${slide.image ? `<div class="image-preview"><img src="${slide.image}" alt="Preview" style="max-width: 200px; max-height: 150px; margin-top: 10px; border-radius: 4px;"></div>` : ''}
+                            </div>
+                            <div class="form-group">
+                                <label>Link do Projeto:</label>
+                                <input type="text" class="slide-link" value="${slide.link || ''}" placeholder="Link para o projeto">
+                            </div>
+                        </div>
+                    `;
+
+                    container.insertAdjacentHTML('beforeend', slideHtml);
+                });
+
+                console.log('✅ Slides populated with saved data');
+            }
+        }
+
+        // Start initialization
+        // Start initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initWhenReady();
+            });
+
+        } else {
+            initWhenReady();
+        }
+
+        async function initWhenReady() {
+            console.log('🔄 DOM ready, waiting for Supabase...');
+
+            try {
+                // Wait for Supabase to be fully loaded with timeout
+                await new Promise<void>((resolve, reject) => {
+                    let attempts = 0;
+                    const maxAttempts = 200; // 10 seconds at 50ms intervals
+
+                    const checkSupabase = () => {
+                        attempts++;
+                        if (typeof (window as any).supabase !== 'undefined' && (window as any).supabase.createClient) {
+                            console.log('✅ Supabase ready after', attempts, 'attempts');
+                            resolve();
+                        } else if (attempts >= maxAttempts) {
+                            console.error('❌ Supabase library failed to load within 10 seconds');
+                            reject(new Error('Supabase library failed to load within 10 seconds'));
+                        } else {
+                            console.log('⏳ Waiting for Supabase... (attempt', attempts, ')');
+                            setTimeout(checkSupabase, 50);
+                        }
+                    };
+
+                    checkSupabase();
+                });
+
+                // Now initialize the admin panel
+                console.log('🚀 Initializing admin panel...');
+                let adminPanel = new AdminPanelClass();
+                console.log('✅ Admin panel initialized successfully');
+
+                // Make it globally available AFTER initialization
+                window.adminPanel = adminPanel;
+                console.log('✅ AdminPanel assigned to window:', window.adminPanel);
+            } catch (error) {
+                console.error('❌ Failed to initialize app:', error);
+                // Fallback: show login screen even if Supabase fails
+                const loadingScreen = document.getElementById('loading-screen');
+                const loginContainer = document.getElementById('login-container');
+                const dashboardContainer = document.getElementById('dashboard-container');
+
+                if (loadingScreen) loadingScreen.style.display = 'none';
+                if (loginContainer) loginContainer.style.display = 'flex';
+                if (dashboardContainer) dashboardContainer.style.display = 'none';
+
+                const errorDiv = document.getElementById('login-error');
+                if (errorDiv) {
+                    errorDiv.textContent = 'Failed to initialize authentication system. Please refresh the page.';
+                    errorDiv.style.display = 'block';
+                }
+            }
+        }
+
+        // Start initialization
+        initWhenReady();
     </script>
-
-    <!-- EasyMDE -->
-    <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
-
-    <!-- Admin Script - Carregado após inicialização do Supabase -->
-    <script src="/admin/admin.js" is:inline></script>
-    
-    <!-- Script de inicialização (novo) -->
-    <script src="/admin/init-new.js" is:inline></script>
-    
-    <!-- Script de depuração -->
-    <script src="/admin/debug.js" is:inline></script>
-    
-    <!-- Script de teste de login -->
-    <script src="/admin/login-test.js" is:inline></script>
 </body>
 </html>

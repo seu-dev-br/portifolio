@@ -1,0 +1,25 @@
+---
+// LoadingSkeleton.astro - Componente de loading skeleton reutilizável
+export interface Props {
+	lines?: number;
+	widths?: string[];
+	height?: string;
+	class?: string;
+}
+
+const {
+	lines = 2,
+	widths = ['100%', '75%'],
+	height = '1rem',
+	class: className = ''
+} = Astro.props;
+---
+
+<div class={`animate-pulse ${className}`}>
+	{Array.from({ length: lines }, (_, i) => (
+		<div
+			class="bg-gray-700/50 rounded-lg mb-2"
+			style={`height: ${height}; width: ${widths[i % widths.length]}`}
+		></div>
+	))}
+</div>

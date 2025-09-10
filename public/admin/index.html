@@ -47,238 +47,285 @@
 
         <!-- Navegação -->
         <nav class="dashboard-nav">
-            <button id="list-posts-btn" class="nav-btn active">Listar Posts</button>
-            <button id="new-post-btn" class="nav-btn">Novo Post</button>
-            <button id="list-projects-btn" class="nav-btn">Listar Projetos</button>
-            <button id="new-project-btn" class="nav-btn">Novo Projeto</button>
-            <button id="about-manager-btn" class="nav-btn">Gerenciar Sobre</button>
+            <button class="nav-item" data-view="overview">Visão Geral</button>
+            <button class="nav-item" data-view="projects">Projetos</button>
+            <button class="nav-item" data-view="posts">Blog</button>
+            <button class="nav-item" data-view="messages">Mensagens</button>
+            <button class="nav-item" data-view="home">Página Inicial</button>
+            <button class="nav-item" data-view="about">Página Sobre</button>
+            <button class="nav-item" data-view="settings">Configurações</button>
         </nav>
 
-        <!-- Seção de Listagem de Posts -->
-        <section id="posts-list-section" class="dashboard-section">
-            <h2>Posts Existentes</h2>
-            <div id="posts-container" class="posts-grid">
-                <!-- Posts serão carregados dinamicamente -->
+        <!-- Conteúdo das Abas -->
+        <div class="tab-content" id="overview-tab">
+            <!-- Visão Geral -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="projects-count">0</h3>
+                    <p>Projetos</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="posts-count">0</h3>
+                    <p>Posts</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="messages-count">0</h3>
+                    <p>Mensagens</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="visits-count">0</h3>
+                    <p>Visitas</p>
+                </div>
             </div>
-        </section>
 
-        <!-- Seção de Criação/Edição de Posts -->
-        <section id="post-editor-section" class="dashboard-section" style="display: none;">
-            <h2 id="editor-title">Criar Novo Post</h2>
-            <form id="post-form">
-                <input type="hidden" id="post-id" value="">
-                
-                <div class="form-group">
-                    <label for="post-title">Título:</label>
-                    <input type="text" id="post-title" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="post-excerpt">Resumo:</label>
-                    <textarea id="post-excerpt" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="post-tags">Tags (separadas por vírgula):</label>
-                    <input type="text" id="post-tags" placeholder="tech, desenvolvimento, tutorial">
-                </div>
-
-                <div class="form-group">
-                    <label for="post-status">Status:</label>
-                    <select id="post-status">
-                        <option value="draft">Rascunho</option>
-                        <option value="published">Publicado</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="cover-image">Imagem de Capa:</label>
-                    <input type="file" id="cover-image-input" accept="image/*">
-                    <input type="text" id="cover-image-url" placeholder="URL da imagem de capa">
-                    <div id="cover-image-preview" class="image-preview"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="post-content">Conteúdo (Markdown):</label>
-                    <textarea id="post-content"></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Post</button>
-                    <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Seção de Listagem de Projetos -->
-        <section id="projects-list-section" class="dashboard-section" style="display: none;">
-            <h2>Projetos Existentes</h2>
-            <div id="projects-container" class="posts-grid">
-                <!-- Projetos serão carregados dinamicamente -->
+            <div class="quick-actions">
+                <button class="btn btn-primary" id="add-project-btn">
+                    <i class="fas fa-plus"></i> Novo Projeto
+                </button>
+                <button class="btn btn-primary" id="add-post-btn">
+                    <i class="fas fa-plus"></i> Novo Post
+                </button>
             </div>
-        </section>
+        </div>
 
-        <!-- Seção de Criação/Edição de Projetos -->
-        <section id="project-editor-section" class="dashboard-section" style="display: none;">
-            <h2 id="project-editor-title">Criar Novo Projeto</h2>
-            <form id="project-form">
-                <input type="hidden" id="project-id" value="">
-                
+        <div class="tab-content" id="projects-tab">
+            <!-- Projetos -->
+            <div class="section-header">
+                <h2>Gerenciar Projetos</h2>
+                <button class="btn btn-primary" id="add-project-btn">
+                    <i class="fas fa-plus"></i> Novo Projeto
+                </button>
+            </div>
+            <div id="projects-list" class="content-list">
+                <!-- Projetos serão carregados aqui -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="posts-tab">
+            <!-- Blog Posts -->
+            <div class="section-header">
+                <h2>Gerenciar Posts</h2>
+                <button class="btn btn-primary" id="add-post-btn">
+                    <i class="fas fa-plus"></i> Novo Post
+                </button>
+            </div>
+            <div id="posts-list" class="content-list">
+                <!-- Posts serão carregados aqui -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="messages-tab">
+            <!-- Mensagens de Contato -->
+            <div class="section-header">
+                <h2>Mensagens de Contato</h2>
+                <button class="btn btn-secondary" id="refresh-messages-btn">
+                    <i class="fas fa-sync"></i> Atualizar
+                </button>
+            </div>
+            <div id="messages-list" class="content-list">
+                <!-- Mensagens serão carregadas aqui -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="settings-tab">
+            <!-- Configurações -->
+            <div class="section-header">
+                <h2>Configurações do Sistema</h2>
+            </div>
+            <div class="settings-content">
+                <p>Configurações em desenvolvimento...</p>
+            </div>
+        </div>
+
+        <div class="tab-content" id="home-tab">
+            <!-- Página Inicial -->
+            <div class="section-header">
+                <h2>Gerenciar Página Inicial</h2>
+                <button class="btn btn-primary" id="save-home-btn">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+            </div>
+
+            <!-- Hero Section -->
+            <div class="settings-section">
+                <h3>Seção Hero</h3>
                 <div class="form-group">
-                    <label for="project-title">Título do Projeto:</label>
-                    <input type="text" id="project-title" required>
+                    <label for="hero-title">Título Principal:</label>
+                    <input type="text" id="hero-title" placeholder="Olá, eu sou Ítalo Antonio">
                 </div>
-
                 <div class="form-group">
-                    <label for="project-description">Descrição:</label>
-                    <textarea id="project-description" rows="4" placeholder="Descreva o projeto..."></textarea>
+                    <label for="hero-subtitle">Subtítulo:</label>
+                    <input type="text" id="hero-subtitle" placeholder="Desenvolvedor Full Stack">
                 </div>
-
                 <div class="form-group">
-                    <label for="project-technologies">Tecnologias (separadas por vírgula):</label>
-                    <input type="text" id="project-technologies" placeholder="React, Node.js, MongoDB">
+                    <label for="hero-description">Descrição:</label>
+                    <textarea id="hero-description" rows="4" placeholder="Criando experiências digitais excepcionais..."></textarea>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="hero-cta-primary">CTA Primário:</label>
+                        <input type="text" id="hero-cta-primary" placeholder="Ver Projetos">
+                    </div>
+                    <div class="form-group">
+                        <label for="hero-cta-secondary">CTA Secundário:</label>
+                        <input type="text" id="hero-cta-secondary" placeholder="Sobre Mim">
+                    </div>
+                </div>
+            </div>
 
+            <!-- Slider Section -->
+            <div class="settings-section">
+                <h3>Slider</h3>
                 <div class="form-group">
-                    <label for="project-demo-link">Link da Demo:</label>
-                    <input type="url" id="project-demo-link" placeholder="https://exemplo.com">
+                    <label>
+                        <input type="checkbox" id="slider-enabled"> Habilitar Slider
+                    </label>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="slider-autoplay"> Autoplay
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="slider-delay">Delay (ms):</label>
+                        <input type="number" id="slider-delay" value="5000" min="1000" max="20000" step="1000">
+                    </div>
+                </div>
+                <div id="slider-items-container">
+                    <!-- Slider items will be added here -->
+                </div>
+                <button class="btn btn-outline" id="add-slide-btn">
+                    <i class="fas fa-plus"></i> Adicionar Slide
+                </button>
+            </div>
 
+            <!-- Featured Projects -->
+            <div class="settings-section">
+                <h3>Projetos em Destaque</h3>
                 <div class="form-group">
-                    <label for="project-github-link">Link do GitHub:</label>
-                    <input type="url" id="project-github-link" placeholder="https://github.com/usuario/repositorio">
+                    <label for="featured-title">Título da Seção:</label>
+                    <input type="text" id="featured-title" placeholder="Projetos em Destaque">
                 </div>
-
                 <div class="form-group">
-                    <label for="project-download-link">Link de Download (opcional):</label>
-                    <input type="url" id="project-download-link" placeholder="https://exemplo.com/download">
+                    <label for="featured-description">Descrição:</label>
+                    <textarea id="featured-description" rows="2" placeholder="Alguns dos meus trabalhos mais recentes..."></textarea>
                 </div>
-
                 <div class="form-group">
-                    <label for="project-status">Status:</label>
-                    <select id="project-status">
-                        <option value="draft">Rascunho</option>
-                        <option value="published">Publicado</option>
-                    </select>
+                    <label for="featured-count">Número de Projetos:</label>
+                    <input type="number" id="featured-count" value="3" min="1" max="10">
                 </div>
+            </div>
 
+            <!-- Latest Posts -->
+            <div class="settings-section">
+                <h3>Últimas Publicações</h3>
                 <div class="form-group">
-                    <label for="project-image">Imagem do Projeto:</label>
-                    <input type="file" id="project-image-input" accept="image/*">
-                    <input type="text" id="project-image-url" placeholder="URL da imagem do projeto">
-                    <div id="project-image-preview" class="image-preview"></div>
+                    <label for="posts-title">Título da Seção:</label>
+                    <input type="text" id="posts-title" placeholder="Últimas Publicações">
                 </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Projeto</button>
-                    <button type="button" id="cancel-project-edit-btn" class="btn btn-secondary">Cancelar</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Seção de Gerenciamento da Página Sobre -->
-        <section id="about-manager-section" class="dashboard-section" style="display: none;">
-            <h2>Gerenciar Página Sobre</h2>
-            <form id="about-form" class="post-form">
-                
-                <!-- Bio -->
                 <div class="form-group">
-                    <label for="about-bio">Biografia:</label>
+                    <label for="posts-description">Descrição:</label>
+                    <textarea id="posts-description" rows="2" placeholder="Confira minhas últimas publicações..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="posts-count">Número de Posts:</label>
+                    <input type="number" id="posts-count" value="3" min="1" max="10">
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="about-tab">
+            <!-- Página Sobre -->
+            <div class="section-header">
+                <h2>Gerenciar Página Sobre</h2>
+                <button class="btn btn-primary" id="save-about-btn">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+            </div>
+
+            <!-- Bio -->
+            <div class="settings-section">
+                <h3>Biografia</h3>
+                <div class="form-group">
+                    <label for="about-bio">Texto da Biografia:</label>
                     <textarea id="about-bio" rows="6" placeholder="Conte sua história profissional..."></textarea>
                 </div>
-
-                <!-- Foto do Perfil -->
                 <div class="form-group">
-                    <label for="profile-image">Foto do Perfil:</label>
-                    <input type="file" id="profile-image-input" accept="image/*">
-                    <input type="text" id="profile-image-url" placeholder="URL da imagem do perfil" style="margin-top: 10px;">
-                    <div id="profile-image-preview" class="image-preview"></div>
+                    <label for="about-profile-image">Foto do Perfil:</label>
+                    <input type="text" id="about-profile-image" placeholder="URL da imagem do perfil">
+                    <div id="about-profile-preview" class="image-preview"></div>
                 </div>
+            </div>
 
-                <!-- Skills -->
-                <div class="form-section">
-                    <h3>Habilidades</h3>
-                    
-                    <div class="form-group">
-                        <label for="skills-frontend">Frontend:</label>
-                        <input type="text" id="skills-frontend" placeholder="HTML5, CSS3, JavaScript, React...">
-                        <small>Separe as habilidades por vírgula</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="skills-backend">Backend:</label>
-                        <input type="text" id="skills-backend" placeholder="Node.js, Python, PHP...">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="skills-database">Database:</label>
-                        <input type="text" id="skills-database" placeholder="MySQL, MongoDB, PostgreSQL...">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="skills-tools">Ferramentas:</label>
-                        <input type="text" id="skills-tools" placeholder="Git, Docker, AWS...">
-                    </div>
+            <!-- Skills -->
+            <div class="settings-section">
+                <h3>Habilidades</h3>
+                <div class="form-group">
+                    <label for="skills-frontend">Frontend (separadas por vírgula):</label>
+                    <input type="text" id="skills-frontend" placeholder="HTML5, CSS3, JavaScript, React, TypeScript">
                 </div>
-
-                <!-- Experiência Profissional -->
-                <div class="form-section">
-                    <h3>Experiência Profissional</h3>
-                    <div id="experience-container">
-                        <!-- Experiências serão adicionadas dinamicamente -->
-                    </div>
-                    <button type="button" id="add-experience-btn" class="btn btn-outline">+ Adicionar Experiência</button>
+                <div class="form-group">
+                    <label for="skills-backend">Backend (separadas por vírgula):</label>
+                    <input type="text" id="skills-backend" placeholder="Node.js, Python, PHP, PostgreSQL">
                 </div>
-
-                <!-- Formação -->
-                <div class="form-section">
-                    <h3>Formação</h3>
-                    <div id="education-container">
-                        <!-- Formações serão adicionadas dinamicamente -->
-                    </div>
-                    <button type="button" id="add-education-btn" class="btn btn-outline">+ Adicionar Formação</button>
+                <div class="form-group">
+                    <label for="skills-database">Banco de Dados (separadas por vírgula):</label>
+                    <input type="text" id="skills-database" placeholder="MySQL, PostgreSQL, MongoDB">
                 </div>
-
-                <!-- Certificações -->
-                <div class="form-section">
-                    <h3>Certificações</h3>
-                    <div id="certifications-container">
-                        <!-- Certificações serão adicionadas dinamicamente -->
-                    </div>
-                    <button type="button" id="add-certification-btn" class="btn btn-outline">+ Adicionar Certificação</button>
+                <div class="form-group">
+                    <label for="skills-tools">Ferramentas (separadas por vírgula):</label>
+                    <input type="text" id="skills-tools" placeholder="Git, Docker, AWS, Figma">
                 </div>
+            </div>
 
-                <!-- Links Sociais -->
-                <div class="form-section">
-                    <h3>Links Sociais</h3>
-                    
+            <!-- Social Links -->
+            <div class="settings-section">
+                <h3>Links Sociais</h3>
+                <div class="form-row">
                     <div class="form-group">
                         <label for="social-github">GitHub:</label>
                         <input type="url" id="social-github" placeholder="https://github.com/seu-usuario">
                     </div>
-
                     <div class="form-group">
                         <label for="social-linkedin">LinkedIn:</label>
                         <input type="url" id="social-linkedin" placeholder="https://linkedin.com/in/seu-perfil">
                     </div>
-
+                </div>
+                <div class="form-row">
                     <div class="form-group">
                         <label for="social-twitter">Twitter:</label>
                         <input type="url" id="social-twitter" placeholder="https://twitter.com/seu-usuario">
                     </div>
-
                     <div class="form-group">
                         <label for="social-email">E-mail:</label>
                         <input type="email" id="social-email" placeholder="seu.email@exemplo.com">
                     </div>
                 </div>
+            </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Salvar Informações</button>
-                    <button type="button" id="cancel-about-btn" class="btn btn-secondary">Cancelar</button>
+            <!-- Experience -->
+            <div class="settings-section">
+                <h3>Experiência Profissional</h3>
+                <div id="experience-container">
+                    <!-- Experience items will be added here -->
                 </div>
-            </form>
-        </section>
+                <button class="btn btn-outline" id="add-experience-btn">
+                    <i class="fas fa-plus"></i> Adicionar Experiência
+                </button>
+            </div>
+
+            <!-- Education -->
+            <div class="settings-section">
+                <h3>Formação</h3>
+                <div id="education-container">
+                    <!-- Education items will be added here -->
+                </div>
+                <button class="btn btn-outline" id="add-education-btn">
+                    <i class="fas fa-plus"></i> Adicionar Formação
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Loading Spinner -->
@@ -292,30 +339,47 @@
     <!-- Supabase Initialization -->
     <script>
         // Initialize Supabase with error handling
-        try {
-            const supabaseUrl = 'https://nattvkjaecceirxthizc.supabase.co';
-            const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
-
-            if (!supabaseUrl || !supabaseAnonKey) {
-                throw new Error('Supabase credentials not found');
-            }
-
-            window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
-            console.log('✅ Supabase initialized successfully at:', new Date().toISOString());
-            console.log('🔗 Supabase URL:', supabaseUrl);
-
-            // Test connection
-            window.supabase.auth.getSession().then(({ data, error }) => {
-                if (error) {
-                    console.error('❌ Supabase connection test failed:', error);
-                } else {
-                    console.log('✅ Supabase connection test successful');
+        function initializeSupabase() {
+            try {
+                // Check if Supabase SDK is loaded
+                if (typeof supabase === 'undefined') {
+                    throw new Error('Supabase SDK not loaded');
                 }
-            });
 
-        } catch (error) {
-            console.error('❌ Failed to initialize Supabase:', error);
-            alert('Erro na inicialização do Supabase. Verifique o console para mais detalhes.');
+                const supabaseUrl = 'https://nattvkjaecceirxthizc.supabase.co';
+                const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
+
+                if (!supabaseUrl || !supabaseAnonKey) {
+                    throw new Error('Supabase credentials not found');
+                }
+
+                window.supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+                console.log('✅ Supabase initialized successfully at:', new Date().toISOString());
+                console.log('🔗 Supabase URL:', supabaseUrl);
+
+                // Dispatch event to notify other scripts
+                window.dispatchEvent(new CustomEvent('supabaseReady'));
+
+                // Test connection
+                window.supabase.auth.getSession().then(({ data, error }) => {
+                    if (error) {
+                        console.error('❌ Supabase connection test failed:', error);
+                    } else {
+                        console.log('✅ Supabase connection test successful');
+                    }
+                });
+
+            } catch (error) {
+                console.error('❌ Failed to initialize Supabase:', error);
+                // Don't show alert, just log the error
+            }
+        }
+
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeSupabase);
+        } else {
+            initializeSupabase();
         }
     </script>
     
@@ -323,16 +387,6 @@
     <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
     
     <!-- Admin Script -->
-    <script src="admin.js"></script>
-    
-    <!-- Posts Loader -->
-    <script src="loadPosts.js"></script>
-    
-    <!-- Fix for buttons -->
-    <script src="fix-buttons.js"></script>
-    
-    <!-- Debug tools -->
-    <link rel="stylesheet" href="debug.css">
-    <script src="debug-tools.js"></script>
+    <script src="../admin.js"></script>
 </body>
 </html>

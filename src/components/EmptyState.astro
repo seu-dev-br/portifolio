@@ -1,0 +1,147 @@
+---
+// EmptyState.astro - Componente para estados vazios atraentes
+export interface Props {
+  icon?: string;
+  title: string;
+  description?: string;
+  actionText?: string;
+  actionHref?: string;
+  actionOnClick?: string;
+  variant?: 'default' | 'minimal' | 'card';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+const {
+  icon = '📭',
+  title,
+  description,
+  actionText,
+  actionHref,
+  actionOnClick,
+  variant = 'default',
+  size = 'md'
+} = Astro.props;
+
+// Size configurations
+const sizeClasses = {
+  sm: {
+    container: 'py-8',
+    icon: 'text-4xl',
+    title: 'text-lg',
+    description: 'text-sm',
+    action: 'px-4 py-2 text-sm'
+  },
+  md: {
+    container: 'py-12',
+    icon: 'text-6xl',
+    title: 'text-xl',
+    description: 'text-base',
+    action: 'px-6 py-3 text-base'
+  },
+  lg: {
+    container: 'py-16',
+    icon: 'text-8xl',
+    title: 'text-2xl',
+    description: 'text-lg',
+    action: 'px-8 py-4 text-lg'
+  }
+};
+
+const currentSize = sizeClasses[size];
+---
+
+<div class={`empty-state text-center ${currentSize.container} ${variant === 'card' ? 'bg-gray-800/30 rounded-xl p-8 border border-gray-700/50' : ''}`}>
+  <!-- Icon -->
+  <div class={`mb-6 ${currentSize.icon} animate-fade-in-up`}>
+    {icon}
+  </div>
+
+  <!-- Title -->
+  <h3 class={`font-semibold mb-3 text-white animate-fade-in-up animate-stagger-1 ${currentSize.title}`}>
+    {title}
+  </h3>
+
+  <!-- Description -->
+  {description && (
+    <p class={`text-gray-400 mb-6 max-w-md mx-auto animate-fade-in-up animate-stagger-2 ${currentSize.description}`}>
+      {description}
+    </p>
+  )}
+
+  <!-- Action Button -->
+  {actionText && (actionHref || actionOnClick) && (
+    <div class="animate-fade-in-up animate-stagger-3">
+      {actionHref ? (
+        <a
+          href={actionHref}
+          class={`inline-flex items-center bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${currentSize.action}`}
+        >
+          {actionText}
+          <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+          </svg>
+        </a>
+      ) : (
+        <button
+          onclick={actionOnClick}
+          class={`inline-flex items-center bg-primary-600 hover:bg-primary-500 text-white font-medium rounded-lg transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${currentSize.action}`}
+        >
+          {actionText}
+          <svg class="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+          </svg>
+        </button>
+      )}
+    </div>
+  )}
+</div>
+
+<style>
+  /* Empty state specific animations */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s ease-out forwards;
+  }
+
+  .animate-stagger-1 {
+    animation-delay: 0.1s;
+  }
+
+  .animate-stagger-2 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-stagger-3 {
+    animation-delay: 0.3s;
+  }
+
+  /* Hover effects for interactive elements */
+  .empty-state a:hover svg,
+  .empty-state button:hover svg {
+    transform: translateX(4px);
+    transition: transform 0.2s ease;
+  }
+
+  /* Dark mode support */
+  :global(.light) .empty-state {
+    --empty-bg: #f8fafc;
+    --empty-text: #1e293b;
+    --empty-text-secondary: #64748b;
+  }
+
+  :global(.dark) .empty-state {
+    --empty-bg: #0f172a;
+    --empty-text: #f1f5f9;
+    --empty-text-secondary: #94a3b8;
+  }
+</style>

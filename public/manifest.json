@@ -1,0 +1,59 @@
+{
+  "name": "Ítalo Antonio - Portfólio",
+  "short_name": "Ítalo Dev",
+  "description": "Portfólio profissional de Ítalo Antonio, Desenvolvedor Full Stack",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "pt-BR",
+  "categories": ["portfolio", "developer", "web"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Projetos",
+      "short_name": "Projetos",
+      "description": "Ver meus projetos",
+      "url": "/projetos",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Blog",
+      "short_name": "Blog",
+      "description": "Ler meu blog",
+      "url": "/blog",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Contato",
+      "short_name": "Contato",
+      "description": "Entrar em contato",
+      "url": "/contato",
+      "icons": [
+        {
+          "src": "/favicon.svg",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ]
+}

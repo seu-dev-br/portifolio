@@ -32,10 +32,18 @@ FOR DELETE USING (
     AND auth.role() = 'authenticated'
 );
 
--- 3. Verificar se o bucket foi criado
+-- 3. Política adicional para permitir upload temporário (para desenvolvimento)
+-- Esta política permite upload sem autenticação para facilitar testes
+CREATE POLICY "Allow public upload to images for development" ON storage.objects
+FOR INSERT WITH CHECK (
+    bucket_id = 'images'
+    AND (auth.role() = 'authenticated' OR auth.role() IS NULL)
+);
+
+-- 4. Verificar se o bucket foi criado
 SELECT id, name, public FROM storage.buckets WHERE name = 'images';
 
--- 4. Verificar as políticas criadas
+-- 5. Verificar as políticas criadas
 SELECT schemaname, tablename, policyname, permissive, roles, cmd
 FROM pg_policies
 WHERE tablename = 'objects' AND schemaname = 'storage';

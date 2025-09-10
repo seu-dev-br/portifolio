@@ -22,5 +22,9 @@ FOR SELECT USING (true);
 CREATE POLICY "Authenticated users can manage settings" ON settings
 FOR ALL USING (auth.role() = 'authenticated');
 
+-- Política adicional para desenvolvimento (permitir operações básicas)
+CREATE POLICY "Allow insert/update for development" ON settings
+FOR ALL USING (true);
+
 -- 4. Verificar se a tabela foi criada
 SELECT * FROM settings LIMIT 1;

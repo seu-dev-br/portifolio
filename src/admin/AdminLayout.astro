@@ -1,0 +1,221 @@
+---
+// src/admin/AdminLayout.astro
+import type { AdminState } from './services/state.service';
+
+export interface Props {
+  state: AdminState;
+  title?: string;
+}
+
+const { state, title = 'Admin Panel' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} - Portfólio Admin</title>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/admin/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <!-- Scripts -->
+    <script>
+        // Estado inicial
+        (window as any).adminState = Astro.props.state;
+
+        // Serviços globais
+        (window as any).adminServices = {
+            loading: null,
+            notification: null,
+            auth: null,
+            state: null
+        };
+    </script>
+</head>
+<body>
+    <div id="admin-container" class="admin-container">
+        <!-- Login Container -->
+        <div id="login-container" class="login-container" style="display: none;">
+            <div class="login-card">
+                <div class="login-header">
+                    <i class="fas fa-shield-alt"></i>
+                    <h1>Painel Administrativo</h1>
+                    <p>Gerencie seu portfólio profissional</p>
+                </div>
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            E-mail
+                        </label>
+                        <input type="email" id="email" placeholder="Digite seu e-mail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">
+                            <i class="fas fa-lock"></i>
+                            Senha
+                        </label>
+                        <input type="password" id="password" placeholder="Digite sua senha" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Entrar
+                    </button>
+                </form>
+                <div id="login-error" class="error-message" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Container -->
+        <div id="dashboard-container" class="dashboard" style="display: none;">
+            <slot />
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-spinner" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Carregando...</p>
+            </div>
+        </div>
+
+        <!-- Notification Container -->
+        <div id="notification-container"></div>
+    </div>
+
+    <!-- Admin Scripts -->
+    <script>
+        import { getSupabaseClient } from '../lib/supabase/client';
+        import { AuthService } from './services/auth.service';
+        import { LoadingService } from './services/loading.service';
+        import { NotificationService } from './services/notification.service';
+        import { StateService } from './services/state.service';
+
+        // Inicializar serviços
+        const supabase = getSupabaseClient();
+        const authService = new AuthService();
+        const loadingService = new LoadingService();
+        const notificationService = new NotificationService();
+        const stateService = new StateService();
+
+        // Disponibilizar globalmente
+        (window as any).adminServices = {
+            auth: authService,
+            loading: loadingService,
+            notification: notificationService,
+            state: stateService
+        };
+
+        // Estado reativo
+        let currentState = (window as any).adminState || {
+            isAuthenticated: false,
+            currentUser: null,
+            currentSession: null,
+            isLoading: false,
+            currentView: 'login',
+            error: null
+        };
+
+        // Funções de UI
+        function updateUI() {
+            const loginContainer = document.getElementById('login-container');
+            const dashboardContainer = document.getElementById('dashboard-container');
+
+            if (currentState.isAuthenticated) {
+                if (loginContainer) loginContainer.style.display = 'none';
+                if (dashboardContainer) dashboardContainer.style.display = 'block';
+            } else {
+                if (loginContainer) loginContainer.style.display = 'block';
+                if (dashboardContainer) dashboardContainer.style.display = 'none';
+            }
+
+            // Atualizar loading
+            if (currentState.isLoading) {
+                loadingService.show();
+            } else {
+                loadingService.hide();
+            }
+
+            // Mostrar erros
+            if (currentState.error) {
+                notificationService.error(currentState.error);
+            }
+        }
+
+        // Login handler
+        async function handleLogin(email: string, password: string) {
+            try {
+                stateService.setLoading(true);
+                stateService.setError(null);
+
+                const result = await authService.login({ email, password });
+
+                if (result.success && result.user && result.session) {
+                    stateService.login(result.user, result.session);
+                    notificationService.success('Login realizado com sucesso!');
+                } else {
+                    stateService.setError(result.error || 'Erro no login');
+                    notificationService.error(result.error || 'Erro no login');
+                }
+            } catch (error: any) {
+                stateService.setError(error.message);
+                notificationService.error(error.message);
+            } finally {
+                stateService.setLoading(false);
+            }
+        }
+
+        // Logout handler
+        async function handleLogout() {
+            try {
+                const result = await authService.logout();
+                if (result.success) {
+                    stateService.logout();
+                    notificationService.success('Logout realizado com sucesso!');
+                } else {
+                    notificationService.error(result.error || 'Erro no logout');
+                }
+            } catch (error: any) {
+                notificationService.error(error.message);
+            }
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando Admin Layout...');
+
+            // Configurar event listeners
+            const loginForm = document.getElementById('login-form') as HTMLFormElement;
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const email = (document.getElementById('email') as HTMLInputElement).value;
+                    const password = (document.getElementById('password') as HTMLInputElement).value;
+                    await handleLogin(email, password);
+                });
+            }
+
+            // Inscrever-se nas mudanças de estado
+            stateService.subscribe((newState) => {
+                currentState = newState;
+                updateUI();
+            });
+
+            // Verificar se já está autenticado
+            authService.getCurrentSession().then((session) => {
+                if (session && session.user) {
+                    stateService.login(session.user, session);
+                }
+            });
+
+            updateUI();
+            console.log('✅ Admin Layout inicializado');
+        });
+    </script>
+</body>
+</html>

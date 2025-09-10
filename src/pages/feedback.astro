@@ -1,0 +1,328 @@
+---
+// Feedback Showcase - Demonstração dos componentes de feedback visual
+import Layout from '../layouts/Layout.astro';
+import ToastNotification from '../components/ToastNotification.astro';
+import FormField from '../components/FormField.astro';
+import EnhancedButton from '../components/EnhancedButton.astro';
+import InteractiveCard from '../components/InteractiveCard.astro';
+import ProgressBar from '../components/ProgressBar.astro';
+---
+
+<Layout title="Feedback Visual - Demonstração" description="Demonstração dos componentes de feedback visual aprimorados">
+	<div class="min-h-screen bg-gray-950 text-white">
+		<!-- Header -->
+		<section class="pt-32 pb-20 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+				<h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+					Feedback Visual Aprimorado
+				</h1>
+				<p class="text-xl text-gray-400 max-w-3xl mx-auto">
+					Sistema completo de feedback visual com micro-interações, validação em tempo real e notificações inteligentes.
+				</p>
+			</div>
+		</section>
+
+		<!-- Showcase Sections -->
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 space-y-20">
+
+			<!-- Toast Notifications -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Notificações Toast</h2>
+				<div class="flex flex-wrap justify-center gap-4 mb-8">
+					<button
+						id="toast-success"
+						class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg transition-colors duration-200"
+					>
+						Toast de Sucesso
+					</button>
+					<button
+						id="toast-error"
+						class="px-6 py-3 bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors duration-200"
+					>
+						Toast de Erro
+					</button>
+					<button
+						id="toast-warning"
+						class="px-6 py-3 bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition-colors duration-200"
+					>
+						Toast de Aviso
+					</button>
+					<button
+						id="toast-info"
+						class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors duration-200"
+					>
+						Toast de Info
+					</button>
+				</div>
+			</section>
+
+			<!-- Enhanced Buttons -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Botões Aprimorados</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					<div class="space-y-4">
+						<h3 class="text-xl font-semibold mb-4">Variantes</h3>
+						<EnhancedButton text="Botão Primário" variant="primary" />
+						<EnhancedButton text="Botão Secundário" variant="secondary" />
+						<EnhancedButton text="Botão Outline" variant="outline" />
+						<EnhancedButton text="Botão Ghost" variant="ghost" />
+					</div>
+					<div class="space-y-4">
+						<h3 class="text-xl font-semibold mb-4">Com Ícones</h3>
+						<EnhancedButton
+							text="Enviar"
+							variant="success"
+							icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`}
+							icon-position="right"
+						/>
+						<EnhancedButton
+							text="Carregar"
+							variant="primary"
+							icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>`}
+						/>
+						<EnhancedButton
+							text="Editar"
+							variant="outline"
+							icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>`}
+						/>
+					</div>
+					<div class="space-y-4">
+						<h3 class="text-xl font-semibold mb-4">Estados</h3>
+						<EnhancedButton text="Loading State" loading={true} />
+						<EnhancedButton text="Botão Desabilitado" disabled={true} />
+						<EnhancedButton
+							text="Link Externo"
+							href="https://github.com"
+							target="_blank"
+							variant="outline"
+							icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>`}
+							icon-position="right"
+						/>
+					</div>
+				</div>
+			</section>
+
+			<!-- Form Fields -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Campos de Formulário</h2>
+				<div class="max-w-2xl mx-auto space-y-6">
+					<FormField
+						type="text"
+						name="demo-name"
+						label="Nome Completo"
+						placeholder="Digite seu nome"
+						required={true}
+						icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>`}
+					/>
+					<FormField
+						type="email"
+						name="demo-email"
+						label="Endereço de Email"
+						placeholder="seu@email.com"
+						required={true}
+						icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>`}
+					/>
+					<FormField
+						type="textarea"
+						name="demo-message"
+						label="Mensagem"
+						placeholder="Digite sua mensagem..."
+						required={true}
+						rows={4}
+						icon={`<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>`}
+					/>
+					<div class="flex gap-4">
+						<EnhancedButton text="Validar Campos" variant="outline" id="validate-btn" />
+						<EnhancedButton text="Limpar Campos" variant="ghost" id="clear-btn" />
+					</div>
+				</div>
+			</section>
+
+			<!-- Interactive Cards -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Cards Interativos</h2>
+				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					<InteractiveCard
+						title="Projeto Destaque"
+						description="Um projeto incrível com tecnologias modernas e design inovador."
+						variant="featured"
+						icon={`<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>`}
+					/>
+					<InteractiveCard
+						title="Card Padrão"
+						description="Card com design clean e micro-interações suaves."
+						icon={`<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>`}
+					/>
+					<InteractiveCard
+						title="Card Minimal"
+						description="Design minimalista com foco na usabilidade."
+						variant="minimal"
+						icon={`<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>`}
+					/>
+				</div>
+			</section>
+
+			<!-- Progress Bars -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Barras de Progresso</h2>
+				<div class="max-w-2xl mx-auto space-y-8">
+					<ProgressBar progress={75} label="Upload de Arquivo" showPercentage={true} />
+					<ProgressBar progress={45} variant="gradient" label="Processamento" />
+					<ProgressBar progress={90} variant="striped" size="lg" label="Finalizando" animated={true} />
+					<div class="flex gap-4">
+						<EnhancedButton text="Simular Progresso" variant="primary" id="progress-btn" />
+						<EnhancedButton text="Resetar" variant="outline" id="reset-progress-btn" />
+					</div>
+				</div>
+			</section>
+
+			<!-- Global Loading -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Loading Global</h2>
+				<div class="text-center">
+					<p class="text-gray-400 mb-6">Demonstração do sistema de loading global com overlay</p>
+					<EnhancedButton text="Mostrar Loading Global" variant="secondary" id="global-loading-btn" />
+				</div>
+			</section>
+
+			<!-- Usage Guide -->
+			<section>
+				<h2 class="text-3xl font-bold mb-8 text-center">Como Usar</h2>
+				<div class="bg-gray-800/50 rounded-xl p-8">
+					<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+						<div>
+							<h3 class="text-xl font-semibold mb-4">Sintaxe Básica</h3>
+							<pre class="bg-gray-900 rounded-lg p-4 text-sm overflow-x-auto"><code>&lt;EnhancedButton text="Clique" /&gt;
+&lt;FormField name="email" label="Email" /&gt;
+&lt;ToastNotification type="success" /&gt;
+&lt;ProgressBar progress={50} /&gt;</code></pre>
+						</div>
+						<div>
+							<h3 class="text-xl font-semibold mb-4">Sistema Global</h3>
+							<pre class="bg-gray-900 rounded-lg p-4 text-sm overflow-x-auto"><code>// Notificações
+window.showToast('Mensagem', 'success');
+
+// Loading global
+window.showLoading('Carregando...');
+window.hideLoading();
+
+// Animações de sucesso/erro
+window.showSuccess(element);
+window.showError(element);</code></pre>
+						</div>
+					</div>
+				</div>
+			</section>
+
+		</div>
+	</div>
+</Layout>
+
+<script>
+	import '../lib/feedback-system.js';
+
+	document.addEventListener('DOMContentLoaded', function() {
+		// Toast buttons
+		document.getElementById('toast-success')?.addEventListener('click', () => {
+			window.showToast('Operação realizada com sucesso!', 'success');
+		});
+
+		document.getElementById('toast-error')?.addEventListener('click', () => {
+			window.showToast('Ocorreu um erro inesperado.', 'error');
+		});
+
+		document.getElementById('toast-warning')?.addEventListener('click', () => {
+			window.showToast('Atenção: verifique os dados inseridos.', 'warning');
+		});
+
+		document.getElementById('toast-info')?.addEventListener('click', () => {
+			window.showToast('Nova funcionalidade disponível!', 'info');
+		});
+
+		// Form validation demo
+		document.getElementById('validate-btn')?.addEventListener('click', () => {
+			const fields = ['demo-name', 'demo-email', 'demo-message'];
+			let allValid = true;
+
+			fields.forEach(fieldId => {
+				const field = document.getElementById(fieldId) as HTMLInputElement | HTMLTextAreaElement;
+				const formField = field?.closest('.form-field-group');
+
+				if (field && formField) {
+					if (!field.value.trim()) {
+						formField.classList.add('error');
+						formField.classList.remove('success');
+						allValid = false;
+					} else {
+						formField.classList.remove('error');
+						formField.classList.add('success');
+					}
+				}
+			});
+
+			if (allValid) {
+				window.showToast('Todos os campos estão válidos!', 'success');
+			} else {
+				window.showToast('Por favor, preencha todos os campos.', 'error');
+			}
+		});
+
+		document.getElementById('clear-btn')?.addEventListener('click', () => {
+			const fields = ['demo-name', 'demo-email', 'demo-message'];
+			fields.forEach(fieldId => {
+				const field = document.getElementById(fieldId) as HTMLInputElement | HTMLTextAreaElement;
+				if (field) {
+					field.value = '';
+					const formField = field.closest('.form-field-group');
+					if (formField) {
+						formField.classList.remove('error', 'success');
+					}
+				}
+			});
+			window.showToast('Campos limpos com sucesso!', 'info');
+		});
+
+		// Progress bar demo
+		let progressInterval: ReturnType<typeof setInterval> | null = null;
+		document.getElementById('progress-btn')?.addEventListener('click', () => {
+			let progress = 0;
+			const progressBar = document.querySelector('.progress-bar') as HTMLElement;
+
+			if (progressInterval) clearInterval(progressInterval);
+
+			progressInterval = setInterval(() => {
+				progress += Math.random() * 15;
+				if (progress >= 100) {
+					progress = 100;
+			if (progressInterval) clearInterval(progressInterval);
+					window.showToast('Processo concluído!', 'success');
+				}
+
+				if (progressBar) {
+					progressBar.style.width = progress + '%';
+				}
+			}, 200);
+		});
+
+		document.getElementById('reset-progress-btn')?.addEventListener('click', () => {
+			if (progressInterval) clearInterval(progressInterval);
+			const progressBar = document.querySelector('.progress-bar') as HTMLElement;
+			if (progressBar) {
+				progressBar.style.width = '0%';
+			}
+			window.showToast('Progresso resetado.', 'info');
+		});
+
+		// Global loading demo
+		document.getElementById('global-loading-btn')?.addEventListener('click', () => {
+			window.showLoading('Demonstrando loading global...');
+			setTimeout(() => {
+				window.hideLoading();
+				window.showToast('Loading global demonstrado!', 'success');
+			}, 3000);
+		});
+
+		// Add focus enhancements
+		window.FeedbackSystem.addFocusEnhancement();
+	});
+</script>

@@ -1,0 +1,313 @@
+---
+// animations-demo.astro - Página de demonstração das micro-animações e scroll effects
+import Layout from '../layouts/Layout.astro';
+import EnhancedButton from '../components/EnhancedButton.astro';
+import InteractiveCard from '../components/InteractiveCard.astro';
+---
+
+<Layout title="Demonstração de Animações">
+  <div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary-900/20 to-accent-blue/20"></div>
+      <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <div class="animate-fade-in-up">
+          <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary-400 via-accent-cyan to-accent-blue bg-clip-text text-transparent">
+            Micro-Animações
+          </h1>
+          <p class="text-xl md:text-2xl text-gray-300 mb-8">
+            Sistema completo de animações scroll-triggered e micro-interações
+          </p>
+          <div class="animate-fade-in-up animate-stagger-2">
+            <EnhancedButton text="Explorar Animações" variant="primary" size="lg" class="magnetic" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Scroll Effects Demo -->
+    <section class="py-20 bg-gray-950 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Scroll Effects
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Animações triggeradas pelo scroll usando Intersection Observer
+          </p>
+        </div>
+
+        <div class="space-y-32">
+          <!-- Fade In Up -->
+          <div class="text-center reveal">
+            <h3 class="text-2xl font-semibold mb-4">Fade In Up</h3>
+            <p class="text-gray-400">Animação de entrada suave de baixo para cima</p>
+          </div>
+
+          <!-- Fade In Left -->
+          <div class="text-center reveal">
+            <h3 class="text-2xl font-semibold mb-4">Fade In Left</h3>
+            <p class="text-gray-400">Animação de entrada da esquerda</p>
+          </div>
+
+          <!-- Fade In Right -->
+          <div class="text-center reveal">
+            <h3 class="text-2xl font-semibold mb-4">Fade In Right</h3>
+            <p class="text-gray-400">Animação de entrada da direita</p>
+          </div>
+
+          <!-- Scale In -->
+          <div class="text-center reveal">
+            <h3 class="text-2xl font-semibold mb-4">Scale In</h3>
+            <p class="text-gray-400">Animação de escala com fade in</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stagger Animations -->
+    <section class="py-20 bg-gray-900/50 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Animações Escalonas
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Elementos que aparecem em sequência com delay progressivo
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8" data-stagger="200">
+          <div class="reveal-stagger animate-stagger-1">
+            <InteractiveCard
+              title="Card 1"
+              description="Primeiro card com animação escalonada"
+            />
+          </div>
+          <div class="reveal-stagger animate-stagger-2">
+            <InteractiveCard
+              title="Card 2"
+              description="Segundo card com delay maior"
+            />
+          </div>
+          <div class="reveal-stagger animate-stagger-3">
+            <InteractiveCard
+              title="Card 3"
+              description="Terceiro card completando a sequência"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hover Effects -->
+    <section class="py-20 bg-gray-950 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Hover Effects
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Micro-interações aprimoradas para melhor feedback visual
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- Card Hover -->
+          <div class="text-center">
+            <h3 class="text-xl font-semibold mb-4">Card Hover</h3>
+            <div class="card-hover bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+              <div class="w-16 h-16 bg-primary-500/20 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                <svg class="w-8 h-8 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+              </div>
+              <p class="text-gray-400">Passe o mouse para ver o efeito</p>
+            </div>
+          </div>
+
+          <!-- Button Hover -->
+          <div class="text-center">
+            <h3 class="text-xl font-semibold mb-4">Button Hover</h3>
+            <EnhancedButton text="Hover Me" variant="primary" class="btn-hover-lift" />
+          </div>
+
+          <!-- Magnetic Effect -->
+          <div class="text-center">
+            <h3 class="text-xl font-semibold mb-4">Magnetic</h3>
+            <div class="magnetic bg-primary-600 hover:bg-primary-500 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300 inline-block cursor-pointer">
+              Atraído pelo mouse
+            </div>
+          </div>
+
+          <!-- Text Glow -->
+          <div class="text-center">
+            <h3 class="text-xl font-semibold mb-4">Text Glow</h3>
+            <div class="text-hover-glow text-primary-400 font-semibold text-lg cursor-pointer">
+              Texto com brilho
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Performance Features -->
+    <section class="py-20 bg-gray-900/50 reveal">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold mb-4 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+            Recursos de Performance
+          </h2>
+          <p class="text-gray-400 text-lg">
+            Otimizações para animações suaves e acessibilidade
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="text-center p-6 bg-gray-800/30 rounded-xl">
+            <div class="w-16 h-16 bg-green-500/20 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">GPU Acceleration</h3>
+            <p class="text-gray-400">Aceleração por hardware para animações suaves</p>
+          </div>
+
+          <div class="text-center p-6 bg-gray-800/30 rounded-xl">
+            <div class="w-16 h-16 bg-blue-500/20 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <svg class="w-8 h-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Reduced Motion</h3>
+            <p class="text-gray-400">Respeita preferências de movimento reduzido</p>
+          </div>
+
+          <div class="text-center p-6 bg-gray-800/30 rounded-xl">
+            <div class="w-16 h-16 bg-purple-500/20 rounded-lg mx-auto mb-4 flex items-center justify-center">
+              <svg class="w-8 h-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Focus Enhancement</h3>
+            <p class="text-gray-400">Melhor acessibilidade com foco visível</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Demo -->
+    <section class="py-20 bg-gray-950 reveal">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-4xl font-bold mb-8 bg-gradient-to-r from-primary-400 to-accent-cyan bg-clip-text text-transparent">
+          Demonstração Interativa
+        </h2>
+
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h3 class="text-xl font-semibold mb-4">Controles de Animação</h3>
+              <div class="space-y-4">
+                <button
+                  id="trigger-fade-in"
+                  class="w-full bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg transition-colors duration-300"
+                >
+                  Trigger Fade In
+                </button>
+                <button
+                  id="trigger-scale-in"
+                  class="w-full bg-accent-cyan hover:bg-accent-blue text-white px-4 py-2 rounded-lg transition-colors duration-300"
+                >
+                  Trigger Scale In
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-xl font-semibold mb-4">Elemento de Teste</h3>
+              <div id="test-element" class="bg-gray-700/50 rounded-lg p-6 text-center">
+                <p class="text-gray-400">Este elemento será animado</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <p class="text-gray-400 text-sm">
+              Use os controles acima para testar as animações programaticamente
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  // Interactive demo functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const triggerFadeIn = document.getElementById('trigger-fade-in');
+    const triggerScaleIn = document.getElementById('trigger-scale-in');
+    const testElement = document.getElementById('test-element');
+
+    triggerFadeIn?.addEventListener('click', () => {
+      if (testElement) {
+        testElement.className = 'bg-gray-700/50 rounded-lg p-6 text-center animate-fade-in-up';
+        setTimeout(() => {
+          testElement.innerHTML = '<p class="text-green-400">✅ Fade In executado!</p>';
+        }, 300);
+      }
+    });
+
+    triggerScaleIn?.addEventListener('click', () => {
+      if (testElement) {
+        testElement.className = 'bg-gray-700/50 rounded-lg p-6 text-center animate-scale-in';
+        setTimeout(() => {
+          testElement.innerHTML = '<p class="text-blue-400">🔄 Scale In executado!</p>';
+        }, 300);
+      }
+    });
+
+    // Reset test element after 3 seconds
+    setInterval(() => {
+      if (testElement) {
+        testElement.className = 'bg-gray-700/50 rounded-lg p-6 text-center';
+        testElement.innerHTML = '<p class="text-gray-400">Este elemento será animado</p>';
+      }
+    }, 3000);
+  });
+</script>
+
+<style>
+  /* Custom styles for demo */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+</style>

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Settings Table</title>
+</head>
+<body>
+    <h1>Teste da Tabela Settings</h1>
+
+    <div id="test-results">
+        <button id="test-select">Testar SELECT</button>
+        <button id="test-insert">Testar INSERT</button>
+        <button id="test-update">Testar UPDATE</button>
+        <button id="test-upsert">Testar UPSERT</button>
+        <div id="output"></div>
+    </div>
+
+    <script type="module">
+        const SUPABASE_URL = 'https://nattvkjaecceirxthizc.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
+
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const output = document.getElementById('output');
+
+        function log(message) {
+            output.innerHTML += '<p>' + message + '</p>';
+            console.log(message);
+        }
+
+        // Test SELECT
+        document.getElementById('test-select').addEventListener('click', async () => {
+            output.innerHTML = '';
+            log('🔍 Testando SELECT...');
+
+            try {
+                const { data, error } = await supabase
+                    .from('settings')
+                    .select('*')
+                    .eq('key', 'home');
+
+                if (error) {
+                    log('❌ Erro no SELECT: ' + JSON.stringify(error));
+                } else {
+                    log('✅ SELECT bem-sucedido: ' + JSON.stringify(data));
+                }
+            } catch (err) {
+                log('❌ Erro inesperado: ' + err.message);
+            }
+        });
+
+        // Test INSERT
+        document.getElementById('test-insert').addEventListener('click', async () => {
+            output.innerHTML = '';
+            log('➕ Testando INSERT...');
+
+            try {
+                const testData = {
+                    key: 'test_' + Date.now(),
+                    value: { test: 'data' }
+                };
+
+                const { data, error } = await supabase
+                    .from('settings')
+                    .insert(testData);
+
+                if (error) {
+                    log('❌ Erro no INSERT: ' + JSON.stringify(error));
+                } else {
+                    log('✅ INSERT bem-sucedido: ' + JSON.stringify(data));
+                }
+            } catch (err) {
+                log('❌ Erro inesperado: ' + err.message);
+            }
+        });
+
+        // Test UPDATE
+        document.getElementById('test-update').addEventListener('click', async () => {
+            output.innerHTML = '';
+            log('📝 Testando UPDATE...');
+
+            try {
+                const { data, error } = await supabase
+                    .from('settings')
+                    .update({
+                        value: { updated: true, timestamp: new Date().toISOString() },
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('key', 'home');
+
+                if (error) {
+                    log('❌ Erro no UPDATE: ' + JSON.stringify(error));
+                } else {
+                    log('✅ UPDATE bem-sucedido: ' + JSON.stringify(data));
+                }
+            } catch (err) {
+                log('❌ Erro inesperado: ' + err.message);
+            }
+        });
+
+        // Test UPSERT
+        document.getElementById('test-upsert').addEventListener('click', async () => {
+            output.innerHTML = '';
+            log('🔄 Testando UPSERT...');
+
+            try {
+                const testData = {
+                    key: 'home',
+                    value: {
+                        test: 'upsert',
+                        timestamp: new Date().toISOString(),
+                        slider: {
+                            enabled: true,
+                            items: [{
+                                title: 'Teste',
+                                image: 'https://example.com/test.jpg'
+                            }]
+                        }
+                    },
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('settings')
+                    .upsert(testData);
+
+                if (error) {
+                    log('❌ Erro no UPSERT: ' + JSON.stringify(error));
+                } else {
+                    log('✅ UPSERT bem-sucedido: ' + JSON.stringify(data));
+                }
+            } catch (err) {
+                log('❌ Erro inesperado: ' + err.message);
+            }
+        });
+    </script>
+</body>
+</html>

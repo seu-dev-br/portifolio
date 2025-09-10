@@ -1,0 +1,163 @@
+---
+// ThemeToggle.astro - Componente para alternar entre tema claro e escuro
+---
+
+<button
+  id="theme-toggle"
+  class="relative inline-flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
+  style="background-color: var(--bg-secondary); border: 1px solid var(--border-primary);"
+  aria-label="Alternar tema"
+  title="Alternar entre tema claro e escuro"
+>
+  <!-- Ícone Sol (Light Mode) -->
+  <svg
+    id="sun-icon"
+    class="w-6 h-6 text-yellow-400 transition-all duration-300"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+    style="display: none;"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+    />
+  </svg>
+
+  <!-- Ícone Lua (Dark Mode) -->
+  <svg
+    id="moon-icon"
+    class="w-6 h-6 text-blue-400 transition-all duration-300"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+    />
+  </svg>
+</button>
+
+<script>
+  // Force dark theme immediately
+  document.documentElement.classList.remove('light');
+  document.documentElement.classList.add('dark');
+  console.log('Forced dark theme on script load');
+
+  // Simple theme toggle script
+  function initThemeToggle() {
+    console.log('Initializing theme toggle...');
+
+    const toggleButton = document.getElementById('theme-toggle');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+
+    if (!toggleButton || !sunIcon || !moonIcon) {
+      console.log('Theme toggle elements not found');
+      return;
+    }
+
+    console.log('Elements found, setting up theme toggle');
+
+    // Load saved theme
+    let currentTheme = localStorage.getItem('theme') || 'dark';
+    if (currentTheme !== 'light' && currentTheme !== 'dark') {
+      currentTheme = 'dark'; // Always default to dark theme
+    }
+
+    // Clear any invalid theme values
+    if (currentTheme === 'light') {
+      localStorage.setItem('theme', 'dark');
+      currentTheme = 'dark';
+    }
+
+    // Apply initial theme
+    applyTheme(currentTheme);
+    console.log('Initial theme applied:', currentTheme);
+    console.log('HTML classes after theme application:', document.documentElement.className);
+
+    console.log('Initial theme applied:', currentTheme);
+
+    // Setup click handler
+    toggleButton.addEventListener('click', function() {
+      console.log('Theme toggle clicked');
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      applyTheme(currentTheme);
+      localStorage.setItem('theme', currentTheme);
+    });
+
+    function applyTheme(theme: string) {
+      console.log('Applying theme:', theme);
+      const root = document.documentElement;
+      console.log('Root element before:', root.className);
+
+      if (theme === 'dark') {
+        root.classList.remove('light');
+        root.classList.add('dark');
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (moonIcon) moonIcon.style.display = 'block';
+      } else {
+        root.classList.remove('dark');
+        root.classList.add('light');
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (moonIcon) moonIcon.style.display = 'none';
+      }
+
+      console.log('Root element after:', root.className);
+
+      // Force Tailwind to re-evaluate classes
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // Trigger reflow
+      document.body.style.display = '';
+    }
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initThemeToggle);
+  } else {
+    initThemeToggle();
+  }
+
+</script>
+
+<style>
+  /* Theme-specific styles */
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-primary: #334155;
+    --bg-accent: #0ea5e9;
+  }
+
+  .light {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --border-primary: #e2e8f0;
+    --bg-accent: #0ea5e9;
+  }
+
+  /* Theme toggle button hover effect */
+  #theme-toggle:hover {
+    background-color: var(--bg-tertiary) !important;
+    transform: scale(1.05);
+  }
+
+  #theme-toggle:focus {
+    box-shadow: 0 0 0 2px var(--bg-accent), 0 0 0 4px var(--bg-primary);
+  }
+
+  /* Smooth transitions for theme changes */
+  * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  }
+</style>

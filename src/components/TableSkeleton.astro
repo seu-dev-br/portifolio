@@ -1,0 +1,47 @@
+---
+// TableSkeleton.astro - Skeleton loading para tabelas
+export interface Props {
+	rows?: number;
+	columns?: number;
+	showHeader?: boolean;
+	headerHeight?: string;
+	rowHeight?: string;
+	class?: string;
+}
+
+const {
+	rows = 5,
+	columns = 4,
+	showHeader = true,
+	headerHeight = 'h-12',
+	rowHeight = 'h-16',
+	class: className = ''
+} = Astro.props;
+---
+
+<div class={`animate-pulse ${className}`}>
+	{showHeader && (
+		<div class="flex border-b border-gray-700/50 pb-4 mb-4">
+			{Array.from({ length: columns }, (_, i) => {
+				const widths = ['w-32', 'w-48', 'w-24', 'w-40', 'w-28'];
+				return (
+					<div class={`${headerHeight} bg-gray-700/50 rounded mr-4 flex-1 ${widths[i % widths.length]}`}></div>
+				);
+			})}
+		</div>
+	)}
+
+	<div class="space-y-3">
+		{Array.from({ length: rows }, (_, rowIndex) => (
+			<div class="flex items-center">
+				{Array.from({ length: columns }, (_, colIndex) => {
+					const widths = ['w-32', 'w-48', 'w-24', 'w-40', 'w-28'];
+					const isLast = colIndex === columns - 1;
+					return (
+						<div class={`${rowHeight} bg-gray-700/50 rounded mr-4 ${isLast ? 'w-20' : widths[colIndex % widths.length]}`}></div>
+					);
+				})}
+			</div>
+		))}
+	</div>
+</div>

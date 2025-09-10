@@ -1,6 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getAllPublishedPosts, formatDate, getReadingTime } from '../lib/supabase.js';
+import { getAllPublishedPosts, formatDate, getReadingTime } from '../lib/supabase';
+import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
+import OptimizedImage from '../components/OptimizedImage.astro';
 
 const posts = await getAllPublishedPosts();
 ---
@@ -17,16 +19,18 @@ const posts = await getAllPublishedPosts();
 					type="text" 
 					id="search-input" 
 					placeholder="Buscar posts..." 
-					class="search-input"
+					class="search-input focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" 
+					aria-label="Buscar posts no blog" 
+					tabindex="0"
 				/>
-				<button id="clear-search" class="clear-search" style="display: none;">×</button>
+				<button id="clear-search" class="clear-search focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" style="display: none;" aria-label="Limpar busca" tabindex="0" role="button">×</button>
 			</div>
 			
 			<!-- Filter Tags -->
 			<div class="filter-tags">
-				<button class="filter-tag active" data-tag="all">Todos</button>
+				<button class="filter-tag active focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" data-tag="all" aria-label="Filtrar por todos os posts" tabindex="0" role="button">Todos</button>
 				{[...new Set(posts.flatMap(post => post.tags || []))].map(tag => (
-					<button class="filter-tag" data-tag={tag}>{tag}</button>
+					<button class="filter-tag focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" data-tag={tag} aria-label={`Filtrar por tag: ${tag}`} tabindex="0" role="button">{tag}</button>
 				))}
 			</div>
 		</section>
@@ -40,13 +44,22 @@ const posts = await getAllPublishedPosts();
 			</section>
 		) : (
 			<section class="posts-section">
-				<div class="posts-grid">
+				<div id="posts-loading" class="posts-grid">
+					<!-- Loading skeletons -->
+					<BlogPostSkeleton />
+					<BlogPostSkeleton />
+					<BlogPostSkeleton />
+					<BlogPostSkeleton />
+					<BlogPostSkeleton />
+					<BlogPostSkeleton />
+				</div>
+				<div id="posts-content" class="posts-grid hidden">
 					{posts.map((post) => (
 						<article class="post-card">
 							{post.coverImage && (
 								<div class="post-image">
 									<a href={`/blog/${post.slug}`}>
-										<img src={post.coverImage} alt={post.title} loading="lazy" />
+										   <OptimizedImage src={post.coverImage} alt={post.title} width={800} height={400} />
 									</a>
 								</div>
 							)}
@@ -60,18 +73,18 @@ const posts = await getAllPublishedPosts();
 									</span>
 								</div>
 								<h2>
-									<a href={`/blog/${post.slug}`}>{post.title}</a>
+										<a href={`/blog/${post.slug}`} aria-label={`Ler post: ${post.title}`} tabindex="0" role="link">{post.title}</a>
 								</h2>
 								<p class="post-excerpt">{post.excerpt}</p>
 								{post.tags && post.tags.length > 0 && (
 									<div class="post-tags">
-										{post.tags.map((tag) => (
+										          {post.tags.map((tag: string) => (
 											<span class="tag">{tag}</span>
 										))}
 									</div>
 								)}
 								<div class="read-more">
-									<a href={`/blog/${post.slug}`} class="btn btn-outline">Ler Mais</a>
+									<a href={`/blog/${post.slug}`} class="btn btn-outline focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" aria-label={`Ler mais sobre: ${post.title}`} tabindex="0" role="link">Ler Mais</a>
 								</div>
 							</div>
 						</article>
@@ -400,12 +413,13 @@ const posts = await getAllPublishedPosts();
 		// Search functionality
 		if (searchInput) {
 			searchInput.addEventListener('input', function(e) {
-				const searchTerm = e.target.value.toLowerCase().trim();
+				const target = e.target as HTMLInputElement;
+				const searchTerm = target?.value?.toLowerCase().trim() || '';
 				
 				if (searchTerm) {
-					clearSearchBtn.style.display = 'block';
+					if (clearSearchBtn) clearSearchBtn.style.display = 'block';
 				} else {
-					clearSearchBtn.style.display = 'none';
+					if (clearSearchBtn) clearSearchBtn.style.display = 'none';
 				}
 				
 				filterPosts(searchTerm, currentTag);
@@ -415,7 +429,7 @@ const posts = await getAllPublishedPosts();
 		// Clear search
 		if (clearSearchBtn) {
 			clearSearchBtn.addEventListener('click', function() {
-				searchInput.value = '';
+				(searchInput as HTMLInputElement).value = '';
 				clearSearchBtn.style.display = 'none';
 				filterPosts('', currentTag);
 			});
@@ -423,26 +437,28 @@ const posts = await getAllPublishedPosts();
 
 		// Tag filter functionality
 		filterTags.forEach(tag => {
-			tag.addEventListener('click', function() {
+			tag.addEventListener('click', function(this: HTMLElement) {
 				// Remove active class from all tags
 				filterTags.forEach(t => t.classList.remove('active'));
 				// Add active class to clicked tag
 				this.classList.add('active');
 				
-				currentTag = this.dataset.tag;
-				const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+				currentTag = this.dataset.tag || '';
+				const searchTerm = searchInput ? (searchInput as HTMLInputElement).value.toLowerCase().trim() : '';
 				
 				filterPosts(searchTerm, currentTag);
 			});
 		});
 
-		function filterPosts(searchTerm, tag) {
+		function filterPosts(searchTerm: string, tag: string) {
 			let visibleCount = 0;
 			
 			postCards.forEach(card => {
-				const title = card.querySelector('h2 a').textContent.toLowerCase();
-				const excerpt = card.querySelector('.post-excerpt').textContent.toLowerCase();
-				const postTags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent.toLowerCase());
+				const titleElement = card.querySelector('h2 a');
+				const excerptElement = card.querySelector('.post-excerpt');
+				const title = titleElement?.textContent?.toLowerCase() || '';
+				const excerpt = excerptElement?.textContent?.toLowerCase() || '';
+				const postTags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent?.toLowerCase() || '');
 				
 				const matchesSearch = !searchTerm || 
 					title.includes(searchTerm) || 
@@ -452,17 +468,17 @@ const posts = await getAllPublishedPosts();
 				const matchesTag = tag === 'all' || postTags.includes(tag.toLowerCase());
 				
 				if (matchesSearch && matchesTag) {
-					card.style.display = 'block';
-					card.style.animation = 'fadeIn 0.5s ease';
+					(card as HTMLElement).style.display = 'block';
+					(card as HTMLElement).style.animation = 'fadeIn 0.5s ease';
 					visibleCount++;
 				} else {
-					card.style.display = 'none';
+					(card as HTMLElement).style.display = 'none';
 				}
 			});
 
 			// Show/hide empty state
-			const emptyState = document.querySelector('.no-posts');
-			const postsSection = document.querySelector('.posts-section');
+			const emptyState = document.querySelector('.no-posts') as HTMLElement;
+			const postsSection = document.querySelector('.posts-section') as HTMLElement;
 			
 			if (visibleCount === 0 && postCards.length > 0) {
 				if (emptyState) emptyState.style.display = 'block';
@@ -471,6 +487,20 @@ const posts = await getAllPublishedPosts();
 				if (emptyState) emptyState.style.display = 'none';
 				if (postsSection) postsSection.style.display = 'block';
 			}
+		}
+	});
+
+	// Loading states management
+	document.addEventListener('DOMContentLoaded', function() {
+		const loadingElement = document.getElementById('posts-loading');
+		const contentElement = document.getElementById('posts-content');
+
+		if (loadingElement && contentElement) {
+			// Simulate loading delay for better UX
+			setTimeout(() => {
+				loadingElement.classList.add('hidden');
+				contentElement.classList.remove('hidden');
+			}, 1000);
 		}
 	});
 </script>

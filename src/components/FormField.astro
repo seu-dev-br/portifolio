@@ -1,0 +1,133 @@
+---
+// FormField.astro - Campo de formulário com feedback visual aprimorado
+export interface Props {
+	type?: 'text' | 'email' | 'password' | 'textarea';
+	name: string;
+	label: string;
+	placeholder?: string;
+	required?: boolean;
+	value?: string;
+	rows?: number;
+	error?: string;
+	success?: string;
+	disabled?: boolean;
+	icon?: string;
+}
+
+const {
+	type = 'text',
+	name,
+	label,
+	placeholder = '',
+	required = false,
+	value = '',
+	rows = 4,
+	error,
+	success,
+	disabled = false,
+	icon
+} = Astro.props;
+---
+
+<div class="form-field-group">
+	<label for={name} class="block text-sm font-medium text-gray-300 mb-2 transition-colors duration-200">
+		{label}
+		{required && <span class="text-red-400 ml-1">*</span>}
+	</label>
+
+	<div class="relative">
+		{type === 'textarea' ? (
+			<textarea
+				id={name}
+				name={name}
+				rows={rows}
+				required={required}
+				disabled={disabled}
+				placeholder={placeholder}
+				class={`form-input w-full px-4 py-3 bg-gray-700/50 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-300 resize-none ${
+					error
+						? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500'
+						: success
+						? 'border-green-500/50 focus:ring-green-500/50 focus:border-green-500'
+						: 'border-gray-600 focus:ring-primary-500 focus:border-primary-500'
+				} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${icon ? 'pl-12' : ''}`}
+			>{value}</textarea>
+		) : (
+			<input
+				type={type}
+				id={name}
+				name={name}
+				value={value}
+				required={required}
+				disabled={disabled}
+				placeholder={placeholder}
+				class={`form-input w-full px-4 py-3 bg-gray-700/50 border rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-all duration-300 ${
+					error
+						? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500'
+						: success
+						? 'border-green-500/50 focus:ring-green-500/50 focus:border-green-500'
+						: 'border-gray-600 focus:ring-primary-500 focus:border-primary-500'
+				} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${icon ? 'pl-12' : ''}`}
+			/>
+		)}
+
+		<!-- Icon -->
+		{icon && (
+			<div class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+				<div class="w-5 h-5" set:html={icon}></div>
+			</div>
+		)}
+
+		<!-- Success/Error Icons -->
+		{(error || success) && (
+			<div class={`absolute right-4 top-1/2 transform -translate-y-1/2 transition-all duration-300 ${
+				error ? 'text-red-400' : 'text-green-400'
+			}`}>
+				{error ? (
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+					</svg>
+				) : (
+					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+					</svg>
+				)}
+			</div>
+		)}
+	</div>
+
+	<!-- Error/Success Messages -->
+	{(error || success) && (
+		<div class={`mt-2 text-sm transition-all duration-300 ${
+			error ? 'text-red-400' : 'text-green-400'
+		}`}>
+			{error || success}
+		</div>
+	)}
+</div>
+
+<style>
+	.form-field-group {
+		position: relative;
+	}
+
+	.form-input {
+		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.form-input:focus {
+		transform: translateY(-1px);
+		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+	}
+
+	.form-input:hover:not(:focus) {
+		border-color: rgba(156, 163, 175, 0.8);
+	}
+
+	/* Floating label effect */
+	.form-input:not(:placeholder-shown) + label,
+	.form-input:focus + label {
+		transform: translateY(-1.5rem) scale(0.85);
+		color: rgb(59, 130, 246);
+	}
+</style>

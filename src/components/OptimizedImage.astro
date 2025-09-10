@@ -1,0 +1,126 @@
+---
+// OptimizedImage.astro - Componente de imagem otimizada com astro:assets
+export interface Props {
+  src: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  quality?: number;
+  format?: 'avif' | 'webp' | 'png' | 'jpg';
+  loading?: 'lazy' | 'eager';
+  decoding?: 'async' | 'sync' | 'auto';
+  class?: string;
+  sizes?: string;
+  placeholder?: 'blur' | 'dominantColor';
+  aspectRatio?: number;
+}
+
+const {
+  src,
+  alt,
+  width,
+  height,
+  quality = 80,
+  format = 'webp',
+  loading = 'lazy',
+  decoding = 'async',
+  class: className,
+  sizes,
+  placeholder = 'blur',
+  aspectRatio
+} = Astro.props;
+
+// Calcular aspect ratio se não fornecido
+const calculatedAspectRatio = aspectRatio || (width && height ? width / height : undefined);
+---
+
+<picture class={className}>
+  <!-- AVIF para navegadores modernos -->
+  <source
+    srcset={`${src}?w=${width || 800}&h=${height || 600}&f=avif&q=${quality}`}
+    type="image/avif"
+  />
+
+  <!-- WebP como fallback -->
+  <source
+    srcset={`${src}?w=${width || 800}&h=${height || 600}&f=webp&q=${quality}`}
+    type="image/webp"
+  />
+
+  <!-- Imagem original como último fallback -->
+  <img
+    src={`${src}?w=${width || 800}&h=${height || 600}&q=${quality}`}
+    alt={alt}
+    width={width}
+    height={height}
+    loading={loading}
+    decoding={decoding}
+    sizes={sizes}
+    style={calculatedAspectRatio ? `aspect-ratio: ${calculatedAspectRatio}` : undefined}
+    class="w-full h-auto object-cover"
+  />
+</picture>
+
+<style>
+  picture {
+    display: block;
+    position: relative;
+  }
+
+  picture img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Placeholder blur effect */
+  picture img[loading="lazy"] {
+    filter: blur(10px);
+    transition: filter 0.3s ease;
+  }
+
+  picture img[loading="lazy"]:not([data-loaded]) {
+    filter: blur(10px);
+  }
+
+  picture img[data-loaded] {
+    filter: blur(0);
+  }
+</style>
+
+<script>
+  // Script para melhorar o loading de imagens
+  document.addEventListener('DOMContentLoaded', () => {
+    const images = document.querySelectorAll('picture img[loading="lazy"]');
+
+    images.forEach(img => {
+      // Usar Intersection Observer para detectar quando a imagem entra na viewport
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target as HTMLImageElement;
+              // Adicionar classe para animação de fade in
+              img.style.opacity = '0';
+              img.style.transition = 'opacity 0.3s ease';
+
+              // Quando a imagem carregar, mostrar com fade
+              img.addEventListener('load', () => {
+                img.style.opacity = '1';
+                img.setAttribute('data-loaded', 'true');
+              });
+
+              // Parar de observar
+              observer.unobserve(img);
+            }
+          });
+        },
+        {
+          rootMargin: '50px'
+        }
+      );
+
+      observer.observe(img);
+    });
+  });
+</script>

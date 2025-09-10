@@ -1,0 +1,133 @@
+---
+// SkeletonCard.astro - Componente de skeleton card configurável
+export interface Props {
+	type?: 'project' | 'blog' | 'testimonial' | 'service' | 'custom';
+	showImage?: boolean;
+	imageHeight?: string;
+	titleLines?: number;
+	contentLines?: number;
+	showTags?: boolean;
+	tagCount?: number;
+	showButtons?: boolean;
+	buttonCount?: number;
+	class?: string;
+}
+
+const {
+	type = 'custom',
+	showImage = true,
+	imageHeight = 'h-48',
+	titleLines = 1,
+	contentLines = 3,
+	showTags = false,
+	tagCount = 3,
+	showButtons = false,
+	buttonCount = 2,
+	class: className = ''
+} = Astro.props;
+
+// Configurações específicas por tipo
+const configs = {
+	project: {
+		showImage: true,
+		imageHeight: 'h-48',
+		titleLines: 1,
+		contentLines: 3,
+		showTags: true,
+		tagCount: 3,
+		showButtons: true,
+		buttonCount: 2
+	},
+	blog: {
+		showImage: true,
+		imageHeight: 'h-48',
+		titleLines: 1,
+		contentLines: 3,
+		showTags: true,
+		tagCount: 2,
+		showButtons: false,
+		buttonCount: 1
+	},
+	testimonial: {
+		showImage: true,
+		imageHeight: 'h-16',
+		titleLines: 1,
+		contentLines: 2,
+		showTags: false,
+		tagCount: 0,
+		showButtons: false,
+		buttonCount: 0
+	},
+	service: {
+		showImage: false,
+		imageHeight: 'h-32',
+		titleLines: 1,
+		contentLines: 2,
+		showTags: false,
+		tagCount: 0,
+		showButtons: true,
+		buttonCount: 1
+	},
+	custom: {
+		showImage,
+		imageHeight,
+		titleLines,
+		contentLines,
+		showTags,
+		tagCount,
+		showButtons,
+		buttonCount
+	}
+};
+
+const config = configs[type];
+---
+
+<div class={`bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/50 animate-pulse ${className}`}>
+	<!-- Image skeleton -->
+	{config.showImage && (
+		<div class={`${config.imageHeight} bg-gray-700/50`}></div>
+	)}
+
+	<!-- Content skeleton -->
+	<div class="p-6">
+		<!-- Title -->
+		{Array.from({ length: config.titleLines }, (_, i) => (
+			<div class={`h-6 bg-gray-700/50 rounded-lg mb-3 ${i > 0 ? 'mt-2' : ''}`}></div>
+		))}
+
+		<!-- Content -->
+		<div class="space-y-2 mb-4">
+			{Array.from({ length: config.contentLines }, (_, i) => {
+				const widths = ['100%', '5/6', '4/6', '3/4'];
+				return (
+					<div
+						class="h-4 bg-gray-700/50 rounded"
+						style={`width: ${widths[i % widths.length]}`}
+					></div>
+				);
+			})}
+		</div>
+
+		<!-- Tags -->
+		{config.showTags && (
+			<div class="flex flex-wrap gap-2 mb-4">
+				{Array.from({ length: config.tagCount }, (_, i) => {
+					const widths = ['w-16', 'w-20', 'w-14', 'w-18'];
+					return (
+						<div class={`h-6 bg-gray-700/50 rounded-full ${widths[i % widths.length]}`}></div>
+					);
+				})}
+			</div>
+		)}
+
+		<!-- Buttons -->
+		{config.showButtons && (
+			<div class="flex gap-3">
+				{Array.from({ length: config.buttonCount }, (_, i) => (
+					<div class="h-10 bg-gray-700/50 rounded-lg flex-1"></div>
+				))}
+			</div>
+		)}
+	</div>
+</div>
