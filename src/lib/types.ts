@@ -55,7 +55,7 @@ export interface AboutData {
   };
   experience: Experience[];
   education: Education[];
-  certifications: string[];
+  certifications: Certification[];
   socialLinks: SocialLinks;
   gallery?: GalleryItem[];
 }
@@ -82,14 +82,27 @@ export interface Experience {
 }
 
 export interface Education {
-  id: string;
-  institution: string;
-  degree: string;
-  field: string;
-  startDate: string;
+  id?: string;
+  institution?: string;
+  degree?: string;
+  field?: string;
+  course?: string;
+  startDate?: string;
   endDate?: string;
-  current: boolean;
+  period?: string;
+  current?: boolean;
   description?: string;
+}
+
+export interface Certification {
+  name?: string;
+  title?: string;
+  issuer?: string;
+  date?: string;
+  year?: string;
+  description?: string;
+  desc?: string;
+  image?: string;
 }
 
 export interface SocialLinks {

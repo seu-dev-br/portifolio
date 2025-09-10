@@ -74,7 +74,11 @@ const data = {
 		backend: ensureArray(rawData.skills?.backend) || defaultData.skills.backend,
 		database: ensureArray(rawData.skills?.database) || defaultData.skills.database,
 		tools: ensureArray(rawData.skills?.tools) || defaultData.skills.tools
-	}
+	},
+	experience: Array.isArray(rawData.experience) ? rawData.experience : defaultData.experience,
+	education: Array.isArray(rawData.education) ? rawData.education : defaultData.education,
+	certifications: Array.isArray(rawData.certifications) ? rawData.certifications : defaultData.certifications,
+	gallery: Array.isArray(rawData.gallery) ? rawData.gallery : defaultData.gallery
 };
 ---
 
@@ -246,7 +250,7 @@ const data = {
 				<div class="space-y-12">
 						{(data.experience || []).map((experience, index) => {
 						// Função para extrair ano de entrada do trabalho
-						const getStartYear = (exp) => {
+						const getStartYear = (exp: any) => {
 							// Primeiro tenta usar o campo year se existir
 							if (exp.year) return exp.year;
 							
