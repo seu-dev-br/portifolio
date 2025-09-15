@@ -1,5 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+// Log para depuração
+console.log('DEBUG: slug recebido:', Astro.params.slug);
+export const prerender = true;
 import { getAllPostSlugs, getPostBySlug, formatDate, getReadingTime } from '../../lib/supabase.js';
 import { marked } from 'marked';
 import OptimizedImage from '../../components/OptimizedImage.astro';
@@ -21,8 +24,9 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-
+console.log('DEBUG: post retornado:', post);
 if (!post) {
+    console.error('Post não encontrado para o slug:', Astro.params.slug);
     return Astro.redirect('/404');
 }
 
