@@ -52,3 +52,5 @@ async function executeSQL() {
 }
 
 executeSQL();
+
+npm install @astrojs/vercel

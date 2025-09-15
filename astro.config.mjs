@@ -1,8 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import node from '@astrojs/node';
-import { fileURLToPath, URL } from 'node:url';
+import vercel from '@astrojs/vercel/server';
 
 // Carregar variáveis de ambiente para garantir que estejam disponíveis
 import dotenv from 'dotenv';
@@ -19,7 +18,7 @@ console.log('- PUBLIC_SUPABASE_ANON_KEY:', process.env.PUBLIC_SUPABASE_ANON_KEY 
 export default defineConfig({
   // Configuração para renderização no servidor (necessária para APIs)
   output: 'server',
-  adapter: node({
+  adapter: vercel({
     mode: 'standalone'
   }),
 
