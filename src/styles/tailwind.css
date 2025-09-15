@@ -1,0 +1,73 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+	/* Swiper custom styles */
+	.hero-swiper {
+		@apply w-full min-h-[80vh] h-[80vh];
+	}
+	.hero-swiper .swiper-slide {
+		@apply relative flex items-center justify-center;
+	}
+	.slide-bg {
+		@apply absolute top-0 left-0 w-full h-full bg-cover bg-center bg-no-repeat;
+	}
+	.slide-overlay {
+		@apply absolute top-0 left-0 w-full h-full bg-black bg-opacity-50;
+	}
+	.slide-content {
+		@apply relative z-20 w-full h-full flex items-center justify-center text-center;
+	}
+	.hero-swiper .swiper-button-next,
+	.hero-swiper .swiper-button-prev {
+		@apply text-white bg-black bg-opacity-50 w-12 h-12 rounded-full transition-all duration-300 mt-[-25px];
+	}
+	.hero-swiper .swiper-button-next:hover,
+	.hero-swiper .swiper-button-prev:hover {
+		@apply bg-opacity-70 scale-110;
+	}
+	.hero-swiper .swiper-pagination {
+		@apply bottom-8;
+	}
+	.hero-swiper .swiper-pagination-bullet {
+		@apply bg-white bg-opacity-50 w-3 h-3 transition-all duration-300;
+	}
+	.hero-swiper .swiper-pagination-bullet-active {
+		@apply bg-white scale-125;
+	}
+	/* Responsive Swiper */
+	@media (max-width: 768px) {
+		.hero-swiper .swiper-button-next,
+		.hero-swiper .swiper-button-prev {
+			@apply w-10 h-10 mt-[-20px];
+		}
+		.hero-swiper .swiper-button-next::after,
+		.hero-swiper .swiper-button-prev::after {
+			font-size: 16px;
+		}
+		.hero-swiper .text-5xl { font-size: 2.5rem; }
+		.hero-swiper .text-7xl { font-size: 3rem; }
+		.hero-swiper .text-xl { font-size: 1.1rem; }
+		.hero-swiper .text-2xl { font-size: 1.3rem; }
+	}
+
+	/* Animation delays */
+	.delay-100 { animation-delay: 0.1s !important; }
+	.delay-200 { animation-delay: 0.2s !important; }
+	.delay-300 { animation-delay: 0.3s !important; }
+	.delay-400 { animation-delay: 0.4s !important; }
+	.delay-500 { animation-delay: 0.5s !important; }
+	.delay-600 { animation-delay: 0.6s !important; }
+
+	/* Scroll Animations */
+	.animate-on-scroll {
+		opacity: 0;
+		transform: translateY(30px);
+		transition: all 0.6s ease;
+	}
+	.animate-in {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
