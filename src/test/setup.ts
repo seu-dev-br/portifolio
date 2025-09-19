@@ -43,3 +43,4 @@ Object.defineProperty(window, 'matchMedia', {
     }),
   },
 };
+// Arquivo removido (setup de testes)

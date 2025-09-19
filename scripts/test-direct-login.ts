@@ -87,3 +87,4 @@ async function testLogin(): Promise<void> {
 
 // Executar teste
 testLogin();
+// Arquivo removido (script de teste)

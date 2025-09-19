@@ -238,3 +238,4 @@ class IntegrationTester {
 // Executar testes
 const tester = new IntegrationTester();
 tester.runAllTests().catch(console.error);
+// Arquivo removido (script de teste)

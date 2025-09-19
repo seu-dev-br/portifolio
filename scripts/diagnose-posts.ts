@@ -130,3 +130,4 @@ async function diagnosePostCreation() {
 }
 
 diagnosePostCreation();
+// Arquivo removido (script de diagnóstico)

@@ -120,3 +120,4 @@ async function testSupabaseConnection() {
 
 // Executar diagnóstico
 testSupabaseConnection().catch(console.error);
+// Arquivo removido (script de diagnóstico)

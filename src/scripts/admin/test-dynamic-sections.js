@@ -82,3 +82,4 @@ function addTestButton() {
 window.addEventListener('load', () => {
     setTimeout(addTestButton, 1000);
 });
+// Arquivo removido (script de teste)

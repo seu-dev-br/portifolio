@@ -140,3 +140,4 @@ async function testComingSoonProjects() {
 }
 
 testComingSoonProjects();
+// Arquivo removido (script de teste)

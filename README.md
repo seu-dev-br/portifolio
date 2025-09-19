@@ -191,6 +191,25 @@ npm run deploy:vercel
 npm run deploy:netlify
 ```
 
+# Scripts e Comandos Úteis
+
+Os scripts utilitários do projeto estão na pasta `/scripts`.
+
+| Script/Comando            | Descrição                                                      |
+|---------------------------|----------------------------------------------------------------|
+| `npm run dev`             | Inicia o servidor de desenvolvimento Astro                     |
+| `npm run build`           | Gera o build de produção, checando variáveis de ambiente       |
+| `npm run preview`         | Visualiza o build localmente                                   |
+| `npm run deploy`          | Build otimizado para deploy manual                             |
+| `npm run deploy:vercel`   | Build e deploy automático no Vercel                            |
+| `npm run deploy:netlify`  | Build e deploy automático no Netlify                           |
+| `npm run generate-sw`     | Gera o Service Worker (PWA)                                    |
+| `npm run check-secrets`   | Verifica se variáveis de ambiente essenciais estão presentes   |
+
+Scripts SQL para banco de dados estão em `/database`.
+
+> Para detalhes de cada script, consulte o cabeçalho do arquivo correspondente em `/scripts` ou a documentação de engenharia (`ENGENHARIA.md`).
+
 # Solução de Problemas
 
 ### Erro "supabaseUrl is required"

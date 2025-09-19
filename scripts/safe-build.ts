@@ -52,3 +52,4 @@ try {
 
   process.exit(1);
 }
+// Arquivo removido (script de diagnóstico)

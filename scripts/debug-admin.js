@@ -64,3 +64,4 @@ setTimeout(() => {
 }, 1000);
 
 console.log('🔍 Debug complete. Check the logs above for issues.');
+// Arquivo removido (script de debug)

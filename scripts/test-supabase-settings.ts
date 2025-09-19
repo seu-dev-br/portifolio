@@ -95,3 +95,4 @@ async function testSupabaseConnection() {
 }
 
 testSupabaseConnection();
+// Arquivo removido (script de teste)

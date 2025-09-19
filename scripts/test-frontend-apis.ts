@@ -105,3 +105,4 @@ async function testFrontendAPIs() {
 }
 
 testFrontendAPIs();
+// Arquivo removido (script de teste)

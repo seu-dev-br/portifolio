@@ -5,3 +5,4 @@ describe('Teste Básico', () => {
     expect(1 + 1).toBe(2);
   });
 });
+// Arquivo removido (teste unitário)

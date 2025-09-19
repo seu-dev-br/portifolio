@@ -73,3 +73,4 @@ async function testAdminLogin(): Promise<void> {
 }
 
 testAdminLogin();
+// Arquivo removido (script de teste)

@@ -73,3 +73,4 @@ async function testConnection() {
 }
 
 testConnection();
+// Arquivo removido (script de teste)

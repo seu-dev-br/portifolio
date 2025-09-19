@@ -431,3 +431,4 @@ Data: ${new Date().toLocaleString()}
 
 // Executar diagnóstico
 diagnoseProject();
+// Arquivo removido (script de diagnóstico)

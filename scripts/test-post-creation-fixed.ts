@@ -106,3 +106,4 @@ Criado em: ${new Date().toLocaleString('pt-BR')}
 }
 
 testPostCreation();
+// Arquivo removido (script de teste)
