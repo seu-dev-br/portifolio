@@ -1,14 +1,14 @@
 // src/lib/supabase/client.ts
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 // Configurações do Supabase
 const supabaseUrl = 'https://nattvkjaecceirxthizc.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
 
 // Cliente Supabase singleton
-let supabaseInstance: SupabaseClient | null = null;
+let supabaseInstance: any = null;
 
-export function getSupabaseClient(): SupabaseClient {
+export function getSupabaseClient(): any {
   if (!supabaseInstance) {
     supabaseInstance = createClient(supabaseUrl, supabaseAnonKey);
     console.log('✅ Supabase client criado');
