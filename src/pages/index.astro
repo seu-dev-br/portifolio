@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { getAllPublishedPosts, getAllPublishedProjects, getHomeData } from '../lib/supabase';
 import PageLoading from '../components/PageLoading.astro';
 import OptimizedImage from '../components/OptimizedImage.astro';
+import  SpeedInsights  from "@vercel/speed-insights/astro"
 
 // Fetch home configuration and latest posts/projects
 const homeData = await getHomeData();

@@ -1,5 +1,85 @@
 # Site Astro com Supabase
 
+> **Documentação de Engenharia e Padrões**
+
+## Sumário
+- [Visão Geral](#visão-geral)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Padrão de Imagens e Assets](#padrão-de-imagens-e-assets)
+- [Scripts e Automação](#scripts-e-automação)
+- [Banco de Dados](#banco-de-dados)
+- [Comandos Úteis](#comandos-úteis)
+- [Deploy](#deploy)
+- [Solução de Problemas](#solução-de-problemas)
+- [Contribuição](#contribuição)
+
+---
+
+# Visão Geral
+
+Este é um site estático construído com Astro, utilizando Supabase como backend para autenticação e banco de dados. O projeto é modular, escalável e pronto para deploy em Vercel ou Netlify.
+
+# Estrutura do Projeto
+
+```
+/
+├── public/                 # Arquivos estáticos
+├── src/
+│   ├── components/         # Componentes Astro
+│   ├── layouts/            # Layouts das páginas
+│   ├── lib/                # Utilitários e configurações
+│   ├── pages/              # Páginas do site
+│   ├── styles/             # Estilos globais
+│   └── test/               # Testes automatizados
+├── scripts/                # Scripts utilitários (build, deploy, manutenção)
+├── manual-tests/           # Testes manuais e exemplos
+├── database/               # Scripts SQL e migrações de banco
+├── admin/                  # Painel administrativo
+└── ...
+```
+
+# Padrão de Imagens e Assets
+
+- **Imagens de capa de post:** 800x400px, formato JPG ou WebP, qualidade 80%+
+- **Avatares:** 128x128px, formato PNG ou WebP, fundo transparente
+- **Ícones:** SVG preferencialmente, tamanho 32x32px ou 64x64px
+- **Imagens de projetos:** 1200x600px, JPG/WebP
+- **Tamanho máximo recomendado:** 500KB por imagem
+- **Nomenclatura:** usar nomes descritivos e kebab-case (ex: `projeto-exemplo-capa.jpg`)
+- **Otimização:** utilize ferramentas como [Squoosh](https://squoosh.app/) antes de subir imagens
+
+# Scripts e Automação
+
+- Scripts de build, deploy e manutenção estão em `/scripts`.
+- Scripts de teste/manual estão em `/manual-tests/scripts`.
+- Scripts SQL e de banco em `/database`.
+- Consulte o `README.md` de cada pasta para detalhes e exemplos de uso.
+
+# Banco de Dados
+
+- Scripts de criação, migração e ajuste de banco estão em `/database`.
+- Use o Supabase Studio para gerenciar dados e permissões.
+- Sempre rode scripts de migração em ambiente de staging antes de produção.
+
+# Comandos Úteis
+
+Veja tabela de comandos na seção original deste README.
+
+# Deploy
+
+Veja instruções detalhadas na seção original deste README.
+
+# Boas Práticas
+- Sempre otimize imagens antes de subir.
+- Mantenha scripts organizados nas pastas corretas.
+- Use variáveis de ambiente para segredos e URLs.
+- Documente endpoints, scripts e integrações customizadas.
+- Faça PRs pequenos e bem descritos.
+
+---
+
+# Site Astro com Supabase
+
 Este é um site estático construído com Astro, utilizando Supabase como backend para autenticação e banco de dados.
 
 ## 🚀 Tecnologias Utilizadas
@@ -111,25 +191,7 @@ npm run deploy:vercel
 npm run deploy:netlify
 ```
 
-## 📁 Estrutura do Projeto
-
-```
-/
-├── public/                 # Arquivos estáticos
-├── src/
-│   ├── components/         # Componentes Astro
-│   ├── layouts/            # Layouts das páginas
-│   ├── lib/                # Utilitários e configurações
-│   │   ├── supabase.js     # Cliente Supabase
-│   │   └── supabase-config.js # Configuração build-time
-│   └── pages/              # Páginas do site
-├── scripts/                # Scripts utilitários
-│   └── check-env.js        # Verificação de ambiente
-├── .github/workflows/      # CI/CD GitHub Actions
-└── admin/                  # Painel administrativo
-```
-
-## 🔧 Solução de Problemas
+# Solução de Problemas
 
 ### Erro "supabaseUrl is required"
 
