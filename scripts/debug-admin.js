@@ -49,7 +49,7 @@ modalElements.forEach(id => {
 
 // Check form field editability
 setTimeout(() => {
-    const titleInput = document.getElementById('project-title') as HTMLInputElement;
+    const titleInput = document.getElementById('project-title');
     if (titleInput) {
         console.log('📝 Testing input editability...');
         const originalValue = titleInput.value;
