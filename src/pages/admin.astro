@@ -8,6 +8,9 @@ declare global {
   }
 }
 
+// Import admin styles
+import '../styles/admin.css';
+
 interface Project {
   id: string;
   title: string;
@@ -56,8 +59,7 @@ interface Stats {
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <!-- Admin Styles -->
-    <link rel="stylesheet" href="/admin.css">
+    <!-- Admin Styles are imported via ES6 import -->
 </head>
 <body>
     <!-- Loading Screen -->
