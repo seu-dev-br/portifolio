@@ -29,7 +29,7 @@ export default defineConfig({
   // Configurações de build otimizadas
   build: {
     format: 'file',
-    inlineStylesheets: 'auto'
+    inlineStylesheets: 'always'
   },
 
   // Configurações de imagem otimizadas
