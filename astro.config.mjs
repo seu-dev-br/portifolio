@@ -18,7 +18,7 @@ console.log('- PUBLIC_SUPABASE_ANON_KEY:', process.env.PUBLIC_SUPABASE_ANON_KEY 
 export default defineConfig({
   // Configuração para renderização no servidor (necessária para APIs)
   output: 'server',
-  adapter: vercel(),
+  adapter: vercel({ mode: 'server' }),
 
   // Base URL configuration
   site: 'https://portifolio-seu-dev-br.vercel.app',
