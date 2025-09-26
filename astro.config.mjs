@@ -21,7 +21,7 @@ export default defineConfig({
   adapter: vercel({ mode: 'server' }),
 
   // Base URL configuration
-  site: 'https://portifolio-seu-dev-br.vercel.app',
+  site: 'https://italoantonio.dev',
 
   // Configurações de integração
   integrations: [tailwind()],
