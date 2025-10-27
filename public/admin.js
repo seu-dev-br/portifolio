@@ -288,10 +288,10 @@ function initializeEventListeners() {
         adminPostsContainer.addEventListener('click', async (e) => {
             const target = e.target;
             if (target.classList.contains('edit-post-btn')) {
-                const postId = target.dataset.postId;
+                const postId = target.dataset.id;
                 await editPost(postId);
             } else if (target.classList.contains('delete-post-btn')) {
-                const postId = target.dataset.postId;
+                const postId = target.dataset.id;
                 await deletePost(postId);
             }
         });
@@ -310,10 +310,10 @@ function initializeEventListeners() {
         adminProjectsContainer.addEventListener('click', async (e) => {
             const target = e.target;
             if (target.classList.contains('edit-project-btn')) {
-                const projectId = target.dataset.projectId;
+                const projectId = target.dataset.id;
                 await editProject(projectId);
             } else if (target.classList.contains('delete-project-btn')) {
-                const projectId = target.dataset.projectId;
+                const projectId = target.dataset.id;
                 await deleteProject(projectId);
             }
         });
