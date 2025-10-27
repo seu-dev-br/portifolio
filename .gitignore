@@ -75,3 +75,4 @@ create_bucket_api.js
 # Testes manuais e scripts SQL
 manual-tests/
 database/
+.vercel
