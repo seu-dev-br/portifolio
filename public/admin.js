@@ -121,8 +121,8 @@ function initializeDOMElements() {
     adminPostForm = document.getElementById('post-form');
     adminEditorTitle = document.getElementById('editor-title');
     adminCancelEditBtn = document.getElementById('cancel-edit-btn');
-    adminPostsContainer = document.getElementById('posts-container');
-    adminProjectsContainer = document.getElementById('projects-container');
+    adminPostsContainer = document.getElementById('posts-list');
+    adminProjectsContainer = document.getElementById('projects-list');
 
     // Form elements - Posts
     adminPostIdInput = document.getElementById('post-id');
