@@ -1420,7 +1420,7 @@ async function loadMessages() {
         
         showAdminLoading();
         const { data: messages, error } = await window.supabase
-            .from('messages')
+            .from('contact_messages')
             .select('*')
             .order('created_at', { ascending: false });
 
@@ -1428,7 +1428,14 @@ async function loadMessages() {
 
         if (error) {
             console.error('❌ Erro do Supabase ao carregar mensagens:', error);
-            showAdminError('Erro ao carregar mensagens: ' + error.message);
+            
+            // Se a tabela não existe, mostrar mensagem específica
+            if (error.code === 'PGRST106' || error.message.includes('table') || error.message.includes('does not exist')) {
+                console.log('ℹ️ Tabela contact_messages não existe ainda');
+                displayNoMessagesTable();
+            } else {
+                showAdminError('Erro ao carregar mensagens: ' + error.message);
+            }
             return;
         }
 
@@ -1481,6 +1488,25 @@ function displayNoMessages() {
     const messagesContainer = document.getElementById('messages-list');
     if (messagesContainer) {
         messagesContainer.innerHTML = '<p>Nenhuma mensagem encontrada.</p>';
+    }
+}
+
+function displayNoMessagesTable() {
+    const messagesContainer = document.getElementById('messages-list');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = `
+            <div class="no-table-message">
+                <h3>📬 Tabela de mensagens não configurada</h3>
+                <p>A tabela <code>contact_messages</code> ainda não foi criada no Supabase.</p>
+                <p>Para habilitar o sistema de mensagens:</p>
+                <ol>
+                    <li>Acesse o <a href="https://supabase.com/dashboard" target="_blank">Painel do Supabase</a></li>
+                    <li>Vá para <strong>SQL Editor</strong></li>
+                    <li>Execute o script <code>create_all_tables.sql</code> do projeto</li>
+                </ol>
+                <p><small>Após criar a tabela, recarregue esta página.</small></p>
+            </div>
+        `;
     }
 }
 
