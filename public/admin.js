@@ -110,9 +110,9 @@ function initializeDOMElements() {
 
     // Navigation elements
     adminListPostsBtn = document.getElementById('list-posts-btn');
-    adminNewPostBtn = document.getElementById('new-post-btn');
+    adminNewPostBtn = document.getElementById('add-post-btn');
     adminListProjectsBtn = document.getElementById('list-projects-btn');
-    adminNewProjectBtn = document.getElementById('new-project-btn');
+    adminNewProjectBtn = document.getElementById('add-project-btn');
     adminPostsListSection = document.getElementById('posts-list-section');
     adminPostEditorSection = document.getElementById('post-editor-section');
     adminProjectsListSection = document.getElementById('projects-list-section');
