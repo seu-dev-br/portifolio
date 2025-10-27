@@ -1235,14 +1235,23 @@ async function loadPosts(){
 async function createPost(){
     if (!window.supabase || !adminPostTitleInput || !adminPostContentTextarea) return;
 
+    // Generate slug from title
+    const slug = adminPostTitleInput.value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
+
     const postData = {
         title: adminPostTitleInput.value,
-        content: adminEasyMDE ? adminEasyMDE.value() : adminPostContentTextarea.value,
+        slug: slug,
+        content_markdown: adminEasyMDE ? adminEasyMDE.value() : adminPostContentTextarea.value,
         excerpt: adminPostExcerptInput?.value || '',
-        tags: adminPostTagsInput?.value.split(',').map((tag) => tag.trim()) || [],
-        status: adminPostStatusSelect?.value,
+        tags: adminPostTagsInput?.value.split(',').map((tag) => tag.trim()).filter(tag => tag) || [],
+        status: adminPostStatusSelect?.value || 'draft',
         cover_image: adminCoverImageUrlInput?.value || '',
-        author_id: adminCurrentUser?.id || '',
+        published_at: (adminPostStatusSelect?.value === 'published') ? new Date().toISOString() : null
     };
 
     const { data, error } = await window.supabase.from('posts').insert([postData]);
@@ -1267,13 +1276,23 @@ async function createPost(){
 async function updatePost(postId){
     if (!window.supabase || !adminPostTitleInput || !adminPostContentTextarea) return;
 
+    // Generate slug from title
+    const slug = adminPostTitleInput.value
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .trim('-');
+
     const postData = {
         title: adminPostTitleInput.value,
-        content: adminEasyMDE ? adminEasyMDE.value() : adminPostContentTextarea.value,
+        slug: slug,
+        content_markdown: adminEasyMDE ? adminEasyMDE.value() : adminPostContentTextarea.value,
         excerpt: adminPostExcerptInput?.value || '',
-        tags: adminPostTagsInput?.value.split(',').map((tag) => tag.trim()) || [],
-        status: adminPostStatusSelect?.value,
+        tags: adminPostTagsInput?.value.split(',').map((tag) => tag.trim()).filter(tag => tag) || [],
+        status: adminPostStatusSelect?.value || 'draft',
         cover_image: adminCoverImageUrlInput?.value || '',
+        published_at: (adminPostStatusSelect?.value === 'published') ? new Date().toISOString() : null
     };
 
     const { data, error } = await window.supabase.from('posts').update(postData).eq('id', postId);
@@ -1328,7 +1347,7 @@ async function editPost(postId){
         if (adminPostStatusSelect) adminPostStatusSelect.value = data.status || 'draft';
         if (adminCoverImageUrlInput) adminCoverImageUrlInput.value = data.cover_image || '';
         if (adminCoverImagePreview) adminCoverImagePreview.src = data.cover_image || '';
-        if (adminPostContentTextarea) adminPostContentTextarea.value = data.content || '';
+        if (adminPostContentTextarea) adminPostContentTextarea.value = data.content_markdown || '';
 
         // Resetar EasyMDE e definir novo valor
         if (adminEasyMDE) {
@@ -1516,13 +1535,13 @@ async function createProject(){
     const projectData = {
         title: adminProjectTitleInput.value,
         description: adminProjectDescriptionInput.value,
-        technologies: adminProjectTechnologiesInput?.value.split(',').map((tech) => tech.trim()) || [],
+        technologies: adminProjectTechnologiesInput?.value.split(',').map((tech) => tech.trim()).filter(tech => tech) || [],
         demo_link: adminProjectDemoLinkInput?.value || '',
         github_link: adminProjectGithubLinkInput?.value || '',
         download_link: adminProjectDownloadLinkInput?.value || '',
-        status: adminProjectStatusSelect?.value,
+        status: adminProjectStatusSelect?.value || 'draft',
         image: adminProjectImageUrlInput?.value || '',
-        author_id: adminCurrentUser?.id || '',
+        published_at: (adminProjectStatusSelect?.value === 'published') ? new Date().toISOString() : null
     };
 
     const { data, error } = await window.supabase.from('projects').insert([projectData]);
@@ -1552,12 +1571,13 @@ async function updateProject(projectId){
     const projectData = {
         title: adminProjectTitleInput.value,
         description: adminProjectDescriptionInput.value,
-        technologies: adminProjectTechnologiesInput?.value.split(',').map((tech) => tech.trim()) || [],
+        technologies: adminProjectTechnologiesInput?.value.split(',').map((tech) => tech.trim()).filter(tech => tech) || [],
         demo_link: adminProjectDemoLinkInput?.value || '',
         github_link: adminProjectGithubLinkInput?.value || '',
         download_link: adminProjectDownloadLinkInput?.value || '',
-        status: adminProjectStatusSelect?.value,
+        status: adminProjectStatusSelect?.value || 'draft',
         image: adminProjectImageUrlInput?.value || '',
+        published_at: (adminProjectStatusSelect?.value === 'published') ? new Date().toISOString() : null
     };
 
     const { data, error } = await window.supabase.from('projects').update(projectData).eq('id', projectId);
