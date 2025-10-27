@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 DOMContentLoaded disparado, inicializando admin...');
     initializeDOMElements();
     initializeEventListeners();
+    initializeTabNavigation();
     console.log('✅ Inicialização do admin concluída');
 });
 
@@ -156,6 +157,63 @@ function initializeDOMElements() {
     adminAboutManagerSection = document.getElementById('about-manager-section');
     adminHomeForm = document.getElementById('home-form');
     adminAboutForm = document.getElementById('about-form');
+}
+
+// ==========================================
+// NAVEGAÇÃO ENTRE ABAS
+// ==========================================
+
+function initializeTabNavigation() {
+    const navItems = document.querySelectorAll('.nav-item');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    navItems.forEach(navItem => {
+        navItem.addEventListener('click', () => {
+            const targetView = navItem.getAttribute('data-view');
+            
+            // Remove active class from all nav items
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // Add active class to clicked nav item
+            navItem.classList.add('active');
+            
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            // Show target tab content
+            const targetTab = document.getElementById(targetView + '-tab');
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                
+                // Load data when switching to specific tabs
+                if (targetView === 'posts') {
+                    loadPosts();
+                } else if (targetView === 'projects') {
+                    loadProjects();
+                } else if (targetView === 'messages') {
+                    loadMessages();
+                }
+            }
+        });
+    });
+    
+    // Show overview tab by default
+    const overviewTab = document.getElementById('overview-tab');
+    if (overviewTab) {
+        // Hide all tabs first
+        tabContents.forEach(content => {
+            content.style.display = 'none';
+        });
+        // Show overview
+        overviewTab.style.display = 'block';
+        
+        // Set first nav item as active
+        if (navItems.length > 0) {
+            navItems[0].classList.add('active');
+        }
+    }
 }
 
 // ==========================================
@@ -1342,6 +1400,87 @@ async function loadProjects(){
         console.error('❌ Erro inesperado ao carregar projetos:', error);
         hideAdminLoading();
         showAdminError('Erro ao carregar projetos');
+    }
+}
+
+// ==========================================
+// LOAD MESSAGES
+// ==========================================
+
+async function loadMessages() {
+    console.log('🔄 Carregando mensagens...');
+    
+    if (!window.supabase) {
+        console.error('❌ Supabase não encontrado');
+        return;
+    }
+
+    try {
+        console.log('✅ Supabase encontrado, carregando mensagens...');
+        
+        showAdminLoading();
+        const { data: messages, error } = await window.supabase
+            .from('messages')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        hideAdminLoading();
+
+        if (error) {
+            console.error('❌ Erro do Supabase ao carregar mensagens:', error);
+            showAdminError('Erro ao carregar mensagens: ' + error.message);
+            return;
+        }
+
+        console.log('📊 Resposta do Supabase para mensagens:', { messages, count: messages?.length });
+
+        if (messages && messages.length > 0) {
+            console.log(`✅ ${messages.length} mensagens carregadas`);
+            displayMessages(messages);
+        } else {
+            console.log('ℹ️ Nenhuma mensagem encontrada');
+            displayNoMessages();
+        }
+    } catch (error) {
+        console.error('❌ Erro inesperado ao carregar mensagens:', error);
+        hideAdminLoading();
+        showAdminError('Erro ao carregar mensagens');
+    }
+}
+
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('messages-list');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = '';
+        messages.forEach(message => {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message-card';
+            messageElement.innerHTML = `
+                <div class="message-header">
+                    <h3>${message.name || 'Sem nome'}</h3>
+                    <span class="message-email">${message.email || 'Sem email'}</span>
+                    <span class="message-date">${new Date(message.created_at).toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div class="message-content">
+                    <p><strong>Assunto:</strong> ${message.subject || 'Sem assunto'}</p>
+                    <p>${message.message || 'Sem mensagem'}</p>
+                </div>
+                <div class="message-actions">
+                    <button class="btn btn-outline" onclick="markMessageAsRead('${message.id}')">Marcar como lida</button>
+                    <button class="btn btn-danger" onclick="deleteMessage('${message.id}')">Excluir</button>
+                </div>
+            `;
+            messagesContainer.appendChild(messageElement);
+        });
+    } else {
+        console.error('❌ Container de mensagens não encontrado');
+    }
+}
+
+function displayNoMessages() {
+    const messagesContainer = document.getElementById('messages-list');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = '<p>Nenhuma mensagem encontrada.</p>';
     }
 }
 
