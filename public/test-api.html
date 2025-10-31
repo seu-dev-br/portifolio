@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste API - Posts e Projetos</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        h1 { color: #4ade80; }
+        h2 { color: #60a5fa; margin-top: 40px; }
+        .status { 
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .success { background: #22c55e; }
+        .error { background: #ef4444; }
+        .loading { background: #3b82f6; }
+        pre {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .card {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4ade80;
+        }
+        button {
+            background: #4ade80;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de API - Posts e Projetos</h1>
+    
+    <button onclick="testPosts()">Testar Posts API</button>
+    <button onclick="testProjects()">Testar Projects API</button>
+    <button onclick="testBoth()">Testar Ambos</button>
+    
+    <div id="status"></div>
+    
+    <h2>📝 Posts</h2>
+    <div id="posts-result"></div>
+    
+    <h2>📁 Projetos</h2>
+    <div id="projects-result"></div>
+
+    <script>
+        function showStatus(message, type = 'loading') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+        }
+
+        async function testPosts() {
+            showStatus('🔄 Buscando posts...', 'loading');
+            const result = document.getElementById('posts-result');
+            
+            try {
+                const response = await fetch('/api/posts.json');
+                const data = await response.json();
+                
+                console.log('Posts data:', data);
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    showStatus(`✅ ${data.length} posts encontrados!`, 'success');
+                    result.innerHTML = data.map(post => `
+                        <div class="card">
+                            <h3>${post.title}</h3>
+                            <p><strong>Status:</strong> ${post.status}</p>
+                            <p><strong>Slug:</strong> ${post.slug}</p>
+                            <p><strong>ID:</strong> ${post.id}</p>
+                            <p><strong>Criado:</strong> ${new Date(post.created_at).toLocaleString('pt-BR')}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    showStatus('⚠️ Nenhum post encontrado', 'error');
+                    result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                showStatus('❌ Erro ao buscar posts: ' + error.message, 'error');
+                result.innerHTML = '<pre>' + error.stack + '</pre>';
+            }
+        }
+
+        async function testProjects() {
+            showStatus('🔄 Buscando projetos...', 'loading');
+            const result = document.getElementById('projects-result');
+            
+            try {
+                const response = await fetch('/api/projects.json');
+                const data = await response.json();
+                
+                console.log('Projects data:', data);
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    showStatus(`✅ ${data.length} projetos encontrados!`, 'success');
+                    result.innerHTML = data.map(project => `
+                        <div class="card">
+                            <h3>${project.title}</h3>
+                            <p>${project.description || 'Sem descrição'}</p>
+                            <p><strong>Status:</strong> ${project.status}</p>
+                            <p><strong>ID:</strong> ${project.id}</p>
+                            <p><strong>Tecnologias:</strong> ${project.technologies?.join(', ') || 'Nenhuma'}</p>
+                            <p><strong>Criado:</strong> ${new Date(project.created_at).toLocaleString('pt-BR')}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    showStatus('⚠️ Nenhum projeto encontrado', 'error');
+                    result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+            } catch (error) {
+                showStatus('❌ Erro ao buscar projetos: ' + error.message, 'error');
+                result.innerHTML = '<pre>' + error.stack + '</pre>';
+            }
+        }
+
+        async function testBoth() {
+            await testPosts();
+            setTimeout(() => testProjects(), 1000);
+        }
+
+        // Testar automaticamente ao carregar
+        window.onload = () => testBoth();
+    </script>
+</body>
+</html>
