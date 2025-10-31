@@ -344,6 +344,28 @@ function initializeEventListeners() {
         });
     }
 
+    // Cancel buttons
+    if (adminCancelEditBtn) {
+        adminCancelEditBtn.addEventListener('click', () => {
+            hideAllSections();
+            if (adminPostsListSection) adminPostsListSection.style.display = 'block';
+            clearPostForm();
+            adminIsEditing = false;
+            adminEditingPostId = null;
+        });
+    }
+
+    const cancelProjectBtn = document.getElementById('cancel-project-edit-btn');
+    if (cancelProjectBtn) {
+        cancelProjectBtn.addEventListener('click', () => {
+            hideAllSections();
+            if (adminProjectsListSection) adminProjectsListSection.style.display = 'block';
+            clearProjectForm();
+            adminIsEditing = false;
+            adminEditingProjectId = null;
+        });
+    }
+
     // Global click handler for modal close
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('modal-overlay')) {
@@ -1235,8 +1257,28 @@ async function loadPosts(){
 async function createPost(){
     if (!window.supabase || !adminPostTitleInput || !adminPostContentTextarea) return;
 
+    // Validar campos obrigatórios
+    const title = adminPostTitleInput.value.trim();
+    const content = adminEasyMDE ? adminEasyMDE.value().trim() : adminPostContentTextarea.value.trim();
+
+    if (!title) {
+        showAdminError('O título do post é obrigatório!');
+        adminPostTitleInput.focus();
+        return;
+    }
+
+    if (!content) {
+        showAdminError('O conteúdo do post é obrigatório!');
+        if (adminEasyMDE) {
+            adminEasyMDE.codemirror.focus();
+        } else {
+            adminPostContentTextarea.focus();
+        }
+        return;
+    }
+
     // Generate slug from title
-    const slug = adminPostTitleInput.value
+    const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -1244,13 +1286,13 @@ async function createPost(){
         .trim('-');
 
     const postData = {
-        title: adminPostTitleInput.value,
+        title: title,
         slug: slug,
-        content_markdown: adminEasyMDE ? adminEasyMDE.value() : adminPostContentTextarea.value,
-        excerpt: adminPostExcerptInput?.value || '',
+        content_markdown: content,
+        excerpt: adminPostExcerptInput?.value.trim() || '',
         tags: adminPostTagsInput?.value.split(',').map((tag) => tag.trim()).filter(tag => tag) || [],
         status: adminPostStatusSelect?.value || 'draft',
-        cover_image: adminCoverImageUrlInput?.value || '',
+        cover_image: adminCoverImageUrlInput?.value.trim() || '',
         published_at: (adminPostStatusSelect?.value === 'published') ? new Date().toISOString() : null
     };
 
@@ -1276,8 +1318,28 @@ async function createPost(){
 async function updatePost(postId){
     if (!window.supabase || !adminPostTitleInput || !adminPostContentTextarea) return;
 
+    // Validar campos obrigatórios
+    const title = adminPostTitleInput.value.trim();
+    const content = adminEasyMDE ? adminEasyMDE.value().trim() : adminPostContentTextarea.value.trim();
+
+    if (!title) {
+        showAdminError('O título do post é obrigatório!');
+        adminPostTitleInput.focus();
+        return;
+    }
+
+    if (!content) {
+        showAdminError('O conteúdo do post é obrigatório!');
+        if (adminEasyMDE) {
+            adminEasyMDE.codemirror.focus();
+        } else {
+            adminPostContentTextarea.focus();
+        }
+        return;
+    }
+
     // Generate slug from title
-    const slug = adminPostTitleInput.value
+    const slug = title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
@@ -1285,13 +1347,13 @@ async function updatePost(postId){
         .trim('-');
 
     const postData = {
-        title: adminPostTitleInput.value,
+        title: title,
         slug: slug,
-        content_markdown: adminEasyMDE ? adminEasyMDE.value() : adminPostContentTextarea.value,
-        excerpt: adminPostExcerptInput?.value || '',
+        content_markdown: content,
+        excerpt: adminPostExcerptInput?.value.trim() || '',
         tags: adminPostTagsInput?.value.split(',').map((tag) => tag.trim()).filter(tag => tag) || [],
         status: adminPostStatusSelect?.value || 'draft',
-        cover_image: adminCoverImageUrlInput?.value || '',
+        cover_image: adminCoverImageUrlInput?.value.trim() || '',
         published_at: (adminPostStatusSelect?.value === 'published') ? new Date().toISOString() : null
     };
 
@@ -1309,10 +1371,19 @@ async function updatePost(postId){
 async function deletePost(postId){
     if (!window.supabase) return;
 
+    // Confirmação antes de excluir
+    if (!confirm('Tem certeza que deseja excluir este post? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+
+    showAdminLoading();
+    
     const { data, error } = await window.supabase.from('posts').delete().eq('id', postId);
 
+    hideAdminLoading();
+
     if (error) {
-        showAdminError(error.message);
+        showAdminError('Erro ao excluir post: ' + error.message);
         return;
     }
 
@@ -1331,10 +1402,14 @@ async function savePost(){
 async function editPost(postId){
     if (!window.supabase) return;
 
+    showAdminLoading();
+
     const { data, error } = await window.supabase.from('posts').select('*').eq('id', postId).single();
 
+    hideAdminLoading();
+
     if (error) {
-        showAdminError(error.message);
+        showAdminError('Erro ao carregar post: ' + error.message);
         return;
     }
 
@@ -1346,12 +1421,20 @@ async function editPost(postId){
         if (adminPostTagsInput) adminPostTagsInput.value = data.tags ? data.tags.join(', ') : '';
         if (adminPostStatusSelect) adminPostStatusSelect.value = data.status || 'draft';
         if (adminCoverImageUrlInput) adminCoverImageUrlInput.value = data.cover_image || '';
-        if (adminCoverImagePreview) adminCoverImagePreview.src = data.cover_image || '';
+        if (adminCoverImagePreview && data.cover_image) {
+            adminCoverImagePreview.innerHTML = `<img src="${data.cover_image}" alt="Preview" style="max-width: 200px;">`;
+        }
         if (adminPostContentTextarea) adminPostContentTextarea.value = data.content_markdown || '';
 
         // Resetar EasyMDE e definir novo valor
         if (adminEasyMDE) {
-            adminEasyMDE.value(data.content || '');
+            adminEasyMDE.value(data.content_markdown || '');
+        }
+
+        // Atualizar título do formulário
+        const editorTitle = document.getElementById('editor-title');
+        if (editorTitle) {
+            editorTitle.textContent = 'Editar Post';
         }
 
         // Definir estado de edição
@@ -1532,9 +1615,25 @@ function displayNoMessagesTable() {
 async function createProject(){
     if (!window.supabase || !adminProjectTitleInput || !adminProjectDescriptionInput) return;
 
+    // Validar campos obrigatórios
+    const title = adminProjectTitleInput.value.trim();
+    const description = adminProjectDescriptionInput.value.trim();
+
+    if (!title) {
+        showAdminError('O título do projeto é obrigatório!');
+        adminProjectTitleInput.focus();
+        return;
+    }
+
+    if (!description) {
+        showAdminError('A descrição do projeto é obrigatória!');
+        adminProjectDescriptionInput.focus();
+        return;
+    }
+
     const projectData = {
-        title: adminProjectTitleInput.value,
-        description: adminProjectDescriptionInput.value,
+        title: title,
+        description: description,
         technologies: adminProjectTechnologiesInput?.value.split(',').map((tech) => tech.trim()).filter(tech => tech) || [],
         demo_link: adminProjectDemoLinkInput?.value || '',
         github_link: adminProjectGithubLinkInput?.value || '',
@@ -1568,9 +1667,25 @@ async function createProject(){
 async function updateProject(projectId){
     if (!window.supabase || !adminProjectTitleInput || !adminProjectDescriptionInput) return;
 
+    // Validar campos obrigatórios
+    const title = adminProjectTitleInput.value.trim();
+    const description = adminProjectDescriptionInput.value.trim();
+
+    if (!title) {
+        showAdminError('O título do projeto é obrigatório!');
+        adminProjectTitleInput.focus();
+        return;
+    }
+
+    if (!description) {
+        showAdminError('A descrição do projeto é obrigatória!');
+        adminProjectDescriptionInput.focus();
+        return;
+    }
+
     const projectData = {
-        title: adminProjectTitleInput.value,
-        description: adminProjectDescriptionInput.value,
+        title: title,
+        description: description,
         technologies: adminProjectTechnologiesInput?.value.split(',').map((tech) => tech.trim()).filter(tech => tech) || [],
         demo_link: adminProjectDemoLinkInput?.value || '',
         github_link: adminProjectGithubLinkInput?.value || '',
@@ -1594,10 +1709,19 @@ async function updateProject(projectId){
 async function deleteProject(projectId){
     if (!window.supabase) return;
 
+    // Confirmação antes de excluir
+    if (!confirm('Tem certeza que deseja excluir este projeto? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+
+    showAdminLoading();
+    
     const { data, error } = await window.supabase.from('projects').delete().eq('id', projectId);
 
+    hideAdminLoading();
+
     if (error) {
-        showAdminError(error.message);
+        showAdminError('Erro ao excluir projeto: ' + error.message);
         return;
     }
 
@@ -1616,10 +1740,14 @@ async function saveProject(){
 async function editProject(projectId){
     if (!window.supabase) return;
 
+    showAdminLoading();
+
     const { data, error } = await window.supabase.from('projects').select('*').eq('id', projectId).single();
 
+    hideAdminLoading();
+
     if (error) {
-        showAdminError(error.message);
+        showAdminError('Erro ao carregar projeto: ' + error.message);
         return;
     }
 
@@ -1633,9 +1761,16 @@ async function editProject(projectId){
         if (adminProjectGithubLinkInput) adminProjectGithubLinkInput.value = data.github_link || '';
         if (adminProjectDownloadLinkInput) adminProjectDownloadLinkInput.value = data.download_link || '';
         if (adminProjectStatusSelect) adminProjectStatusSelect.value = data.status || 'draft';
-        if (adminProjectImageInput) adminProjectImageInput.value = data.image || '';
         if (adminProjectImageUrlInput) adminProjectImageUrlInput.value = data.image || '';
-        if (adminProjectImagePreview) adminProjectImagePreview.src = data.image || '';
+        if (adminProjectImagePreview && data.image) {
+            adminProjectImagePreview.innerHTML = `<img src="${data.image}" alt="Preview" style="max-width: 200px;">`;
+        }
+
+        // Atualizar título do formulário
+        const projectEditorTitle = document.getElementById('project-editor-title');
+        if (projectEditorTitle) {
+            projectEditorTitle.textContent = 'Editar Projeto';
+        }
 
         // Definir estado de edição
         adminIsEditing = true;
@@ -2416,8 +2551,14 @@ function clearPostForm() {
     if (adminPostStatusSelect) adminPostStatusSelect.value = 'draft';
     if (adminCoverImageInput) adminCoverImageInput.value = '';
     if (adminCoverImageUrlInput) adminCoverImageUrlInput.value = '';
-    if (adminCoverImagePreview) adminCoverImagePreview.src = '';
+    if (adminCoverImagePreview) adminCoverImagePreview.innerHTML = '';
     if (adminPostContentTextarea) adminPostContentTextarea.value = '';
+    
+    // Resetar título do formulário
+    const editorTitle = document.getElementById('editor-title');
+    if (editorTitle) {
+        editorTitle.textContent = 'Criar Novo Post';
+    }
     
     // Resetar estado de edição
     adminIsEditing = false;
@@ -2441,7 +2582,13 @@ function clearProjectForm() {
     if (adminProjectStatusSelect) adminProjectStatusSelect.value = 'draft';
     if (adminProjectImageInput) adminProjectImageInput.value = '';
     if (adminProjectImageUrlInput) adminProjectImageUrlInput.value = '';
-    if (adminProjectImagePreview) adminProjectImagePreview.src = '';
+    if (adminProjectImagePreview) adminProjectImagePreview.innerHTML = '';
+    
+    // Resetar título do formulário
+    const projectEditorTitle = document.getElementById('project-editor-title');
+    if (projectEditorTitle) {
+        projectEditorTitle.textContent = 'Criar Novo Projeto';
+    }
     
     // Resetar estado de edição
     adminIsEditing = false;
