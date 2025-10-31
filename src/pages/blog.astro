@@ -56,6 +56,7 @@ import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
 </Layout>
 
 <script>
+// @ts-nocheck
   // Funções auxiliares
   function formatDate(timestamp) {
     if (!timestamp) return 'Data não disponível';
@@ -81,11 +82,11 @@ import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
     
     try {
       const response = await fetch('/api/posts.json');
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      
+
       const posts = await response.json();
       console.log(`✅ [blog] ${posts.length} posts carregados`);
 
@@ -105,7 +106,7 @@ import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
       }
 
       // Extrair todas as tags únicas
-      const allTags = [...new Set(posts.flatMap(post => post.tags || []))];
+      const allTags = [...new Set(posts.flatMap(post => Array.isArray(post.tags) ? post.tags : []))];
       
       // Criar botões de filtro de tags
       if (filterTagsContainer && allTags.length > 0) {
@@ -119,37 +120,43 @@ import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
 
       // Renderizar posts
       if (postsGrid) {
-        postsGrid.innerHTML = posts.map(post => `
-          <article class="post-card bg-gray-800/70 rounded-2xl overflow-hidden border border-gray-700 shadow-lg flex flex-col transition-all hover:-translate-y-2 hover:shadow-2xl" data-tags='${JSON.stringify(post.tags || [])}'>
-            ${post.coverImage ? `
-              <div class="post-image w-full h-56 overflow-hidden relative">
-                <a href="/blog/${post.slug}">
-                  <img src="${post.coverImage}" alt="${post.title}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
-                </a>
-              </div>
-            ` : ''}
-            <div class="post-content flex flex-col flex-1 p-6">
-              <div class="post-meta flex flex-wrap items-center justify-between text-sm text-gray-400 mb-3 gap-2">
-                <time datetime="${post.publishedAt}">${formatDate(post.publishedAt)}</time>
-                <span class="reading-time">${getReadingTime(post.contentMarkdown)} de leitura</span>
-              </div>
-              <h2 class="text-xl font-bold mb-2 leading-tight">
-                <a href="/blog/${post.slug}" class="text-white hover:text-primary-400 transition-colors">${post.title}</a>
-              </h2>
-              <p class="post-excerpt text-gray-300 line-clamp-3 mb-4">${post.excerpt}</p>
-              ${post.tags && post.tags.length > 0 ? `
-                <div class="post-tags flex flex-wrap gap-2 mb-4">
-                  ${post.tags.map(tag => `
-                    <span class="tag bg-primary-900/20 text-primary-400 px-3 py-1 rounded-full text-xs font-medium border border-primary-400/30">${tag}</span>
-                  `).join('')}
+        postsGrid.innerHTML = posts.map(post => {
+          const tags = Array.isArray(post.tags) ? post.tags : [];
+          const tagsMarkup = tags.map(tag => `
+            <span class="tag bg-primary-900/20 text-primary-400 px-3 py-1 rounded-full text-xs font-medium border border-primary-400/30">${tag}</span>
+          `).join('');
+          const tagsSection = tags.length > 0 ? `
+            <div class="post-tags flex flex-wrap gap-2 mb-4">
+              ${tagsMarkup}
+            </div>
+          ` : '';
+
+          return `
+            <article class="post-card bg-gray-800/70 rounded-2xl overflow-hidden border border-gray-700 shadow-lg flex flex-col transition-all hover:-translate-y-2 hover:shadow-2xl" data-tags='${JSON.stringify(tags)}'>
+              ${post.thumbnailUrl ? `
+                <div class="post-image w-full h-56 overflow-hidden relative">
+                  <a href="/blog/${post.slug}">
+                    <img src="${post.thumbnailUrl}" alt="${post.title}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+                  </a>
                 </div>
               ` : ''}
-              <div class="read-more mt-auto">
-                <a href="/blog/${post.slug}" class="btn btn-outline inline-block px-5 py-2 rounded-lg border-2 border-primary-400 text-primary-400 font-semibold hover:bg-primary-400 hover:text-white transition-all">Ler Mais</a>
+              <div class="post-content flex flex-col flex-1 p-6">
+                <div class="post-meta flex flex-wrap items-center justify-between text-sm text-gray-400 mb-3 gap-2">
+                  <time datetime="${post.publishedAt ?? ''}">${formatDate(post.publishedAt)}</time>
+                  <span class="reading-time">${getReadingTime(post.contentMarkdown)} de leitura</span>
+                </div>
+                <h2 class="text-xl font-bold mb-2 leading-tight">
+                  <a href="/blog/${post.slug}" class="text-white hover:text-primary-400 transition-colors">${post.title}</a>
+                </h2>
+                <p class="post-excerpt text-gray-300 line-clamp-3 mb-4">${post.summary || 'Resumo não disponível.'}</p>
+                ${tagsSection}
+                <div class="read-more mt-auto">
+                  <a href="/blog/${post.slug}" class="btn btn-outline inline-block px-5 py-2 rounded-lg border-2 border-primary-400 text-primary-400 font-semibold hover:bg-primary-400 hover:text-white transition-all">Ler Mais</a>
+                </div>
               </div>
-            </div>
-          </article>
-        `).join('');
+            </article>
+          `;
+        }).join('');
       }
 
       // Mostrar conteúdo
@@ -167,8 +174,10 @@ import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
       if (postsLoading) postsLoading.classList.add('hidden');
       if (noPosts) {
         noPosts.classList.remove('hidden');
-        noPosts.querySelector('h2').textContent = 'Erro ao carregar posts';
-        noPosts.querySelector('p').textContent = 'Tente novamente mais tarde.';
+        const heading = noPosts.querySelector('h2');
+        if (heading) heading.textContent = 'Erro ao carregar posts';
+        const paragraph = noPosts.querySelector('p');
+        if (paragraph) paragraph.textContent = 'Tente novamente mais tarde.';
       }
     }
   }

@@ -1,35 +1,87 @@
 import type { APIRoute } from 'astro';
 import { createClient } from '@supabase/supabase-js';
 
-// Criar cliente Supabase direto aqui (sem dependências)
-const supabaseUrl = 'https://nattvkjaecceirxthizc.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hdHR2a2phZWNjZWlyeHRoaXpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5MjM2NTMsImV4cCI6MjA3MjQ5OTY1M30.K6Nfu5oGeoo6bZyToBNWkBdA1CncXEjWIrSydlMU2WQ';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = import.meta.env.SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.SUPABASE_ANON_KEY;
 
-export const GET: APIRoute = async () => {
-  console.log('🔍 [API] Buscando projetos...');
-  
-  const { data, error } = await supabase
+const supabase = supabaseUrl && supabaseAnonKey
+  ? createClient(supabaseUrl, supabaseAnonKey, { auth: { persistSession: false } })
+  : null;
+
+export const GET: APIRoute = async ({ request }) => {
+  if (!supabase) {
+    console.warn('[api/projects.json] Variáveis SUPABASE_URL/SUPABASE_ANON_KEY não configuradas. Retornando lista vazia.');
+    return new Response(JSON.stringify([]), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        Pragma: 'no-cache'
+      }
+    });
+  }
+
+  const { searchParams } = new URL(request.url);
+  const limitParam = Number.parseInt(searchParams.get('limit') ?? '', 10);
+  const featuredParam = searchParams.get('featured');
+
+  console.log('[api/projects.json] Iniciando busca de projetos publicados.', {
+    limit: Number.isNaN(limitParam) ? null : limitParam,
+    featured: featuredParam ?? null
+  });
+
+  let query = supabase
     .from('projects')
-    .select('*')
+    .select(
+      'id, title, slug, description, technologies, thumbnail_url, link_url, repo_url, featured, published_at, created_at, updated_at'
+    )
     .eq('status', 'published')
+    .order('published_at', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
 
+  if (!Number.isNaN(limitParam) && limitParam > 0) {
+    query = query.limit(limitParam);
+  }
+
+  if (featuredParam === 'true') {
+    query = query.eq('featured', true);
+  } else if (featuredParam === 'false') {
+    query = query.eq('featured', false);
+  }
+
+  const { data, error } = await query;
+
   if (error) {
-    console.error('❌ Erro:', error);
-    return new Response(JSON.stringify({ error: error.message, projects: [] }), {
-      status: 200,
+    console.error('[api/projects.json] Erro ao buscar projetos:', error);
+    return new Response(JSON.stringify({ error: 'Falha ao carregar projetos publicados.' }), {
+      status: 500,
       headers: { 'Content-Type': 'application/json' }
     });
   }
 
-  console.log(`✅ ${data?.length || 0} projetos`);
-  
-  return new Response(JSON.stringify(data || []), {
+  const payload = (data ?? []).map((project) => ({
+    id: project.id,
+    title: project.title ?? '',
+    slug: project.slug ?? '',
+    description: project.description ?? '',
+    technologies: Array.isArray(project.technologies) ? project.technologies.filter(Boolean) : [],
+    thumbnailUrl: project.thumbnail_url ?? null,
+    demoUrl: project.link_url ?? null,
+    repoUrl: project.repo_url ?? null,
+    featured: Boolean(project.featured),
+    publishedAt: project.published_at ?? project.created_at ?? null,
+    createdAt: project.created_at ?? null,
+    updatedAt: project.updated_at ?? null
+  }));
+
+  console.log('[api/projects.json] Projetos encontrados:', payload.length);
+
+  return new Response(JSON.stringify(payload), {
     status: 200,
-    headers: { 
+    headers: {
       'Content-Type': 'application/json',
-      'Cache-Control': 'no-store, max-age=0'
+      'Cache-Control': 'no-store, no-cache, must-revalidate',
+      Pragma: 'no-cache'
     }
   });
 };
