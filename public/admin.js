@@ -1506,14 +1506,7 @@ async function createPost(){
     }
 
     showAdminSuccess('Post criado com sucesso!');
-    if (adminPostTitleInput) adminPostTitleInput.value = '';
-    if (adminPostContentTextarea) adminPostContentTextarea.value = '';
-    if (adminPostExcerptInput) adminPostExcerptInput.value = '';
-    if (adminPostTagsInput) adminPostTagsInput.value = '';
-    if (adminPostStatusSelect) adminPostStatusSelect.value = 'draft';
-    if (adminCoverImageInput) adminCoverImageInput.value = '';
-    if (adminCoverImageUrlInput) adminCoverImageUrlInput.value = '';
-    if (adminCoverImagePreview) adminCoverImagePreview.src = '';
+    clearPostForm();
     loadPosts();
 }
 
@@ -1567,6 +1560,7 @@ async function updatePost(postId){
     }
 
     showAdminSuccess('Post atualizado com sucesso!');
+    clearPostForm();
     loadPosts();
 }
 
@@ -1596,8 +1590,12 @@ async function deletePost(postId){
 async function savePost(){
     if (adminIsEditing && adminEditingPostId) {
         await updatePost(adminEditingPostId);
+        // Após atualizar, voltar para lista
+        navigateToView('posts');
     } else {
         await createPost();
+        // Após criar, voltar para lista
+        navigateToView('posts');
     }
 }
 
@@ -1850,16 +1848,7 @@ async function createProject(){
     }
 
     showAdminSuccess('Projeto criado com sucesso!');
-    if (adminProjectTitleInput) adminProjectTitleInput.value = '';
-    if (adminProjectDescriptionInput) adminProjectDescriptionInput.value = '';
-    if (adminProjectTechnologiesInput) adminProjectTechnologiesInput.value = '';
-    if (adminProjectDemoLinkInput) adminProjectDemoLinkInput.value = '';
-    if (adminProjectGithubLinkInput) adminProjectGithubLinkInput.value = '';
-    if (adminProjectDownloadLinkInput) adminProjectDownloadLinkInput.value = '';
-    if (adminProjectStatusSelect) adminProjectStatusSelect.value = 'draft';
-    if (adminProjectImageInput) adminProjectImageInput.value = '';
-    if (adminProjectImageUrlInput) adminProjectImageUrlInput.value = '';
-    if (adminProjectImagePreview) adminProjectImagePreview.src = '';
+    clearProjectForm();
     loadProjects();
 }
 
@@ -1902,6 +1891,7 @@ async function updateProject(projectId){
     }
 
     showAdminSuccess('Projeto atualizado com sucesso!');
+    clearProjectForm();
     loadProjects();
 }
 
@@ -1931,8 +1921,12 @@ async function deleteProject(projectId){
 async function saveProject(){
     if (adminIsEditing && adminEditingProjectId) {
         await updateProject(adminEditingProjectId);
+        // Após atualizar, voltar para lista
+        navigateToView('projects');
     } else {
         await createProject();
+        // Após criar, voltar para lista
+        navigateToView('projects');
     }
 }
 
