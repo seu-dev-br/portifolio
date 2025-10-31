@@ -1,9 +1,13 @@
 ---
+// Enable SSR (Server-Side Rendering) para buscar dados em tempo real
+export const prerender = false;
+
 import Layout from '../layouts/Layout.astro';
 import { getAllPublishedPosts, formatDate, getReadingTime } from '../lib/supabase';
 import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
 import OptimizedImage from '../components/OptimizedImage.astro';
 
+// Busca posts em tempo real a cada request
 const posts = await getAllPublishedPosts();
 ---
 

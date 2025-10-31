@@ -1,10 +1,13 @@
 ---
+// Enable SSR (Server-Side Rendering) para buscar dados em tempo real
+export const prerender = false;
+
 import Layout from '../layouts/Layout.astro';
 import { getAllPublishedProjects, getComingSoonProjects, getAboutData } from '../lib/supabase';
 import SkeletonGrid from '../components/SkeletonGrid.astro';
 import ComingSoonCard from '../components/ComingSoonCard.astro';
 
-// Fetch all published and coming soon projects
+// Fetch all published and coming soon projects (em tempo real a cada request)
 const projects = await getAllPublishedProjects();
 const comingSoonProjects = await getComingSoonProjects();
 const aboutData = await getAboutData();

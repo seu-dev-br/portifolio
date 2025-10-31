@@ -1,11 +1,14 @@
 ---
+// Enable SSR (Server-Side Rendering) para buscar dados em tempo real
+export const prerender = false;
+
 import Layout from '../layouts/Layout.astro';
 import { getAllPublishedPosts, getAllPublishedProjects, getHomeData } from '../lib/supabase';
 import PageLoading from '../components/PageLoading.astro';
 import OptimizedImage from '../components/OptimizedImage.astro';
 import  SpeedInsights  from "@vercel/speed-insights/astro"
 
-// Fetch home configuration and latest posts/projects
+// Fetch home configuration and latest posts/projects (em tempo real)
 const homeData = await getHomeData();
 const posts = await getAllPublishedPosts();
 const latestPosts = posts.slice(0, homeData?.posts?.count || 3);
