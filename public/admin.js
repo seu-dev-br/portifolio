@@ -163,57 +163,179 @@ function initializeDOMElements() {
 // NAVEGAÇÃO ENTRE ABAS
 // ==========================================
 
-function initializeTabNavigation() {
-    const navItems = document.querySelectorAll('.nav-item');
-    const tabContents = document.querySelectorAll('.tab-content');
+// ==========================================
+// SISTEMA DE NAVEGAÇÃO ROBUSTO (CMS-style)
+// ==========================================
 
+// State management para navegação
+const AdminNavigationState = {
+    currentView: 'overview',
+    currentSection: null,
+    history: []
+};
+
+/**
+ * Navega para uma view específica (similar ao WordPress admin)
+ * @param {string} viewName - Nome da view (overview, posts, projects, etc)
+ * @param {boolean} addToHistory - Se deve adicionar ao histórico
+ */
+function navigateToView(viewName, addToHistory = true) {
+    console.log(`🔄 Navegando para: ${viewName}`);
+    
+    // Adicionar ao histórico
+    if (addToHistory && AdminNavigationState.currentView !== viewName) {
+        AdminNavigationState.history.push(AdminNavigationState.currentView);
+    }
+    
+    // Atualizar state
+    AdminNavigationState.currentView = viewName;
+    AdminNavigationState.currentSection = null;
+    
+    // Esconder todas as tabs E sections
+    hideAllTabs();
+    hideAllSections();
+    
+    // Mostrar a tab correta
+    const targetTab = document.getElementById(`${viewName}-tab`);
+    if (targetTab) {
+        targetTab.style.display = 'block';
+        
+        // Carregar dados conforme necessário
+        loadViewData(viewName);
+        
+        // Atualizar navegação visual
+        updateNavigationUI(viewName);
+        
+        console.log(`✅ View ${viewName} carregada com sucesso`);
+    } else {
+        console.error(`❌ Tab ${viewName}-tab não encontrada`);
+    }
+}
+
+/**
+ * Navega para uma section específica (editor, gerenciador, etc)
+ * @param {string} sectionName - Nome da section
+ */
+function navigateToSection(sectionName) {
+    console.log(`🔄 Navegando para section: ${sectionName}`);
+    
+    AdminNavigationState.currentSection = sectionName;
+    
+    // Esconder todas as sections
+    hideAllSections();
+    
+    // Mostrar a section correta
+    const targetSection = document.getElementById(sectionName);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        console.log(`✅ Section ${sectionName} mostrada`);
+    } else {
+        console.error(`❌ Section ${sectionName} não encontrada`);
+    }
+}
+
+/**
+ * Esconde todas as tabs (abas principais)
+ */
+function hideAllTabs() {
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.style.display = 'none';
+    });
+}
+
+/**
+ * Carrega dados necessários para cada view
+ * @param {string} viewName - Nome da view
+ */
+function loadViewData(viewName) {
+    switch(viewName) {
+        case 'posts':
+            loadPosts();
+            break;
+        case 'projects':
+            loadProjects();
+            break;
+        case 'messages':
+            loadMessages();
+            break;
+        case 'overview':
+            loadDashboardStats();
+            break;
+        case 'home':
+            loadHomeSettings();
+            break;
+        case 'about':
+            loadAboutSettings();
+            break;
+        case 'settings':
+            loadGeneralSettings();
+            break;
+        default:
+            console.log(`ℹ️ Nenhum dado para carregar na view: ${viewName}`);
+    }
+}
+
+/**
+ * Atualiza UI da navegação (active states)
+ * @param {string} viewName - Nome da view ativa
+ */
+function updateNavigationUI(viewName) {
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    navItems.forEach(item => {
+        const itemView = item.getAttribute('data-view');
+        
+        if (itemView === viewName) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+}
+
+/**
+ * Volta para a view anterior (breadcrumb-style)
+ */
+function navigateBack() {
+    if (AdminNavigationState.currentSection) {
+        // Se estamos em uma section, volta para a view principal
+        AdminNavigationState.currentSection = null;
+        hideAllSections();
+        
+        // Mostrar a tab atual novamente
+        const currentTab = document.getElementById(`${AdminNavigationState.currentView}-tab`);
+        if (currentTab) {
+            currentTab.style.display = 'block';
+        }
+    } else if (AdminNavigationState.history.length > 0) {
+        // Volta para a view anterior no histórico
+        const previousView = AdminNavigationState.history.pop();
+        navigateToView(previousView, false);
+    }
+}
+
+/**
+ * Inicializa sistema de navegação
+ */
+function initializeTabNavigation() {
+    console.log('🚀 Inicializando sistema de navegação...');
+    
+    const navItems = document.querySelectorAll('.nav-item');
+    
+    // Event listeners para items de navegação
     navItems.forEach(navItem => {
-        navItem.addEventListener('click', () => {
+        navItem.addEventListener('click', (e) => {
+            e.preventDefault();
             const targetView = navItem.getAttribute('data-view');
-            
-            // Remove active class from all nav items
-            navItems.forEach(item => item.classList.remove('active'));
-            
-            // Add active class to clicked nav item
-            navItem.classList.add('active');
-            
-            // Hide all tab contents
-            tabContents.forEach(content => {
-                content.style.display = 'none';
-            });
-            
-            // Show target tab content
-            const targetTab = document.getElementById(targetView + '-tab');
-            if (targetTab) {
-                targetTab.style.display = 'block';
-                
-                // Load data when switching to specific tabs
-                if (targetView === 'posts') {
-                    loadPosts();
-                } else if (targetView === 'projects') {
-                    loadProjects();
-                } else if (targetView === 'messages') {
-                    loadMessages();
-                }
-            }
+            navigateToView(targetView);
         });
     });
     
-    // Show overview tab by default
-    const overviewTab = document.getElementById('overview-tab');
-    if (overviewTab) {
-        // Hide all tabs first
-        tabContents.forEach(content => {
-            content.style.display = 'none';
-        });
-        // Show overview
-        overviewTab.style.display = 'block';
-        
-        // Set first nav item as active
-        if (navItems.length > 0) {
-            navItems[0].classList.add('active');
-        }
-    }
+    // Navegar para overview por padrão
+    navigateToView('overview', false);
+    
+    console.log('✅ Sistema de navegação inicializado');
 }
 
 // ==========================================
@@ -253,33 +375,28 @@ function initializeEventListeners() {
     // Navigation buttons
     if (adminListPostsBtn) {
         adminListPostsBtn.addEventListener('click', () => {
-            hideAllSections();
-            adminPostsListSection.style.display = 'block';
-            loadPosts();
+            navigateToView('posts');
         });
     }
 
-    if (adminNewPostBtn) {
-        adminNewPostBtn.addEventListener('click', () => {
-            hideAllSections();
-            adminPostEditorSection.style.display = 'block';
+    // Event delegation para TODOS os botões "Novo Post"
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'add-post-btn') {
+            e.preventDefault();
+            navigateToSection('post-editor-section');
             clearPostForm();
-        });
-    }
+        }
+        
+        if (e.target && e.target.id === 'add-project-btn') {
+            e.preventDefault();
+            navigateToSection('project-editor-section');
+            clearProjectForm();
+        }
+    });
 
     if (adminListProjectsBtn) {
         adminListProjectsBtn.addEventListener('click', () => {
-            hideAllSections();
-            adminProjectsListSection.style.display = 'block';
-            loadProjects();
-        });
-    }
-
-    if (adminNewProjectBtn) {
-        adminNewProjectBtn.addEventListener('click', () => {
-            hideAllSections();
-            adminProjectEditorSection.style.display = 'block';
-            clearProjectForm();
+            navigateToView('projects');
         });
     }
 
@@ -345,26 +462,26 @@ function initializeEventListeners() {
     }
 
     // Cancel buttons
-    if (adminCancelEditBtn) {
-        adminCancelEditBtn.addEventListener('click', () => {
-            hideAllSections();
-            if (adminPostsListSection) adminPostsListSection.style.display = 'block';
+    // Event delegation para botões de cancelar (suporta múltiplos botões)
+    document.addEventListener('click', (e) => {
+        // Cancelar edição de post
+        if (e.target && (e.target.id === 'cancel-edit-btn' || e.target.classList.contains('cancel-post-btn'))) {
+            e.preventDefault();
             clearPostForm();
             adminIsEditing = false;
             adminEditingPostId = null;
-        });
-    }
-
-    const cancelProjectBtn = document.getElementById('cancel-project-edit-btn');
-    if (cancelProjectBtn) {
-        cancelProjectBtn.addEventListener('click', () => {
-            hideAllSections();
-            if (adminProjectsListSection) adminProjectsListSection.style.display = 'block';
+            navigateToView('posts');
+        }
+        
+        // Cancelar edição de projeto
+        if (e.target && (e.target.id === 'cancel-project-edit-btn' || e.target.classList.contains('cancel-project-btn'))) {
+            e.preventDefault();
             clearProjectForm();
             adminIsEditing = false;
             adminEditingProjectId = null;
-        });
-    }
+            navigateToView('projects');
+        }
+    });
 
     // Global click handler for modal close
     document.addEventListener('click', function(e) {
@@ -593,6 +710,91 @@ function generateSlug(title){
         .replace(/[^\w-]+/g, '')
         .replace(/--+/g, '-')
         .replace(/^-+|-+$/g, '');
+}
+
+// ==========================================
+// FUNÇÕES DE DASHBOARD E ESTATÍSTICAS
+// ==========================================
+
+/**
+ * Carrega estatísticas do dashboard (overview)
+ */
+async function loadDashboardStats() {
+    console.log('📊 Carregando estatísticas do dashboard...');
+    
+    if (!window.supabase) {
+        console.error('❌ Supabase não está inicializado');
+        return;
+    }
+
+    try {
+        // Contar posts
+        const { count: postsCount, error: postsError } = await window.supabase
+            .from('posts')
+            .select('*', { count: 'exact', head: true });
+        
+        if (!postsError) {
+            const postsCountEl = document.getElementById('posts-count');
+            if (postsCountEl) postsCountEl.textContent = postsCount || 0;
+        }
+
+        // Contar projetos
+        const { count: projectsCount, error: projectsError } = await window.supabase
+            .from('projects')
+            .select('*', { count: 'exact', head: true });
+        
+        if (!projectsError) {
+            const projectsCountEl = document.getElementById('projects-count');
+            if (projectsCountEl) projectsCountEl.textContent = projectsCount || 0;
+        }
+
+        // Contar mensagens
+        const { count: messagesCount, error: messagesError } = await window.supabase
+            .from('contact_messages')
+            .select('*', { count: 'exact', head: true });
+        
+        if (!messagesError) {
+            const messagesCountEl = document.getElementById('messages-count');
+            if (messagesCountEl) messagesCountEl.textContent = messagesCount || 0;
+        }
+
+        console.log('✅ Estatísticas carregadas:', { postsCount, projectsCount, messagesCount });
+    } catch (error) {
+        console.error('❌ Erro ao carregar estatísticas:', error);
+    }
+}
+
+/**
+ * Carrega configurações gerais
+ */
+async function loadGeneralSettings() {
+    console.log('⚙️ Carregando configurações gerais...');
+    
+    if (!window.supabase) {
+        console.error('❌ Supabase não está inicializado');
+        return;
+    }
+
+    try {
+        const { data, error } = await window.supabase
+            .from('settings')
+            .select('*')
+            .eq('key', 'general')
+            .single();
+        
+        if (error) {
+            console.log('ℹ️ Nenhuma configuração geral encontrada');
+            return;
+        }
+
+        if (data && data.value) {
+            console.log('✅ Configurações gerais carregadas:', data.value);
+            // Aqui você pode popular os campos do formulário de configurações
+            // quando criar a interface de settings
+        }
+    } catch (error) {
+        console.error('❌ Erro ao carregar configurações:', error);
+    }
 }
 
 // ==========================================
@@ -1441,11 +1643,8 @@ async function editPost(postId){
         adminIsEditing = true;
         adminEditingPostId = postId;
 
-        // Mostrar seção do editor
-        hideAllSections();
-        if (adminPostEditorSection) {
-            adminPostEditorSection.style.display = 'block';
-        }
+        // Navegar para seção do editor
+        navigateToSection('post-editor-section');
     }
 }
 
@@ -1776,11 +1975,8 @@ async function editProject(projectId){
         adminIsEditing = true;
         adminEditingProjectId = projectId;
 
-        // Mostrar seção do editor
-        hideAllSections();
-        if (adminProjectEditorSection) {
-            adminProjectEditorSection.style.display = 'block';
-        }
+        // Navegar para seção do editor
+        navigateToSection('project-editor-section');
     }
 }
 
