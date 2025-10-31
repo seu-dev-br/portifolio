@@ -1,23 +1,7 @@
 ---
-// Enable SSR (Server-Side Rendering) para buscar dados em tempo real
-export const prerender = false;
-
+// Página estática - dados carregados via API
 import Layout from '../layouts/Layout.astro';
-import { getAllPublishedPosts, formatDate, getReadingTime } from '../lib/supabase';
 import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
-import OptimizedImage from '../components/OptimizedImage.astro';
-
-// Disable cache - busca dados frescos sempre
-if (Astro.response) {
-  Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  Astro.response.headers.set('Pragma', 'no-cache');
-  Astro.response.headers.set('Expires', '0');
-}
-
-// Busca posts em tempo real a cada request
-console.log('🔄 [blog.astro] Buscando posts...');
-const posts = await getAllPublishedPosts();
-console.log(`📊 [blog.astro] ${posts.length} posts retornados`);
 ---
 
 <Layout title="Blog - Ítalo Antonio" description="Artigos sobre desenvolvimento web, tecnologia e programação">
@@ -25,6 +9,7 @@ console.log(`📊 [blog.astro] ${posts.length} posts retornados`);
     <section class="blog-header text-center py-12">
       <h1 class="text-4xl sm:text-5xl font-extrabold mb-4 bg-gradient-to-r from-primary-400 via-accent-blue to-accent-cyan bg-clip-text text-transparent animate-gradient">Meu Blog</h1>
       <p class="text-lg text-gray-400 max-w-xl mx-auto mb-8">Compartilhando conhecimento sobre desenvolvimento web, tecnologia e programação.</p>
+      
       <!-- Search Bar -->
       <div class="relative max-w-md mx-auto mb-6">
         <input 
@@ -37,169 +22,225 @@ console.log(`📊 [blog.astro] ${posts.length} posts retornados`);
         />
         <button id="clear-search" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xl focus:outline-none focus:ring-2 focus:ring-primary-400 hidden" aria-label="Limpar busca" tabindex="0" role="button">×</button>
       </div>
-      <!-- Filter Tags -->
-      <div class="flex flex-wrap justify-center gap-2 mb-4">
-        <button class="filter-tag active px-4 py-2 rounded-full bg-gradient-to-r from-primary-400 to-accent-cyan text-white font-semibold shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-tag="all" aria-label="Filtrar por todos os posts" tabindex="0" role="button">Todos</button>
-        {[...new Set(posts.flatMap(post => post.tags || []))].map(tag => (
-          <button class="filter-tag px-4 py-2 rounded-full bg-gray-700 text-gray-200 font-semibold border border-gray-600 hover:bg-primary-500 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" data-tag={tag} aria-label={`Filtrar por tag: ${tag}`} tabindex="0" role="button">{tag}</button>
-        ))}
+      
+      <!-- Filter Tags Container (será preenchido via JS) -->
+      <div id="filter-tags-container" class="flex flex-wrap justify-center gap-2 mb-4">
+        <button class="filter-tag active px-4 py-2 rounded-full bg-gradient-to-r from-primary-400 to-accent-cyan text-white font-semibold shadow-sm transition-all" data-tag="all">Todos</button>
       </div>
     </section>
-    {posts.length === 0 ? (
-      <section class="no-posts py-16">
-        <div class="empty-state text-center p-8 bg-gray-800/60 rounded-xl border border-gray-700">
-          <h2 class="text-2xl font-bold text-gray-200 mb-2">Nenhum post publicado ainda</h2>
-          <p class="text-gray-400 text-lg">Em breve você encontrará conteúdo interessante por aqui!</p>
-        </div>
-      </section>
-    ) : (
-      <section class="posts-section pb-16">
-        <div id="posts-loading" class="posts-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          <!-- Loading skeletons -->
-          <BlogPostSkeleton />
-          <BlogPostSkeleton />
-          <BlogPostSkeleton />
-          <BlogPostSkeleton />
-          <BlogPostSkeleton />
-          <BlogPostSkeleton />
-        </div>
-        <div id="posts-content" class="posts-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
-          {posts.map((post) => (
-            <article class="post-card bg-gray-800/70 rounded-2xl overflow-hidden border border-gray-700 shadow-lg flex flex-col transition-all hover:-translate-y-2 hover:shadow-2xl">
-              {post.coverImage && (
-                <div class="post-image w-full h-56 overflow-hidden relative">
-                  <a href={`/blog/${post.slug}`}> <OptimizedImage src={post.coverImage} alt={post.title} width={800} height={400} class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" /> </a>
-                </div>
-              )}
-              <div class="post-content flex flex-col flex-1 p-6">
-                <div class="post-meta flex flex-wrap items-center justify-between text-sm text-gray-400 mb-3 gap-2">
-                  <time datetime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
-                  <span class="reading-time">{getReadingTime(post.contentMarkdown)} de leitura</span>
-                </div>
-                <h2 class="text-xl font-bold mb-2 leading-tight">
-                  <a href={`/blog/${post.slug}`} class="text-white hover:text-primary-400 transition-colors" aria-label={`Ler post: ${post.title}`} tabindex="0" role="link">{post.title}</a>
-                </h2>
-                <p class="post-excerpt text-gray-300 line-clamp-3 mb-4">{post.excerpt}</p>
-                {post.tags && post.tags.length > 0 && (
-                  <div class="post-tags flex flex-wrap gap-2 mb-4">
-                    {post.tags.map((tag: string) => (
-                      <span class="tag bg-primary-900/20 text-primary-400 px-3 py-1 rounded-full text-xs font-medium border border-primary-400/30">{tag}</span>
-                    ))}
-                  </div>
-                )}
-                <div class="read-more mt-auto">
-                  <a href={`/blog/${post.slug}`} class="btn btn-outline inline-block px-5 py-2 rounded-lg border-2 border-primary-400 text-primary-400 font-semibold hover:bg-primary-400 hover:text-white transition-all focus:outline-none focus:ring-2 focus:ring-primary-400" aria-label={`Ler mais sobre: ${post.title}`} tabindex="0" role="link">Ler Mais</a>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-    )}
+
+    <!-- Loading State -->
+    <section id="posts-loading" class="py-16">
+      <div class="posts-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <BlogPostSkeleton />
+        <BlogPostSkeleton />
+        <BlogPostSkeleton />
+      </div>
+    </section>
+
+    <!-- Posts Content (será preenchido via JS) -->
+    <section id="posts-content" class="hidden pb-16">
+      <div id="posts-grid" class="posts-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Posts serão carregados aqui -->
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <section id="no-posts" class="hidden py-16">
+      <div class="empty-state text-center p-8 bg-gray-800/60 rounded-xl border border-gray-700">
+        <h2 class="text-2xl font-bold text-gray-200 mb-2">Nenhum post publicado ainda</h2>
+        <p class="text-gray-400 text-lg">Em breve você encontrará conteúdo interessante por aqui!</p>
+      </div>
+    </section>
   </div>
 </Layout>
 
 <script>
-	// Blog Search and Filter Functionality
-	document.addEventListener('DOMContentLoaded', function() {
-		const searchInput = document.getElementById('search-input');
-		const clearSearchBtn = document.getElementById('clear-search');
-		const filterTags = document.querySelectorAll('.filter-tag');
-		const postCards = document.querySelectorAll('.post-card');
+  // Funções auxiliares
+  function formatDate(timestamp) {
+    if (!timestamp) return 'Data não disponível';
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('pt-BR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
 
-		let currentTag = 'all';
+  function getReadingTime(content) {
+    if (!content) return '0 min';
+    const wordsPerMinute = 200;
+    const words = content.split(/\s+/).length;
+    const minutes = Math.ceil(words / wordsPerMinute);
+    return `${minutes} min`;
+  }
 
-		// Search functionality
-		if (searchInput) {
-			searchInput.addEventListener('input', function(e) {
-				const target = e.target as HTMLInputElement;
-				const searchTerm = target?.value?.toLowerCase().trim() || '';
-				
-				if (searchTerm) {
-					if (clearSearchBtn) clearSearchBtn.style.display = 'block';
-				} else {
-					if (clearSearchBtn) clearSearchBtn.style.display = 'none';
-				}
-				
-				filterPosts(searchTerm, currentTag);
-			});
-		}
+  // Carregar posts da API
+  async function loadPosts() {
+    console.log('🔄 [blog] Carregando posts da API...');
+    
+    try {
+      const response = await fetch('/api/posts.json');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const posts = await response.json();
+      console.log(`✅ [blog] ${posts.length} posts carregados`);
 
-		// Clear search
-		if (clearSearchBtn) {
-			clearSearchBtn.addEventListener('click', function() {
-				(searchInput as HTMLInputElement).value = '';
-				clearSearchBtn.style.display = 'none';
-				filterPosts('', currentTag);
-			});
-		}
+      const postsLoading = document.getElementById('posts-loading');
+      const postsContent = document.getElementById('posts-content');
+      const noPosts = document.getElementById('no-posts');
+      const postsGrid = document.getElementById('posts-grid');
+      const filterTagsContainer = document.getElementById('filter-tags-container');
 
-		// Tag filter functionality
-		filterTags.forEach(tag => {
-			tag.addEventListener('click', function(this: HTMLElement) {
-				// Remove active class from all tags
-				filterTags.forEach(t => t.classList.remove('active'));
-				// Add active class to clicked tag
-				this.classList.add('active');
-				
-				currentTag = this.dataset.tag || '';
-				const searchTerm = searchInput ? (searchInput as HTMLInputElement).value.toLowerCase().trim() : '';
-				
-				filterPosts(searchTerm, currentTag);
-			});
-		});
+      // Esconder loading
+      if (postsLoading) postsLoading.classList.add('hidden');
 
-		function filterPosts(searchTerm: string, tag: string) {
-			let visibleCount = 0;
-			
-			postCards.forEach(card => {
-				const titleElement = card.querySelector('h2 a');
-				const excerptElement = card.querySelector('.post-excerpt');
-				const title = titleElement?.textContent?.toLowerCase() || '';
-				const excerpt = excerptElement?.textContent?.toLowerCase() || '';
-				const postTags = Array.from(card.querySelectorAll('.tag')).map(t => t.textContent?.toLowerCase() || '');
-				
-				const matchesSearch = !searchTerm || 
-					title.includes(searchTerm) || 
-					excerpt.includes(searchTerm) ||
-					postTags.some(t => t.includes(searchTerm));
-				
-				const matchesTag = tag === 'all' || postTags.includes(tag.toLowerCase());
-				
-				if (matchesSearch && matchesTag) {
-					(card as HTMLElement).style.display = 'block';
-					(card as HTMLElement).style.animation = 'fadeIn 0.5s ease';
-					visibleCount++;
-				} else {
-					(card as HTMLElement).style.display = 'none';
-				}
-			});
+      if (posts.length === 0) {
+        // Mostrar empty state
+        if (noPosts) noPosts.classList.remove('hidden');
+        return;
+      }
 
-			// Show/hide empty state
-			const emptyState = document.querySelector('.no-posts') as HTMLElement;
-			const postsSection = document.querySelector('.posts-section') as HTMLElement;
-			
-			if (visibleCount === 0 && postCards.length > 0) {
-				if (emptyState) emptyState.style.display = 'block';
-				if (postsSection) postsSection.style.display = 'none';
-			} else {
-				if (emptyState) emptyState.style.display = 'none';
-				if (postsSection) postsSection.style.display = 'block';
-			}
-		}
-	});
+      // Extrair todas as tags únicas
+      const allTags = [...new Set(posts.flatMap(post => post.tags || []))];
+      
+      // Criar botões de filtro de tags
+      if (filterTagsContainer && allTags.length > 0) {
+        filterTagsContainer.innerHTML = `
+          <button class="filter-tag active px-4 py-2 rounded-full bg-gradient-to-r from-primary-400 to-accent-cyan text-white font-semibold shadow-sm transition-all" data-tag="all">Todos</button>
+          ${allTags.map(tag => `
+            <button class="filter-tag px-4 py-2 rounded-full bg-gray-700 text-gray-200 font-semibold border border-gray-600 hover:bg-primary-500 hover:text-white transition-all" data-tag="${tag}">${tag}</button>
+          `).join('')}
+        `;
+      }
 
-	// Loading states management
-	document.addEventListener('DOMContentLoaded', function() {
-		const loadingElement = document.getElementById('posts-loading');
-		const contentElement = document.getElementById('posts-content');
+      // Renderizar posts
+      if (postsGrid) {
+        postsGrid.innerHTML = posts.map(post => `
+          <article class="post-card bg-gray-800/70 rounded-2xl overflow-hidden border border-gray-700 shadow-lg flex flex-col transition-all hover:-translate-y-2 hover:shadow-2xl" data-tags='${JSON.stringify(post.tags || [])}'>
+            ${post.coverImage ? `
+              <div class="post-image w-full h-56 overflow-hidden relative">
+                <a href="/blog/${post.slug}">
+                  <img src="${post.coverImage}" alt="${post.title}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+                </a>
+              </div>
+            ` : ''}
+            <div class="post-content flex flex-col flex-1 p-6">
+              <div class="post-meta flex flex-wrap items-center justify-between text-sm text-gray-400 mb-3 gap-2">
+                <time datetime="${post.publishedAt}">${formatDate(post.publishedAt)}</time>
+                <span class="reading-time">${getReadingTime(post.contentMarkdown)} de leitura</span>
+              </div>
+              <h2 class="text-xl font-bold mb-2 leading-tight">
+                <a href="/blog/${post.slug}" class="text-white hover:text-primary-400 transition-colors">${post.title}</a>
+              </h2>
+              <p class="post-excerpt text-gray-300 line-clamp-3 mb-4">${post.excerpt}</p>
+              ${post.tags && post.tags.length > 0 ? `
+                <div class="post-tags flex flex-wrap gap-2 mb-4">
+                  ${post.tags.map(tag => `
+                    <span class="tag bg-primary-900/20 text-primary-400 px-3 py-1 rounded-full text-xs font-medium border border-primary-400/30">${tag}</span>
+                  `).join('')}
+                </div>
+              ` : ''}
+              <div class="read-more mt-auto">
+                <a href="/blog/${post.slug}" class="btn btn-outline inline-block px-5 py-2 rounded-lg border-2 border-primary-400 text-primary-400 font-semibold hover:bg-primary-400 hover:text-white transition-all">Ler Mais</a>
+              </div>
+            </div>
+          </article>
+        `).join('');
+      }
 
-		if (loadingElement && contentElement) {
-			// Simulate loading delay for better UX
-			setTimeout(() => {
-				loadingElement.classList.add('hidden');
-				contentElement.classList.remove('hidden');
-			}, 1000);
-		}
-	});
+      // Mostrar conteúdo
+      if (postsContent) postsContent.classList.remove('hidden');
+
+      // Implementar busca e filtros
+      setupSearchAndFilters();
+      
+    } catch (error) {
+      console.error('❌ [blog] Erro ao carregar posts:', error);
+      
+      const postsLoading = document.getElementById('posts-loading');
+      const noPosts = document.getElementById('no-posts');
+      
+      if (postsLoading) postsLoading.classList.add('hidden');
+      if (noPosts) {
+        noPosts.classList.remove('hidden');
+        noPosts.querySelector('h2').textContent = 'Erro ao carregar posts';
+        noPosts.querySelector('p').textContent = 'Tente novamente mais tarde.';
+      }
+    }
+  }
+
+  function setupSearchAndFilters() {
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const filterTags = document.querySelectorAll('.filter-tag');
+    const postCards = document.querySelectorAll('.post-card');
+
+    let currentTag = 'all';
+
+    // Search functionality
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        
+        if (clearSearchBtn) {
+          clearSearchBtn.classList.toggle('hidden', searchTerm === '');
+        }
+
+        filterPosts(searchTerm, currentTag);
+      });
+    }
+
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', function() {
+        if (searchInput) {
+          searchInput.value = '';
+          this.classList.add('hidden');
+          filterPosts('', currentTag);
+        }
+      });
+    }
+
+    // Tag filtering
+    filterTags.forEach(tag => {
+      tag.addEventListener('click', function() {
+        filterTags.forEach(t => t.classList.remove('active', 'bg-gradient-to-r', 'from-primary-400', 'to-accent-cyan'));
+        filterTags.forEach(t => t.classList.add('bg-gray-700'));
+        
+        this.classList.add('active', 'bg-gradient-to-r', 'from-primary-400', 'to-accent-cyan');
+        this.classList.remove('bg-gray-700');
+        
+        currentTag = this.getAttribute('data-tag') || 'all';
+        const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+        filterPosts(searchTerm, currentTag);
+      });
+    });
+
+    function filterPosts(searchTerm, tag) {
+      postCards.forEach(card => {
+        const title = card.querySelector('h2')?.textContent.toLowerCase() || '';
+        const excerpt = card.querySelector('.post-excerpt')?.textContent.toLowerCase() || '';
+        const tagsData = JSON.parse(card.getAttribute('data-tags') || '[]');
+        
+        const matchesSearch = title.includes(searchTerm) || excerpt.includes(searchTerm);
+        const matchesTag = tag === 'all' || tagsData.includes(tag);
+        
+        if (matchesSearch && matchesTag) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+  }
+
+  // Carregar posts quando a página carregar
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadPosts);
+  } else {
+    loadPosts();
+  }
 </script>
