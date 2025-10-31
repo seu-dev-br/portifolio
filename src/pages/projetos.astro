@@ -1,102 +1,6 @@
 ---
-// Enable SSR (Server-Side Rendering) para buscar dados em tempo real
-export const prerender = false;
-
+// Página simples com fetch client-side
 import Layout from '../layouts/Layout.astro';
-import { getAllPublishedProjects, getComingSoonProjects, getAboutData } from '../lib/supabase';
-import SkeletonGrid from '../components/SkeletonGrid.astro';
-import ComingSoonCard from '../components/ComingSoonCard.astro';
-
-// Disable cache - busca dados frescos sempre
-if (Astro.response) {
-  Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  Astro.response.headers.set('Pragma', 'no-cache');
-  Astro.response.headers.set('Expires', '0');
-}
-
-// Fetch all published and coming soon projects (em tempo real a cada request)
-console.log('🔄 [projetos.astro] Buscando projetos...');
-const projects = await getAllPublishedProjects();
-console.log(`📊 [projetos.astro] ${projects.length} projetos retornados`);
-const comingSoonProjects = await getComingSoonProjects();
-const aboutData = await getAboutData();
-
-// Dados padrão caso não haja dados no Supabase
-const defaultData = {
-	socialLinks: {
-		email: 'contato@exemplo.com'
-	}
-};
-
-// Usar dados do Supabase ou dados padrão
-const data = aboutData || defaultData;
-
-// Mock projects data for demonstration (replace with actual Supabase data)
-const mockProjects = [
-	{
-		id: '1',
-		title: 'E-commerce Platform',
-		description: 'Plataforma completa de e-commerce com React, Node.js e PostgreSQL. Inclui sistema de pagamentos, gestão de inventário e painel administrativo.',
-		technologies: ['React', 'Node.js', 'PostgreSQL', 'Stripe', 'Tailwind CSS'],
-		image: '/project-placeholder.jpg',
-		demoLink: 'https://demo-ecommerce.vercel.app',
-		githubLink: 'https://github.com/italoantonio/ecommerce-platform',
-		category: 'Full Stack'
-	},
-	{
-		id: '2',
-		title: 'Task Management App',
-		description: 'Aplicação de gerenciamento de tarefas com Vue.js e Firebase. Recursos incluem colaboração em tempo real, notificações e integração com calendário.',
-		technologies: ['Vue.js', 'Firebase', 'Tailwind CSS', 'Vuex', 'PWA'],
-		image: '/project-placeholder.jpg',
-		demoLink: 'https://taskmanager-demo.vercel.app',
-		githubLink: 'https://github.com/italoantonio/task-manager',
-		category: 'Frontend'
-	},
-	{
-		id: '3',
-		title: 'Weather Dashboard',
-		description: 'Dashboard interativo de clima com JavaScript vanilla, APIs e gráficos. Inclui previsões detalhadas, mapas interativos e dados históricos.',
-		technologies: ['JavaScript', 'Chart.js', 'OpenWeather API', 'CSS3', 'LocalStorage'],
-		image: '/project-placeholder.jpg',
-		demoLink: 'https://weather-dashboard-demo.vercel.app',
-		githubLink: 'https://github.com/italoantonio/weather-dashboard',
-		category: 'Frontend'
-	},
-	{
-		id: '4',
-		title: 'Learning Management System',
-		description: 'Sistema de gestão de aprendizagem com Next.js, MongoDB e Prisma. Inclui cursos online, progresso de alunos e certificados.',
-		technologies: ['Next.js', 'MongoDB', 'Prisma', 'Stripe', 'Tailwind CSS'],
-		image: '/project-placeholder.jpg',
-		demoLink: 'https://lms-demo.vercel.app',
-		githubLink: 'https://github.com/italoantonio/lms-platform',
-		category: 'Full Stack'
-	},
-	{
-		id: '5',
-		title: 'Real-time Chat App',
-		description: 'Aplicação de chat em tempo real com React, Socket.io e Express. Recursos incluem salas privadas, emojis e compartilhamento de arquivos.',
-		technologies: ['React', 'Socket.io', 'Express', 'MongoDB', 'Tailwind CSS'],
-		image: '/project-placeholder.jpg',
-		demoLink: 'https://chat-demo.vercel.app',
-		githubLink: 'https://github.com/italoantonio/realtime-chat',
-		category: 'Full Stack'
-	},
-	{
-		id: '6',
-		title: 'Analytics Dashboard',
-		description: 'Dashboard de analytics com React, D3.js e Python FastAPI. Inclui visualizações de dados, relatórios automáticos e exportação.',
-		technologies: ['React', 'D3.js', 'Python', 'FastAPI', 'PostgreSQL'],
-		image: '/project-placeholder.jpg',
-		demoLink: 'https://analytics-demo.vercel.app',
-		githubLink: 'https://github.com/italoantonio/analytics-dashboard',
-		category: 'Full Stack'
-	}
-];
-
-// Use mock data if no projects from Supabase
-const displayProjects = projects && projects.length > 0 ? projects : mockProjects;
 ---
 
 <Layout title="Projetos - Ítalo Antonio">
@@ -113,112 +17,55 @@ const displayProjects = projects && projects.length > 0 ? projects : mockProject
 		</div>
 	</section>
 
-	<!-- Projects Grid -->
-	<section class="py-20 bg-gray-950 reveal">
+	<!-- Loading State -->
+	<section id="projects-loading" class="py-20 bg-gray-950">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-			{displayProjects && displayProjects.length > 0 ? (
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-stagger="100">
-					{displayProjects.map((project, index) => (
-						<article class={`bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/50 card-hover group reveal-stagger animate-stagger-${(index % 5) + 1}`}>
-							<!-- Project Image -->
-							<div class="relative overflow-hidden">
-								<div class="w-full h-48 bg-gradient-to-br from-primary-600/20 to-accent-cyan/20 flex items-center justify-center">
-									<svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-									</svg>
-								</div>
-								<div class="absolute top-4 right-4">
-									<span class="px-3 py-1 bg-gray-900/80 text-gray-300 text-xs rounded-full backdrop-blur-sm">
-										{'category' in project ? project.category : 'Projeto'}
-									</span>
-								</div>
-							</div>
-
-							<!-- Project Content -->
-							<div class="p-6">
-								<h3 class="text-xl font-semibold text-white mb-3 group-hover:text-primary-400 transition-colors duration-200">
-									{project.title}
-								</h3>
-								<p class="text-gray-400 mb-4 line-clamp-3">
-									{project.description}
-								</p>
-
-								<!-- Technologies -->
-								{project.technologies && project.technologies.length > 0 && (
-									<div class="flex flex-wrap gap-2 mb-6">
-										          {project.technologies.slice(0, 4).map((tech: string) => (
-											<span class="px-3 py-1 bg-gradient-to-r from-primary-500/20 to-accent-cyan/20 text-primary-300 text-sm rounded-full border border-primary-500/30">
-												{tech}
-											</span>
-										))}
-										{project.technologies.length > 4 && (
-											<span class="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full">
-												+{project.technologies.length - 4}
-											</span>
-										)}
-									</div>
-								)}
-
-								<!-- Project Links -->
-								<div class="flex gap-3">
-									{project.demoLink && (
-										<a href={project.demoLink} class="flex-1 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white text-center py-3 px-4 rounded-lg transition-all duration-200 font-medium transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" target="_blank" rel="noopener noreferrer" aria-label={`Ver demo do projeto: ${project.title}`} tabindex="0" role="link">
-											<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-											</svg>
-											Demo
-										</a>
-									)}
-									{project.githubLink && (
-										<a href={project.githubLink} class="flex-1 border border-gray-600 hover:border-primary-400 text-gray-300 hover:text-primary-400 text-center py-3 px-4 rounded-lg transition-all duration-200 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400" target="_blank" rel="noopener noreferrer" aria-label={`Ver código no GitHub do projeto: ${project.title}`} tabindex="0" role="link">
-											<svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
-												<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-											</svg>
-											Código
-										</a>
-									)}
-								</div>
-							</div>
-						</article>
-					))}
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-pulse">
+					<div class="h-48 bg-gray-700 rounded mb-4"></div>
+					<div class="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+					<div class="h-4 bg-gray-700 rounded w-full mb-2"></div>
+					<div class="h-4 bg-gray-700 rounded w-2/3"></div>
 				</div>
-			) : (
-				<div class="text-center py-20">
-					<div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-						<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-						</svg>
-					</div>
-					<h3 class="text-xl font-semibold text-gray-300 mb-2">Nenhum projeto encontrado</h3>
-					<p class="text-gray-400">Volte em breve para ver meus próximos trabalhos!</p>
+				<div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-pulse">
+					<div class="h-48 bg-gray-700 rounded mb-4"></div>
+					<div class="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+					<div class="h-4 bg-gray-700 rounded w-full mb-2"></div>
+					<div class="h-4 bg-gray-700 rounded w-2/3"></div>
 				</div>
-			)}
+				<div class="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-pulse">
+					<div class="h-48 bg-gray-700 rounded mb-4"></div>
+					<div class="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+					<div class="h-4 bg-gray-700 rounded w-full mb-2"></div>
+					<div class="h-4 bg-gray-700 rounded w-2/3"></div>
+				</div>
+			</div>
 		</div>
 	</section>
 
-	<!-- Coming Soon Projects Section -->
-	{comingSoonProjects && comingSoonProjects.length > 0 && (
-		<section class="py-20 bg-gradient-to-br from-blue-950 via-indigo-950 to-purple-950 reveal">
-			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-				<div class="text-center mb-16">
-					<h2 class="text-3xl md:text-4xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-						🚀 Em Breve
-					</h2>
-					<p class="text-gray-400 text-lg max-w-2xl mx-auto">
-						Projetos que estou desenvolvendo ou planejando. Fique ligado para as próximas novidades!
-					</p>
-				</div>
-
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-stagger="100">
-					{comingSoonProjects.map((project, index) => (
-						<div class={`reveal-stagger animate-stagger-${(index % 5) + 1}`}>
-							<ComingSoonCard project={project} />
-						</div>
-					))}
-				</div>
+	<!-- Projects Grid -->
+	<section id="projects-content" class="hidden py-20 bg-gray-950">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+				<!-- Projetos serão carregados aqui via JavaScript -->
 			</div>
-		</section>
-	)}
+		</div>
+	</section>
+
+	<!-- Empty State -->
+	<section id="no-projects" class="hidden py-20 bg-gray-950">
+		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+			<div class="text-center py-20">
+				<div class="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+					<svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+					</svg>
+				</div>
+				<h3 class="text-xl font-semibold text-gray-300 mb-2">Nenhum projeto encontrado</h3>
+				<p class="text-gray-400">Volte em breve para ver meus próximos trabalhos!</p>
+			</div>
+		</div>
+	</section>
 
 	<!-- CTA Section -->
 	<section class="py-20 bg-gradient-to-r from-primary-900/20 to-accent-blue/20">
@@ -234,7 +81,7 @@ const displayProjects = projects && projects.length > 0 ? projects : mockProject
 				<a href="/contato" class="bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-xl shadow-primary-500/25">
 					Entrar em Contato
 				</a>
-				<a href={`mailto:${data.socialLinks?.email || 'contato@exemplo.com'}`} class="border-2 border-gray-600 hover:border-primary-400 text-gray-300 hover:text-primary-400 px-8 py-4 rounded-lg font-semibold transition-all duration-300">
+				<a href="mailto:contato@exemplo.com" class="border-2 border-gray-600 hover:border-primary-400 text-gray-300 hover:text-primary-400 px-8 py-4 rounded-lg font-semibold transition-all duration-300">
 					Enviar Email
 				</a>
 			</div>
@@ -242,5 +89,116 @@ const displayProjects = projects && projects.length > 0 ? projects : mockProject
 	</section>
 </Layout>
 
+<script>
+	async function loadProjects() {
+		console.log('🔄 Carregando projetos da API...');
+		
+		const loading = document.getElementById('projects-loading');
+		const content = document.getElementById('projects-content');
+		const noProjects = document.getElementById('no-projects');
+		const grid = document.getElementById('projects-grid');
 
-</Layout>
+		try {
+			const response = await fetch('/api/projects.json');
+			const projects = await response.json();
+			
+			console.log('✅ Projetos recebidos:', projects);
+
+			// Esconder loading
+			if (loading) loading.classList.add('hidden');
+
+			if (!Array.isArray(projects) || projects.length === 0) {
+				console.log('⚠️ Nenhum projeto encontrado');
+				if (noProjects) noProjects.classList.remove('hidden');
+				return;
+			}
+
+			// Renderizar projetos
+			if (grid) {
+				grid.innerHTML = projects.map(project => `
+					<article class="bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden border border-gray-700/50 card-hover group">
+						<!-- Project Image -->
+						<div class="relative overflow-hidden">
+							<div class="w-full h-48 bg-gradient-to-br from-primary-600/20 to-accent-cyan/20 flex items-center justify-center">
+								${project.image ? `
+									<img src="${project.image}" alt="${project.title}" class="w-full h-full object-cover">
+								` : `
+									<svg class="w-16 h-16 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+									</svg>
+								`}
+							</div>
+						</div>
+
+						<!-- Project Content -->
+						<div class="p-6">
+							<h3 class="text-xl font-semibold text-white mb-3 group-hover:text-primary-400 transition-colors duration-200">
+								${project.title}
+							</h3>
+							<p class="text-gray-400 mb-4 line-clamp-3">
+								${project.description || 'Sem descrição'}
+							</p>
+
+							<!-- Technologies -->
+							${project.technologies && project.technologies.length > 0 ? `
+								<div class="flex flex-wrap gap-2 mb-6">
+									${project.technologies.slice(0, 4).map(tech => `
+										<span class="px-3 py-1 bg-gradient-to-r from-primary-500/20 to-accent-cyan/20 text-primary-300 text-sm rounded-full border border-primary-500/30">
+											${tech}
+										</span>
+									`).join('')}
+									${project.technologies.length > 4 ? `
+										<span class="px-3 py-1 bg-gray-700/50 text-gray-400 text-sm rounded-full">
+											+${project.technologies.length - 4}
+										</span>
+									` : ''}
+								</div>
+							` : ''}
+
+							<!-- Project Links -->
+							<div class="flex gap-3">
+								${project.demo_link ? `
+									<a href="${project.demo_link}" class="flex-1 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white text-center py-3 px-4 rounded-lg transition-all duration-200 font-medium transform hover:scale-105" target="_blank" rel="noopener noreferrer">
+										<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+										</svg>
+										Demo
+									</a>
+								` : ''}
+								${project.github_link ? `
+									<a href="${project.github_link}" class="flex-1 border border-gray-600 hover:border-primary-400 text-gray-300 hover:text-primary-400 text-center py-3 px-4 rounded-lg transition-all duration-200 font-medium" target="_blank" rel="noopener noreferrer">
+										<svg class="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 24 24">
+											<path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+										</svg>
+										Código
+									</a>
+								` : ''}
+							</div>
+						</div>
+					</article>
+				`).join('');
+			}
+
+			// Mostrar conteúdo
+			if (content) content.classList.remove('hidden');
+
+		} catch (error) {
+			console.error('❌ Erro ao carregar projetos:', error);
+			if (loading) loading.classList.add('hidden');
+			if (noProjects) {
+				noProjects.classList.remove('hidden');
+				const h3 = noProjects.querySelector('h3');
+				const p = noProjects.querySelector('p');
+				if (h3) h3.textContent = 'Erro ao carregar projetos';
+				if (p) p.textContent = 'Tente novamente mais tarde.';
+			}
+		}
+	}
+
+	// Carregar quando a página estiver pronta
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', loadProjects);
+	} else {
+		loadProjects();
+	}
+</script>
