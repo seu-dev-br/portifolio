@@ -8,12 +8,22 @@ import PageLoading from '../components/PageLoading.astro';
 import OptimizedImage from '../components/OptimizedImage.astro';
 import  SpeedInsights  from "@vercel/speed-insights/astro"
 
+// Disable cache - busca dados frescos sempre
+if (Astro.response) {
+  Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  Astro.response.headers.set('Pragma', 'no-cache');
+  Astro.response.headers.set('Expires', '0');
+}
+
 // Fetch home configuration and latest posts/projects (em tempo real)
+console.log('🔄 [index.astro] Buscando dados...');
 const homeData = await getHomeData();
 const posts = await getAllPublishedPosts();
+console.log(`📊 [index.astro] ${posts.length} posts retornados`);
 const latestPosts = posts.slice(0, homeData?.posts?.count || 3);
 
 const projects = await getAllPublishedProjects();
+console.log(`📊 [index.astro] ${projects.length} projetos retornados`);
 const featuredProjects = projects.slice(0, homeData?.featured?.count || 3);
 ---
 

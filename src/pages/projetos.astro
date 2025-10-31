@@ -7,8 +7,17 @@ import { getAllPublishedProjects, getComingSoonProjects, getAboutData } from '..
 import SkeletonGrid from '../components/SkeletonGrid.astro';
 import ComingSoonCard from '../components/ComingSoonCard.astro';
 
+// Disable cache - busca dados frescos sempre
+if (Astro.response) {
+  Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  Astro.response.headers.set('Pragma', 'no-cache');
+  Astro.response.headers.set('Expires', '0');
+}
+
 // Fetch all published and coming soon projects (em tempo real a cada request)
+console.log('🔄 [projetos.astro] Buscando projetos...');
 const projects = await getAllPublishedProjects();
+console.log(`📊 [projetos.astro] ${projects.length} projetos retornados`);
 const comingSoonProjects = await getComingSoonProjects();
 const aboutData = await getAboutData();
 

@@ -26,6 +26,8 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // Helper functions for fetching data during build
 export async function getAllPublishedPosts(): Promise<Post[]> {
     try {
+        console.log('🔍 [getAllPublishedPosts] Buscando posts com status="published"...');
+        
         const { data: posts, error } = await supabase
             .from('posts')
             .select('*')
@@ -33,8 +35,13 @@ export async function getAllPublishedPosts(): Promise<Post[]> {
             .order('published_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching published posts:', error);
+            console.error('❌ [getAllPublishedPosts] Erro ao buscar posts:', error);
             return [];
+        }
+
+        console.log(`✅ [getAllPublishedPosts] ${posts?.length || 0} posts encontrados`);
+        if (posts && posts.length > 0) {
+            console.log('📝 [getAllPublishedPosts] Posts:', posts.map(p => ({ id: p.id, title: p.title, status: p.status })));
         }
 
         return posts.map(post => ({
@@ -305,6 +312,8 @@ export async function updateHomeData(data: Partial<HomeData>): Promise<SupabaseR
 // Projects Management Functions
 export async function getAllPublishedProjects() {
     try {
+        console.log('🔍 [getAllPublishedProjects] Buscando projetos com status="published"...');
+        
         const { data: projects, error } = await supabase
             .from('projects')
             .select('*')
@@ -312,8 +321,13 @@ export async function getAllPublishedProjects() {
             .order('published_at', { ascending: false });
 
         if (error) {
-            console.error('Error fetching published projects:', error);
+            console.error('❌ [getAllPublishedProjects] Erro ao buscar projetos:', error);
             return [];
+        }
+
+        console.log(`✅ [getAllPublishedProjects] ${projects?.length || 0} projetos encontrados`);
+        if (projects && projects.length > 0) {
+            console.log('📁 [getAllPublishedProjects] Projetos:', projects.map(p => ({ id: p.id, title: p.title, status: p.status })));
         }
 
         return projects.map(project => ({

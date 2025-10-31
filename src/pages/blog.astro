@@ -7,8 +7,17 @@ import { getAllPublishedPosts, formatDate, getReadingTime } from '../lib/supabas
 import BlogPostSkeleton from '../components/BlogPostSkeleton.astro';
 import OptimizedImage from '../components/OptimizedImage.astro';
 
+// Disable cache - busca dados frescos sempre
+if (Astro.response) {
+  Astro.response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+  Astro.response.headers.set('Pragma', 'no-cache');
+  Astro.response.headers.set('Expires', '0');
+}
+
 // Busca posts em tempo real a cada request
+console.log('🔄 [blog.astro] Buscando posts...');
 const posts = await getAllPublishedPosts();
+console.log(`📊 [blog.astro] ${posts.length} posts retornados`);
 ---
 
 <Layout title="Blog - Ítalo Antonio" description="Artigos sobre desenvolvimento web, tecnologia e programação">
